@@ -1,0 +1,39 @@
+import axios from "axios";
+
+const api = axios.create({ baseURL: "http://localhost:8000" });
+
+// Attach JWT token to every request if present
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("fh_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// Auth
+export const register = (data) => api.post("/api/auth/register", data);
+export const login = (email, password) => {
+  const form = new URLSearchParams();
+  form.append("username", email);
+  form.append("password", password);
+  return api.post("/api/auth/login", form, { headers: { "Content-Type": "application/x-www-form-urlencoded" } });
+};
+export const getMe = () => api.get("/api/auth/me");
+
+// Scores
+export const generateScore = (data) => api.post("/api/score/generate", data);
+export const getDemoScore = () => api.get("/api/score/demo");
+export const getHistory = () => api.get("/api/score/history");
+export const getScore = (id) => api.get(`/api/score/${id}`);
+
+// Chat
+export const sendChat = (message, context = null) =>
+  api.post("/api/chat", { message, context });
+
+// Consent
+export const getConsent = (consentId) => api.get(`/api/score/consent/${consentId}`);
+
+// Loan outcomes
+export const recordOutcome = (msmeId, data) => api.post(`/api/score/${msmeId}/outcome`, data);
+export const getAllOutcomes = () => api.get("/api/score/outcomes/all");
+
+export default api;

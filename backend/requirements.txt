@@ -1,0 +1,16 @@
+fastapi==0.111.0
+uvicorn==0.30.1
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
+xgboost==2.0.3
+shap==0.45.1
+sqlalchemy==2.0.30
+pydantic==2.7.4
+faker==25.2.0
+python-multipart==0.0.9
+httpx==0.27.0
+joblib==1.4.2
+python-jose[cryptography]
+passlib[bcrypt]
+google-genai>=0.3.0

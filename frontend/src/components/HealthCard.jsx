@@ -1,0 +1,397 @@
+import React, { useRef, useState } from "react";
+import ScoreGauge from "./ScoreGauge";
+import PillarBar from "./PillarBar";
+import RevenueChart from "./RevenueChart";
+import LoanProductsMatrix from "./LoanProductsMatrix";
+import Recommendations from "./Recommendations";
+import DetailedReports from "./DetailedReports";
+import ScoreSimulator from "./ScoreSimulator";
+import EMICalculator from "./EMICalculator";
+import LoanApplyCTA from "./LoanApplyCTA";
+import PeerBenchmark from "./PeerBenchmark";
+import ScoreTrend from "./ScoreTrend";
+import ConsentCard from "./ConsentCard";
+import NTCBanner from "./NTCBanner";
+import OutcomeModal from "./OutcomeModal";
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
+
+const riskColors = {
+  "LOW": "#22c55e",
+  "MEDIUM-LOW": "#eab308",
+  "MEDIUM": "#f97316",
+  "HIGH": "#ef4444",
+};
+
+const recBg = {
+  "APPROVE": "#15803d22",
+  "RECOMMEND FOR REVIEW": "#ca8a0422",
+  "MANUAL UNDERWRITING REQUIRED": "#ea580c22",
+  "DECLINE": "#dc262622",
+};
+
+async function exportPDF(ref, business_name) {
+  const { default: html2canvas } = await import("html2canvas");
+  const { default: jsPDF } = await import("jspdf");
+  const canvas = await html2canvas(ref, { backgroundColor: "#0f172a", scale: 1.5, useCORS: true });
+  const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width / 1.5, canvas.height / 1.5] });
+  pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width / 1.5, canvas.height / 1.5);
+  pdf.save(`FinHealth-${business_name.replace(/\s+/g, "-")}.pdf`);
+}
+
+export default function HealthCard({ data }) {
+  const printRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
+  const [showOutcome, setShowOutcome] = useState(false);
+  const [recordedOutcome, setRecordedOutcome] = useState(null);
+
+  const { business_name, gstin, city, business_type, years_in_business,
+    pillar_scores, loan_eligibility, ml_prediction, explanations, generated_at,
+    monthly_revenues, monthly_inflows, recommendations, raw_features } = data;
+
+  const handleExport = async () => {
+    setExporting(true);
+    try { await exportPDF(printRef.current, business_name); }
+    finally { setExporting(false); }
+  };
+
+  // NTC mode: credit_worthiness is null — replace with 0 so Recharts doesn't
+  // generate NaN coordinates and collapse the radar chart.
+  const radarData = [
+    { subject: "Cash Flow", value: pillar_scores.cash_flow },
+    { subject: "Compliance", value: pillar_scores.compliance },
+    { subject: "Growth", value: pillar_scores.growth },
+    { subject: "Stability", value: pillar_scores.stability },
+    { subject: "Credit", value: pillar_scores.credit_worthiness ?? 0 },
+  ];
+
+  const riskColor = riskColors[loan_eligibility.risk_band] || "#94a3b8";
+  const date = new Date(generated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+  const HC_SECTIONS = [
+    { id: "hc-overview",   label: "Overview",    icon: "📊" },
+    { id: "hc-reports",    label: "Reports",     icon: "📁" },
+    { id: "hc-emi",        label: "EMI Calc",    icon: "💰" },
+    { id: "hc-simulator",  label: "Simulator",   icon: "🎯" },
+    { id: "hc-benchmark",  label: "Benchmarks",  icon: "📈" },
+    { id: "hc-apply",      label: "Apply",       icon: "✅" },
+  ];
+
+  return (
+    <div ref={printRef} style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px" }}>
+
+      {/* Quick-nav bar */}
+      <div style={{
+        position: "sticky", top: 60, zIndex: 50,
+        background: "#0f172aee", backdropFilter: "blur(8px)",
+        borderBottom: "1px solid #1e293b",
+        display: "flex", gap: 6, padding: "10px 0", marginBottom: 20,
+        overflowX: "auto",
+      }}>
+        {HC_SECTIONS.map(s => (
+          <button key={s.id} onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{
+            padding: "6px 14px", borderRadius: 20, flexShrink: 0,
+            background: "#1e293b", border: "1px solid #334155",
+            color: "#94a3b8", fontSize: 12, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 5,
+          }}>
+            <span>{s.icon}</span> {s.label}
+          </button>
+        ))}
+      </div>
+
+      <div id="hc-overview" />
+
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(135deg, #1e293b, #0f172a)",
+        border: "1px solid #334155",
+        borderRadius: 20,
+        padding: "28px 32px",
+        marginBottom: 20,
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: 0, right: 0, width: 200, height: 200,
+          background: "radial-gradient(circle, #3b82f622 0%, transparent 70%)",
+          borderRadius: "50%", transform: "translate(30%, -30%)",
+        }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "#3b82f6", letterSpacing: 2, fontWeight: 600, marginBottom: 6 }}>
+              MSME FINANCIAL HEALTH CARD
+            </div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 }}>{business_name}</h1>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
+              <span style={{ fontSize: 12, color: "#64748b", background: "#1e293b", padding: "3px 10px", borderRadius: 20 }}>{gstin}</span>
+              <span style={{ fontSize: 12, color: "#64748b" }}>📍 {city}</span>
+              <span style={{ fontSize: 12, color: "#64748b" }}>🏭 {business_type}</span>
+              <span style={{ fontSize: 12, color: "#64748b" }}>⏱ {years_in_business} yrs in business</span>
+            </div>
+          </div>
+          <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+            <div style={{ fontSize: 11, color: "#475569" }}>Generated: {date}</div>
+            <div style={{
+              padding: "6px 16px", borderRadius: 8,
+              background: recBg[loan_eligibility.recommendation] || "#1e293b",
+              border: `1px solid ${riskColor}44`,
+              fontSize: 12, fontWeight: 700, color: riskColor, letterSpacing: 0.5,
+            }}>
+              {loan_eligibility.recommendation}
+            </div>
+            <div style={{ display:"flex", gap:6 }}>
+              <button onClick={() => setShowOutcome(true)} style={{
+                padding: "6px 14px", borderRadius: 8,
+                background: recordedOutcome ? "#22c55e22" : "#1e293b",
+                border: recordedOutcome ? "1px solid #22c55e44" : "1px solid #334155",
+                color: recordedOutcome ? "#22c55e" : "#94a3b8",
+                fontSize: 11, cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 5,
+              }}>
+                {recordedOutcome ? `✓ ${recordedOutcome}` : "📋 Mark Outcome"}
+              </button>
+              <button onClick={handleExport} disabled={exporting} style={{
+                padding: "6px 14px", borderRadius: 8,
+                background: exporting ? "#334155" : "#1e293b",
+                border: "1px solid #334155", color: exporting ? "#475569" : "#94a3b8",
+                fontSize: 11, cursor: exporting ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", gap: 5,
+              }}>
+                {exporting ? "⏳ Exporting…" : "⬇ Export PDF"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* NTC/NTB Banner */}
+      <NTCBanner ntcFlag={data.ntc_flag} ntbFlag={data.ntb_flag} overallScore={pillar_scores.overall} />
+
+      {/* Score + Pillars Row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 20, marginBottom: 20 }}>
+
+        {/* Left: Gauge + Loan Info */}
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 20,
+        }}>
+          <ScoreGauge score={pillar_scores.overall} />
+          <div style={{ width: "100%", borderTop: "1px solid #334155", paddingTop: 16 }}>
+            <div style={{ fontSize: 11, color: "#475569", marginBottom: 12, letterSpacing: 1.5 }}>LOAN ELIGIBILITY</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 }}>
+              ₹{(loan_eligibility.eligible_loan_amount / 100000).toFixed(1)}L
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: "#64748b" }}>Risk Band</span>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: riskColor,
+                border: `1px solid ${riskColor}44`,
+                padding: "2px 8px", borderRadius: 20,
+              }}>{loan_eligibility.risk_band}</span>
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 4 }}>
+                <span>ML Confidence</span>
+                <span style={{ color: ml_prediction.prediction === "CREDITWORTHY" ? "#22c55e" : "#ef4444" }}>
+                  {(ml_prediction.confidence * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: ml_prediction.prediction === "CREDITWORTHY" ? "#22c55e" : "#ef4444" }}>
+                {ml_prediction.prediction}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Pillars */}
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+        }}>
+          <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 20 }}>5-PILLAR BREAKDOWN</div>
+          <PillarBar scores={pillar_scores} />
+        </div>
+      </div>
+
+      {/* Radar + Explanations Row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 20 }}>
+
+        {/* Radar Chart */}
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+        }}>
+          <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 10 }}>PERFORMANCE RADAR</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <RadarChart data={radarData}>
+              <PolarGrid stroke="#334155" />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748b", fontSize: 11 }} />
+              <Radar dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={2} dot={{ fill: "#3b82f6", r: 3 }} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* SHAP Explanations */}
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+        }}>
+          <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 16 }}>AI EXPLANATION (SHAP)</div>
+
+          {explanations.strengths.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color: "#22c55e", fontWeight: 600, marginBottom: 8 }}>STRENGTHS</div>
+              {explanations.strengths.map((s, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "8px 12px", background: "#15803d11",
+                  borderLeft: "3px solid #22c55e", borderRadius: "0 8px 8px 0",
+                  marginBottom: 6,
+                }}>
+                  <span style={{ fontSize: 13 }}>✓</span>
+                  <div>
+                    <div style={{ fontSize: 12, color: "#cbd5e1", fontWeight: 600 }}>{s.label}</div>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>Impact: +{(s.shap_value * 100).toFixed(1)}%</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {explanations.risks.length > 0 && (
+            <div>
+              <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, marginBottom: 8 }}>RISK FACTORS</div>
+              {explanations.risks.map((r, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "8px 12px", background: "#dc262611",
+                  borderLeft: "3px solid #ef4444", borderRadius: "0 8px 8px 0",
+                  marginBottom: 6,
+                }}>
+                  <span style={{ fontSize: 13 }}>✗</span>
+                  <div>
+                    <div style={{ fontSize: 12, color: "#cbd5e1", fontWeight: 600 }}>{r.label}</div>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>Impact: {(r.shap_value * 100).toFixed(1)}%</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Revenue Trend Chart — full width */}
+      {monthly_revenues && monthly_revenues.length > 0 && (
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+          marginTop: 20,
+        }}>
+          <RevenueChart revenues={monthly_revenues} inflows={monthly_inflows} />
+        </div>
+      )}
+
+      {/* Loan Products Matrix */}
+      {loan_eligibility?.products && (
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+          marginTop: 20,
+        }}>
+          <LoanProductsMatrix products={loan_eligibility.products} />
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {recommendations && recommendations.length > 0 && (
+        <div style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: 20,
+          padding: 28,
+          marginTop: 20,
+        }}>
+          <Recommendations recommendations={recommendations} />
+        </div>
+      )}
+
+      {/* Detailed Reports */}
+      <div id="hc-reports" />
+      {raw_features && (
+        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+          <DetailedReports data={data} />
+        </div>
+      )}
+
+      {/* Score Journey Trend */}
+      {gstin && (
+        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+          <ScoreTrend gstin={gstin} currentScore={pillar_scores.overall} />
+        </div>
+      )}
+
+      {/* EMI Calculator */}
+      <div id="hc-emi" />
+      {loan_eligibility?.products && (
+        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+          <EMICalculator products={loan_eligibility.products} />
+        </div>
+      )}
+
+      {/* What-If Score Simulator */}
+      <div id="hc-simulator" />
+      {raw_features && (
+        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+          <ScoreSimulator
+            rawFeatures={raw_features}
+            currentScores={pillar_scores}
+            avgMonthlyRevenue={raw_features.avg_monthly_revenue}
+          />
+        </div>
+      )}
+
+      {/* Peer Benchmarking */}
+      <div id="hc-benchmark" />
+      <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+        <PeerBenchmark businessType={business_type} city={city} myScores={pillar_scores} />
+      </div>
+
+      {/* Apply for Loan CTA */}
+      <div id="hc-apply" style={{ marginTop: 20 }}>
+        <LoanApplyCTA data={data} />
+      </div>
+
+      {/* AA Consent Artifact */}
+      {data.consent_id && (
+        <div style={{ marginTop: 20 }}>
+          <ConsentCard consentId={data.consent_id} />
+        </div>
+      )}
+
+      {/* Outcome Modal */}
+      {showOutcome && (
+        <OutcomeModal
+          data={data}
+          onClose={() => setShowOutcome(false)}
+          onSaved={(outcome) => setRecordedOutcome(outcome)}
+        />
+      )}
+    </div>
+  );
+}
