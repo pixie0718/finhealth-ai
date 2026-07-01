@@ -9,3 +9,10 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Register the PWA service worker so the app is installable and works offline.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/service-worker.js`).catch(() => {});
+  });
+}

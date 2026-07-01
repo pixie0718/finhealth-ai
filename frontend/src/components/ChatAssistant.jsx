@@ -42,7 +42,7 @@ function Message({ msg }) {
   );
 }
 
-export default function ChatAssistant({ scoreContext = null }) {
+export default function ChatAssistant({ scoreContext = null, liftForNav = false }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -98,8 +98,8 @@ export default function ChatAssistant({ scoreContext = null }) {
         title="AI Assistant"
         style={{
           position: "fixed",
-          bottom: 28,
-          right: 28,
+          bottom: liftForNav ? 86 : 28,
+          right: liftForNav ? 18 : 28,
           width: 54,
           height: 54,
           borderRadius: "50%",
@@ -124,10 +124,10 @@ export default function ChatAssistant({ scoreContext = null }) {
       {open && (
         <div style={{
           position: "fixed",
-          bottom: 94,
-          right: 28,
-          width: 360,
-          height: 520,
+          bottom: liftForNav ? 150 : 94,
+          right: liftForNav ? 12 : 28,
+          width: "min(360px, calc(100vw - 24px))",
+          height: liftForNav ? "min(520px, calc(100vh - 200px))" : 520,
           background: "#0f172a",
           border: "1px solid #334155",
           borderRadius: 20,

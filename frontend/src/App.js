@@ -11,6 +11,22 @@ import Settings from "./pages/Settings";
 import HealthCard from "./components/HealthCard";
 import ChatAssistant from "./components/ChatAssistant";
 import ToolsHub from "./pages/ToolsHub";
+import BottomNav from "./components/BottomNav";
+import useIsMobile from "./hooks/useIsMobile";
+
+// Short labels + icons for the mobile bottom tab bar (keys match the shells' tab state).
+const MANAGER_BOTTOM = [
+  { key: "Dashboard", label: "Home", icon: "🏠" },
+  { key: "Score History", label: "History", icon: "📈" },
+  { key: "New Application", label: "New", icon: "➕" },
+  { key: "Tools", label: "Tools", icon: "🧰" },
+  { key: "Settings", label: "Settings", icon: "⚙️" },
+];
+const OWNER_BOTTOM = [
+  { key: "Check Eligibility", label: "Score", icon: "📊" },
+  { key: "Tools", label: "Tools", icon: "🧰" },
+  { key: "Settings", label: "Settings", icon: "⚙️" },
+];
 
 const NAV_TABS = ["Dashboard", "Score History", "New Application", "Tools", "Settings"];
 
@@ -50,12 +66,13 @@ function RequireRole({ role, children }) {
 function ManagerShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState("Dashboard");
   const [viewData, setViewData] = useState(null);
   const doLogout = () => { logout(); navigate("/"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a" }}>
+    <div style={{ minHeight: "100vh", background: "#0f172a", paddingBottom: isMobile ? 74 : 0 }}>
       <div style={{
         borderBottom: "1px solid #1e293b",
         padding: "8px 16px",
@@ -82,13 +99,15 @@ function ManagerShell() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-          {NAV_TABS.map((t) => (
-            <button key={t} style={navStyle(tab === t)} onClick={() => { setTab(t); setViewData(null); }}>
-              {t}
-            </button>
-          ))}
-        </div>
+        {!isMobile && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+            {NAV_TABS.map((t) => (
+              <button key={t} style={navStyle(tab === t)} onClick={() => { setTab(t); setViewData(null); }}>
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ fontSize: 12, color: "#475569" }}>🏦 IDBI Bank</div>
@@ -125,7 +144,10 @@ function ManagerShell() {
         <Onboarding onResult={setViewData} />
       )}
 
-      <ChatAssistant scoreContext={viewData} />
+      <ChatAssistant scoreContext={viewData} liftForNav={isMobile} />
+      {isMobile && (
+        <BottomNav tabs={MANAGER_BOTTOM} active={tab} onSelect={(k) => { setTab(k); setViewData(null); }} />
+      )}
     </div>
   );
 }
@@ -135,12 +157,13 @@ function ManagerShell() {
 function OwnerShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [msmeTab, setMsmeTab] = useState("Check Eligibility");
   const [ownerResult, setOwnerResult] = useState(null);  // last generated score → chat context
   const doLogout = () => { logout(); navigate("/"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a" }}>
+    <div style={{ minHeight: "100vh", background: "#0f172a", paddingBottom: isMobile ? 74 : 0 }}>
       <div style={{
         borderBottom: "1px solid #1e293b", padding: "8px 16px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -158,11 +181,13 @@ function OwnerShell() {
             <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Business Owner Portal</div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-          {["Check Eligibility", "Tools", "Settings"].map((t) => (
-            <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{t}</button>
-          ))}
-        </div>
+        {!isMobile && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+            {["Check Eligibility", "Tools", "Settings"].map((t) => (
+              <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{t}</button>
+            ))}
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
           <button onClick={doLogout} style={{
@@ -172,7 +197,10 @@ function OwnerShell() {
         </div>
       </div>
       {msmeTab === "Tools" ? <ToolsHub /> : msmeTab === "Settings" ? <Settings /> : <MSMEPortal onBack={() => setMsmeTab("Check Eligibility")} onResult={setOwnerResult} />}
-      <ChatAssistant scoreContext={ownerResult} />
+      <ChatAssistant scoreContext={ownerResult} liftForNav={isMobile} />
+      {isMobile && (
+        <BottomNav tabs={OWNER_BOTTOM} active={msmeTab} onSelect={setMsmeTab} />
+      )}
     </div>
   );
 }
