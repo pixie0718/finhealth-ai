@@ -12,6 +12,7 @@ import HealthCard from "./components/HealthCard";
 import ChatAssistant from "./components/ChatAssistant";
 import ToolsHub from "./pages/ToolsHub";
 import BottomNav from "./components/BottomNav";
+import InstallPrompt from "./components/InstallPrompt";
 import useIsMobile from "./hooks/useIsMobile";
 
 // Short labels + icons for the mobile bottom tab bar (keys match the shells' tab state).
@@ -210,6 +211,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <InstallPrompt />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/owner/login" element={<AuthPage role="msme" />} />

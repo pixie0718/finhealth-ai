@@ -16,3 +16,11 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/service-worker.js`).catch(() => {});
   });
 }
+
+// Capture the install prompt as early as possible (it can fire before React mounts)
+// so the in-app Install banner can trigger it on demand.
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  window.__deferredInstallPrompt = e;
+  window.dispatchEvent(new Event("fh-installable"));
+});
