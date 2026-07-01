@@ -63,6 +63,8 @@ export default function InstallPrompt() {
   if (!show || location.pathname.endsWith("/login")) return null;
 
   const canPrompt = !!deferred;
+  // Shell pages have the chat bubble + bottom nav on the right/bottom — sit above them.
+  const isShell = location.pathname.startsWith("/owner") || location.pathname.startsWith("/manager");
   const instruction = isIOS()
     ? "Tap the Share icon, then “Add to Home Screen”."
     : isAndroid()
@@ -72,15 +74,17 @@ export default function InstallPrompt() {
   return (
     <div style={{
       position: "fixed", zIndex: 400,
-      left: isMobile ? 12 : 24,
-      bottom: isMobile ? "calc(86px + env(safe-area-inset-bottom, 0px))" : 24,
+      right: isMobile ? 12 : 24,
+      bottom: isMobile
+        ? (isShell ? "calc(150px + env(safe-area-inset-bottom, 0px))" : "calc(20px + env(safe-area-inset-bottom, 0px))")
+        : (isShell ? 96 : 24),
       width: "min(300px, calc(100vw - 24px))",
       background: "linear-gradient(135deg, #1e293b, #221645)",
-      border: "1px solid #3b82f655",
+      border: "1px solid #3b82f566",
       borderRadius: 16,
-      boxShadow: "0 10px 40px #000000aa",
+      boxShadow: "0 12px 40px #000000aa",
       padding: 14,
-      animation: "fhSlideUp 0.25s ease-out",
+      animation: "fhSlideUp 0.3s ease-out, fhPulseGlow 2.4s ease-in-out 0.5s infinite",
     }}>
       <button onClick={dismiss} aria-label="Dismiss" style={{
         position: "absolute", top: 8, right: 8,

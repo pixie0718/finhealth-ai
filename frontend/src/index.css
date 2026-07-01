@@ -13,3 +13,7 @@ body {
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 #3b82f644; } 50% { box-shadow: 0 0 0 12px #3b82f600; } }
 @keyframes fhSlideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fhPulseGlow {
+  0%, 100% { box-shadow: 0 12px 40px #000000aa, 0 0 0 0 #6366f177; }
+  50%      { box-shadow: 0 12px 40px #000000aa, 0 0 0 9px #6366f100; }
+}
