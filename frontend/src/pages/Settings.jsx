@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import useIsMobile from "../hooks/useIsMobile";
 
 const DATA_SOURCES = [
   { icon: "📊", name: "GST Portal", desc: "Revenue & compliance data", color: "#3b82f6", status: "Connected" },
@@ -23,6 +24,7 @@ const card = { background: "#1e293b", border: "1px solid #334155", borderRadius:
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const isMobile = useIsMobile();
   const [consents, setConsents] = useState(CONSENT_ITEMS.map((text) => ({ text, status: "ACTIVE" })));
   const anyActive = consents.some((c) => c.status === "ACTIVE");
 
@@ -70,7 +72,7 @@ export default function Settings() {
             </div>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
           {[
             { label: "EMAIL", value: user?.email },
             { label: "ROLE", value: user?.role === "banker" ? "Bank Officer — IDBI" : "Business Owner — MSME" },
@@ -88,7 +90,7 @@ export default function Settings() {
       {/* Data Sources — status follows the consent toggles below */}
       <div style={sectionTitle}>CONNECTED DATA SOURCES</div>
       <div style={{ ...card, padding: "16px 20px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
           {DATA_SOURCES.map((ds, i) => {
             // First 5 sources are governed by the 5 consent items; MCA stays "Optional".
             const status = ds.status === "Optional"
@@ -102,13 +104,13 @@ export default function Settings() {
               borderRadius: 12, padding: "12px 14px",
               display: "flex", alignItems: "center", gap: 12,
             }}>
-              <span style={{ fontSize: 22 }}>{ds.icon}</span>
-              <div style={{ flex: 1 }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{ds.icon}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: ds.color }}>{ds.name}</div>
                 <div style={{ fontSize: 10, color: "#475569", marginTop: 1 }}>{ds.desc}</div>
               </div>
               <div style={{
-                fontSize: 10, fontWeight: 700,
+                fontSize: 10, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap",
                 color: ds.status === "Connected" ? "#22c55e" : "#64748b",
                 padding: "2px 8px", borderRadius: 20,
                 background: ds.status === "Connected" ? "#15803d22" : "#1e293b",
