@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getHistory } from "../api/client";
+import useIsMobile from "../hooks/useIsMobile";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
@@ -25,15 +26,21 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export default function ScoreHistory({ onView }) {
+  const isMobile = useIsMobile();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
+    setError(false);
     getHistory()
       .then((r) => setRecords(r.data))
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { load(); }, []);
 
   const chartData = [...records]
     .reverse()
@@ -61,7 +68,20 @@ export default function ScoreHistory({ onView }) {
         <p style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{records.length} assessments on record</p>
       </div>
 
-      {records.length === 0 ? (
+      {error ? (
+        <div style={{
+          background: "#1c1010", border: "1px solid #dc262633", borderRadius: 20,
+          padding: 48, textAlign: "center",
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+          <div style={{ color: "#fca5a5", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Couldn't reach the server</div>
+          <div style={{ color: "#64748b", fontSize: 13, marginBottom: 18 }}>Make sure the backend is running on port 8000.</div>
+          <button onClick={load} style={{
+            padding: "10px 24px", borderRadius: 10, border: "1px solid #ef444455",
+            background: "#dc262611", color: "#f87171", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}>↻ Retry</button>
+        </div>
+      ) : records.length === 0 ? (
         <div style={{
           background: "#1e293b", border: "1px solid #334155", borderRadius: 20,
           padding: 48, textAlign: "center",
@@ -72,7 +92,7 @@ export default function ScoreHistory({ onView }) {
       ) : (
         <>
           {/* Summary cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
             {[
               { label: "TOTAL ASSESSMENTS", value: records.length, sub: "All time", color: "#93c5fd" },
               { label: "AVERAGE SCORE", value: avg, sub: "Across all assessments", color: "#a78bfa" },

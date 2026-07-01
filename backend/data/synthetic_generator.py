@@ -59,23 +59,27 @@ def infer_city_from_gstin(gstin: str, requested_city: str) -> str:
 
 
 def generate_gst_data(months: int = 18, revenue_base: float = None,
-                      compliance_rate: float = None, rng=None) -> dict:
+                      compliance_rate: float = None, rng=None, quality: float = 0.6) -> dict:
+    """quality ∈ [0,1] drives filing compliance, revenue trend/volatility and buyer diversity
+    so that a business's fundamentals move together (good businesses look good across pillars)."""
     if rng is None:
         rng = random
     if revenue_base is None:
         revenue_base = rng.uniform(200000, 5000000)
     if compliance_rate is None:
-        compliance_rate = rng.uniform(0.55, 1.0)
+        compliance_rate = min(1.0, max(0.35, 0.45 + 0.55 * quality + rng.uniform(-0.08, 0.08)))
 
+    trend = -0.025 + 0.055 * quality          # monthly drift: poor shrinks, good grows
+    vol = 0.03 + 0.15 * (1 - quality)         # good = steady revenue, poor = volatile
+    b_mean = 4 + 18 * quality                 # good = many buyers, poor = few
+    running = revenue_base
     monthly_revenues, gst_filed, buyers = [], [], []
     for _ in range(months):
-        growth = 1 + rng.uniform(-0.05, 0.12)
-        noise = rng.uniform(0.85, 1.15)
-        revenue = revenue_base * growth * noise
-        monthly_revenues.append(round(revenue, 2))
+        noise = rng.uniform(1 - vol, 1 + vol)
+        monthly_revenues.append(round(max(1000, running * noise), 2))
         gst_filed.append(1 if rng.random() < compliance_rate else 0)
-        buyers.append(rng.randint(3, 25))
-        revenue_base = revenue * 0.98
+        buyers.append(max(1, rng.randint(int(b_mean) - 3, int(b_mean) + 4)))
+        running *= (1 + trend)
 
     total_revenue = sum(monthly_revenues)
     tax_amount = total_revenue * 0.18
@@ -89,43 +93,53 @@ def generate_gst_data(months: int = 18, revenue_base: float = None,
     }
 
 
-def generate_upi_aa_data(months: int = 18, revenue_base: float = None, rng=None) -> dict:
+def generate_upi_aa_data(months: int = 18, revenue_base: float = None, rng=None, quality: float = 0.6) -> dict:
+    """quality drives cash retention (net cash flow), inflow stability, bounce rate and balance."""
     if rng is None:
         rng = random
     if revenue_base is None:
         revenue_base = rng.uniform(150000, 4000000)
 
+    out_ratio = 0.85 - 0.32 * quality         # good businesses retain more cash
+    vol = 0.04 + 0.16 * (1 - quality)         # good = steady inflows
+    bal_ratio = 0.12 + 0.42 * quality         # good keep a healthier balance
+    trend = -0.02 + 0.05 * quality
+    running = revenue_base
     monthly_inflows, monthly_outflows, bounce_counts, transaction_counts = [], [], [], []
     for _ in range(months):
-        inflow = revenue_base * rng.uniform(0.8, 1.2)
-        outflow = inflow * rng.uniform(0.55, 0.85)
+        inflow = running * rng.uniform(1 - vol, 1 + vol)
+        outflow = inflow * min(0.97, max(0.4, out_ratio + rng.uniform(-0.05, 0.05)))
         txn_count = rng.randint(80, 500)
-        bounce = rng.randint(0, max(1, int(txn_count * 0.05)))
+        bounce = rng.randint(0, max(1, int(txn_count * 0.06 * (1 - quality))))
         monthly_inflows.append(round(inflow, 2))
         monthly_outflows.append(round(outflow, 2))
         bounce_counts.append(bounce)
         transaction_counts.append(txn_count)
-        revenue_base = inflow * 0.97
+        running *= (1 + trend)
 
     return {
         "monthly_inflows": monthly_inflows,
         "monthly_outflows": monthly_outflows,
         "bounce_counts": bounce_counts,
         "transaction_counts": transaction_counts,
-        "avg_monthly_balance": round(np.mean(monthly_inflows) * 0.3, 2),
+        "avg_monthly_balance": round(np.mean(monthly_inflows) * bal_ratio, 2),
     }
 
 
-def generate_epfo_data(months: int = 18, rng=None) -> dict:
+def generate_epfo_data(months: int = 18, rng=None, quality: float = 0.6) -> dict:
+    """quality drives EPFO compliance, headcount growth and salary stability."""
     if rng is None:
         rng = random
     base_employees = rng.randint(5, 150)
+    epfo_rate = min(1.0, max(0.4, 0.55 + 0.45 * quality + rng.uniform(-0.08, 0.08)))
+    base_salary = rng.uniform(15000, 42000)
+    sal_vol = 0.02 + 0.12 * (1 - quality)     # good = steady payroll
+    # hiring pattern: good businesses tend to add staff, weak ones shed
+    steps = [1, 1, 2, 0] if quality > 0.6 else ([0, 0, -1, 1] if quality < 0.35 else [0, 0, 1, 1, -1, 2])
     employee_counts, avg_salaries, compliance_months = [], [], []
-    epfo_rate = rng.uniform(0.7, 1.0)
     for _ in range(months):
-        growth = rng.choice([0, 0, 0, 1, 1, 2, -1])
-        base_employees = max(1, base_employees + growth)
-        salary = rng.uniform(12000, 45000)
+        base_employees = max(1, base_employees + rng.choice(steps))
+        salary = base_salary * rng.uniform(1 - sal_vol, 1 + sal_vol)
         complied = 1 if rng.random() < epfo_rate else 0
         employee_counts.append(base_employees)
         avg_salaries.append(round(salary, 2))
@@ -138,18 +152,19 @@ def generate_epfo_data(months: int = 18, rng=None) -> dict:
     }
 
 
-def generate_credit_history(rng=None, ntc_forced: bool = False) -> dict:
+def generate_credit_history(rng=None, ntc_forced: bool = False, quality: float = 0.6) -> dict:
+    """quality drives CIBIL score and delinquency (DPD) for businesses with a credit file."""
     if rng is None:
         rng = random
-    if ntc_forced or rng.random() < 0.35:
+    if ntc_forced or rng.random() < 0.30:
         return {"has_credit_history": False, "credit_score": None, "active_loans": 0, "dpd_30": 0, "dpd_90": 0}
-    credit_score = rng.randint(550, 850)
+    credit_score = int(min(850, max(500, 520 + 320 * quality + rng.uniform(-40, 40))))
     return {
         "has_credit_history": True,
         "credit_score": credit_score,
         "active_loans": rng.randint(0, 3),
-        "dpd_30": rng.randint(0, 3),
-        "dpd_90": rng.randint(0, 1),
+        "dpd_30": rng.randint(0, max(0, int(4 * (1 - quality)))),
+        "dpd_90": rng.randint(0, max(0, int(2 * (1 - quality)))),
     }
 
 
@@ -175,19 +190,19 @@ def generate_msme_profile_from_gstin(
     rev_lo, rev_hi = REVENUE_RANGES.get(business_type, (200000, 4000000))
     revenue_base = rng.uniform(rev_lo, rev_hi)
 
-    # Compliance tuned by years_in_business (older = more compliant on average)
-    base_compliance = min(0.55 + (years_in_business / 20) * 0.40, 1.0)
-    compliance_rate = rng.uniform(max(0.40, base_compliance - 0.15), min(1.0, base_compliance + 0.15))
+    # Overall business "quality" for this GSTIN — deterministic from the seed, nudged up
+    # by tenure. Drives every pillar together so a given GSTIN is coherently strong/weak.
+    quality = min(0.97, max(0.05, rng.uniform(0.18, 0.92) + (years_in_business / 20) * 0.12 - 0.04))
 
     # NTB detection: new businesses or very low revenue → likely no bank relationship
     ntb_flag = years_in_business <= 2 or revenue_base < 300000
     # NTC: seeded by GSTIN
     ntc_forced = rng.random() < (0.50 if ntb_flag else 0.25)
 
-    gst = generate_gst_data(revenue_base=revenue_base, compliance_rate=compliance_rate, rng=rng)
-    upi = generate_upi_aa_data(revenue_base=revenue_base * 0.9, rng=rng)
-    epfo = generate_epfo_data(rng=rng)
-    credit = generate_credit_history(rng=rng, ntc_forced=ntc_forced)
+    gst = generate_gst_data(revenue_base=revenue_base, rng=rng, quality=quality)
+    upi = generate_upi_aa_data(revenue_base=revenue_base * 0.9, rng=rng, quality=quality)
+    epfo = generate_epfo_data(rng=rng, quality=quality)
+    credit = generate_credit_history(rng=rng, ntc_forced=ntc_forced, quality=quality)
 
     import uuid
     return {
@@ -221,20 +236,21 @@ def generate_msme_profile(business_type=None, city=None, quality="random") -> di
     if city is None:
         city = random.choice(CITIES)
 
+    # Map the quality label to a numeric factor q ∈ [0,1] that drives every generator.
     if quality == "good":
+        q = random.uniform(0.70, 0.96)
         revenue_base = random.uniform(1000000, 5000000)
-        compliance_rate = random.uniform(0.85, 1.0)
     elif quality == "poor":
+        q = random.uniform(0.06, 0.34)
         revenue_base = random.uniform(100000, 500000)
-        compliance_rate = random.uniform(0.4, 0.65)
     else:
+        q = random.uniform(0.12, 0.92)
         revenue_base = random.uniform(200000, 4000000)
-        compliance_rate = random.uniform(0.55, 1.0)
 
-    gst = generate_gst_data(revenue_base=revenue_base, compliance_rate=compliance_rate)
-    upi = generate_upi_aa_data(revenue_base=revenue_base * 0.9)
-    epfo = generate_epfo_data()
-    credit = generate_credit_history()
+    gst = generate_gst_data(revenue_base=revenue_base, quality=q)
+    upi = generate_upi_aa_data(revenue_base=revenue_base * 0.9, quality=q)
+    epfo = generate_epfo_data(quality=q)
+    credit = generate_credit_history(quality=q)
 
     import uuid, faker as fk
     _fake = fk.Faker("en_IN")

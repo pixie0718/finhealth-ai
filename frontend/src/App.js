@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import Landing from "./pages/Landing";
@@ -24,20 +25,46 @@ const navStyle = (active) => ({
   cursor: "pointer",
 });
 
+const LoadingScreen = () => (
+  <div style={{
+    minHeight: "100vh", background: "#0f172a",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    color: "#475569", fontSize: 14,
+  }}>
+    Loading...
+  </div>
+);
 
-function BankerApp({ user, logout, onSwitchRole }) {
+// Route guard: gates an area to a single role. Redirects to the right login /
+// the user's own home when the account doesn't match.
+function RequireRole({ role, children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to={role === "banker" ? "/manager/login" : "/owner/login"} replace />;
+  if (user.role !== role) return <Navigate to={user.role === "banker" ? "/manager" : "/owner"} replace />;
+  return children;
+}
+
+
+// ─── Bank Manager shell (/manager) ──────────────────────────────────────────
+function ManagerShell() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState("Dashboard");
   const [viewData, setViewData] = useState(null);
+  const doLogout = () => { logout(); navigate("/"); };
 
   return (
     <div style={{ minHeight: "100vh", background: "#0f172a" }}>
       <div style={{
         borderBottom: "1px solid #1e293b",
-        padding: "0 32px",
+        padding: "8px 16px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        height: 60,
+        flexWrap: "wrap",
+        rowGap: 8,
+        minHeight: 60,
         position: "sticky", top: 0,
         background: "#0f172a",
         zIndex: 100,
@@ -45,17 +72,17 @@ function BankerApp({ user, logout, onSwitchRole }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 16,
-          }}>📊</div>
+          }}>🏦</div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", lineHeight: 1 }}>FinHealth AI</div>
-            <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>MSME Credit Intelligence</div>
+            <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Bank Manager Console</div>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
           {NAV_TABS.map((t) => (
             <button key={t} style={navStyle(tab === t)} onClick={() => { setTab(t); setViewData(null); }}>
               {t}
@@ -66,12 +93,7 @@ function BankerApp({ user, logout, onSwitchRole }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ fontSize: 12, color: "#475569" }}>🏦 IDBI Bank</div>
           {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
-          <button onClick={onSwitchRole} style={{
-            background: "transparent", border: "1px solid #334155",
-            color: "#64748b", padding: "5px 12px", borderRadius: 8,
-            fontSize: 11, cursor: "pointer",
-          }}>← Switch Role</button>
-          <button onClick={logout} style={{
+          <button onClick={doLogout} style={{
             background: "transparent", border: "1px solid #ef444433",
             color: "#ef4444", padding: "5px 12px", borderRadius: 8,
             fontSize: 11, cursor: "pointer",
@@ -108,76 +130,67 @@ function BankerApp({ user, logout, onSwitchRole }) {
   );
 }
 
-function AppContent() {
-  const { user, loading, logout } = useAuth();
-  const [role, setRole] = useState(null);
+
+// ─── Business Owner shell (/owner) ──────────────────────────────────────────
+function OwnerShell() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [msmeTab, setMsmeTab] = useState("Check Eligibility");
+  const [ownerResult, setOwnerResult] = useState(null);  // last generated score → chat context
+  const doLogout = () => { logout(); navigate("/"); };
 
-  if (loading) {
-    return (
+  return (
+    <div style={{ minHeight: "100vh", background: "#0f172a" }}>
       <div style={{
-        minHeight: "100vh", background: "#0f172a",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        color: "#475569", fontSize: 14,
+        borderBottom: "1px solid #1e293b", padding: "8px 16px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        flexWrap: "wrap", rowGap: 8,
+        minHeight: 60, position: "sticky", top: 0, background: "#0f172a", zIndex: 100,
       }}>
-        Loading...
-      </div>
-    );
-  }
-
-  if (!user) return <AuthPage />;
-
-  if (!role) return <Landing onSelect={setRole} />;
-
-  if (role === "msme") {
-    return (
-      <div style={{ minHeight: "100vh", background: "#0f172a" }}>
-        <div style={{
-          borderBottom: "1px solid #1e293b", padding: "0 32px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 60, position: "sticky", top: 0, background: "#0f172a", zIndex: 100,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
-            }}>📊</div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", lineHeight: 1 }}>FinHealth AI</div>
-              <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>MSME Loan Eligibility</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {["Check Eligibility", "Tools", "Settings"].map((t) => (
-              <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{t}</button>
-            ))}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
-            <button onClick={() => setRole(null)} style={{
-              background: "transparent", border: "1px solid #334155",
-              color: "#64748b", padding: "5px 12px", borderRadius: 8, fontSize: 11, cursor: "pointer",
-            }}>← Switch Role</button>
-            <button onClick={logout} style={{
-              background: "transparent", border: "1px solid #ef444433",
-              color: "#ef4444", padding: "5px 12px", borderRadius: 8, fontSize: 11, cursor: "pointer",
-            }}>Logout</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
+          }}>🏭</div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", lineHeight: 1 }}>FinHealth AI</div>
+            <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Business Owner Portal</div>
           </div>
         </div>
-        {msmeTab === "Tools" ? <ToolsHub /> : msmeTab === "Settings" ? <Settings /> : <MSMEPortal onBack={() => setRole(null)} />}
-        <ChatAssistant />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+          {["Check Eligibility", "Tools", "Settings"].map((t) => (
+            <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{t}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
+          <button onClick={doLogout} style={{
+            background: "transparent", border: "1px solid #ef444433",
+            color: "#ef4444", padding: "5px 12px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+          }}>Logout</button>
+        </div>
       </div>
-    );
-  }
-
-  return <BankerApp user={user} logout={logout} onSwitchRole={() => setRole(null)} />;
+      {msmeTab === "Tools" ? <ToolsHub /> : msmeTab === "Settings" ? <Settings /> : <MSMEPortal onBack={() => setMsmeTab("Check Eligibility")} onResult={setOwnerResult} />}
+      <ChatAssistant scoreContext={ownerResult} />
+    </div>
+  );
 }
+
 
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/owner/login" element={<AuthPage role="msme" />} />
+          <Route path="/manager/login" element={<AuthPage role="banker" />} />
+          <Route path="/owner/*" element={<RequireRole role="msme"><OwnerShell /></RequireRole>} />
+          <Route path="/manager/*" element={<RequireRole role="banker"><ManagerShell /></RequireRole>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
   );
 }

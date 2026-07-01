@@ -195,7 +195,7 @@ export default function ChatAssistant({ scoreContext = null }) {
                     <div key={i} style={{
                       width: 6, height: 6, borderRadius: "50%",
                       background: "#3b82f6",
-                      animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+                      animation: `chatBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
                     }} />
                   ))}
                 </div>
@@ -283,7 +283,7 @@ export default function ChatAssistant({ scoreContext = null }) {
       )}
 
       <style>{`
-        @keyframes bounce {
+        @keyframes chatBounce {
           0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
           40% { transform: scale(1); opacity: 1; }
         }

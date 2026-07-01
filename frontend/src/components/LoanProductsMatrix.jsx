@@ -1,6 +1,13 @@
 import React from "react";
 
 const PRODUCTS = [
+  // Government / NTC-NTB schemes — only present in the payload for NTC/NTB businesses
+  { key: "mudra_shishu",    label: "MUDRA Shishu",     icon: "🌱", desc: "Govt scheme • up to ₹50k" },
+  { key: "mudra_kishore",   label: "MUDRA Kishore",    icon: "🌿", desc: "Govt scheme • up to ₹5L" },
+  { key: "mudra_tarun",     label: "MUDRA Tarun",      icon: "🌳", desc: "Govt scheme • up to ₹10L" },
+  { key: "cgtmse_backed",   label: "CGTMSE-Backed",    icon: "🛡️", desc: "Collateral-free • up to ₹2Cr" },
+  { key: "standup_india",   label: "Stand-Up India",   icon: "🚀", desc: "First-gen entrepreneurs" },
+  // Standard products
   { key: "msme_loan",       label: "MSME Loan",        icon: "🏭", desc: "MSME Special Scheme" },
   { key: "working_capital", label: "Working Capital",  icon: "⚡", desc: "Short-term liquidity" },
   { key: "business_loan",   label: "Business Loan",    icon: "💼", desc: "Long-term expansion" },

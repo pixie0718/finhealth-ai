@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 const DATA_SOURCES = [
@@ -23,6 +23,16 @@ const card = { background: "#1e293b", border: "1px solid #334155", borderRadius:
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const [consents, setConsents] = useState(CONSENT_ITEMS.map((text) => ({ text, status: "ACTIVE" })));
+  const anyActive = consents.some((c) => c.status === "ACTIVE");
+
+  const toggleConsent = (i) => {
+    setConsents((cs) => cs.map((c, idx) => {
+      if (idx !== i) return c;
+      if (c.status === "ACTIVE" && !window.confirm(`Revoke consent for:\n\n${c.text}?`)) return c;
+      return { ...c, status: c.status === "ACTIVE" ? "REVOKED" : "ACTIVE" };
+    }));
+  };
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 16px" }}>
@@ -75,11 +85,17 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Data Sources */}
+      {/* Data Sources — status follows the consent toggles below */}
       <div style={sectionTitle}>CONNECTED DATA SOURCES</div>
       <div style={{ ...card, padding: "16px 20px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {DATA_SOURCES.map((ds) => (
+          {DATA_SOURCES.map((ds, i) => {
+            // First 5 sources are governed by the 5 consent items; MCA stays "Optional".
+            const status = ds.status === "Optional"
+              ? "Optional"
+              : (consents[i] && consents[i].status === "ACTIVE" ? "Connected" : "Revoked");
+            ds = { ...ds, status };
+            return (
             <div key={ds.name} style={{
               background: "#0f172a",
               border: `1px solid ${ds.color}22`,
@@ -101,7 +117,8 @@ export default function Settings() {
                 {ds.status === "Connected" ? "✓" : "–"} {ds.status}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -109,29 +126,39 @@ export default function Settings() {
       <div style={sectionTitle}>CONSENT & DATA SHARING</div>
       <div style={card}>
         <div style={{
-          background: "#15803d11", border: "1px solid #15803d33",
+          background: anyActive ? "#15803d11" : "#dc262611",
+          border: anyActive ? "1px solid #15803d33" : "1px solid #dc262633",
           borderRadius: 10, padding: "12px 16px", marginBottom: 16,
-          fontSize: 12, color: "#86efac",
+          fontSize: 12, color: anyActive ? "#86efac" : "#fca5a5",
         }}>
-          🔒 Active consent — valid for 90 days from last assessment. Revoke anytime below.
+          {anyActive
+            ? "🔒 Active consent — valid for 90 days from last assessment. Revoke anytime below."
+            : "⚠ All consents revoked. New assessments can't fetch data until you re-grant access."}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-          {CONSENT_ITEMS.map((item, i) => (
-            <div key={i} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "10px 14px", background: "#0f172a", borderRadius: 10,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ color: "#22c55e", fontSize: 13 }}>✓</span>
-                <span style={{ fontSize: 13, color: "#94a3b8" }}>{item}</span>
+          {consents.map((c, i) => {
+            const active = c.status === "ACTIVE";
+            return (
+              <div key={i} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "10px 14px", background: "#0f172a", borderRadius: 10,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ color: active ? "#22c55e" : "#64748b", fontSize: 13 }}>{active ? "✓" : "✕"}</span>
+                  <span style={{ fontSize: 13, color: active ? "#94a3b8" : "#475569", textDecoration: active ? "none" : "line-through" }}>{c.text}</span>
+                </div>
+                <button onClick={() => toggleConsent(i)} style={{
+                  fontSize: 10, fontWeight: 700, cursor: "pointer",
+                  color: active ? "#f87171" : "#22c55e",
+                  background: active ? "#dc262611" : "#15803d22",
+                  padding: "3px 10px", borderRadius: 20,
+                  border: active ? "1px solid #dc262633" : "1px solid #15803d33",
+                }}>
+                  {active ? "Revoke" : "Re-grant"}
+                </button>
               </div>
-              <div style={{
-                fontSize: 10, color: "#22c55e", fontWeight: 700,
-                background: "#15803d22", padding: "2px 8px",
-                borderRadius: 20, border: "1px solid #15803d33",
-              }}>ACTIVE</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div style={{ fontSize: 11, color: "#475569", padding: "10px 14px", background: "#0f172a", borderRadius: 10 }}>
           📋 Consent valid for 90 days • Data used only for credit assessment • No third-party sharing

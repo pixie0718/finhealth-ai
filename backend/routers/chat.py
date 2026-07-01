@@ -89,10 +89,10 @@ def chat(
     system_prompt = build_system_prompt(body.context)
     full_prompt = f"{system_prompt}\n\nUser: {body.message}"
 
+    client = get_client()  # raises 503 (not configured) — kept outside try so it isn't masked as 502
     try:
-        client = get_client()
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=full_prompt,
         )
         reply = response.text

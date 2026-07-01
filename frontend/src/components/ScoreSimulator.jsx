@@ -1,18 +1,22 @@
 import React, { useState, useMemo } from "react";
+import useIsMobile from "../hooks/useIsMobile";
 
 function clip(v, min, max) { return Math.min(Math.max(v, min), max); }
 
-function computeScores(f) {
-  const cf = (f.cash_flow_ratio * 35 + f.inflow_stability * 25 + (1 - f.bounce_rate) * 25 + Math.min(f.avg_balance_ratio, 1) * 15) * 100;
-  const comp = (f.gst_compliance * 50 + f.epfo_compliance * 35 + Math.min(f.tax_to_revenue / 0.18, 1) * 15) * 100;
-  const rev_growth_norm = (f.revenue_growth + 1) / 4;
-  const emp_growth_norm = (f.emp_growth + 1) / 4;
-  const trend_norm = f.revenue_trend_norm + 0.5;
-  const growth = (rev_growth_norm * 45 + emp_growth_norm * 30 + trend_norm * 25) * 100;
+function computeScores(f, ntc = false) {
+  // Weights in each pillar already sum to 100 and features are 0–1, so the weighted
+  // sum is already on a 0–100 scale. (Must match backend compute_pillar_scores — an
+  // extra ×100 here overflowed every pillar to 100, faking a huge simulated gain.)
+  const cf = f.cash_flow_ratio * 35 + f.inflow_stability * 25 + (1 - f.bounce_rate) * 25 + Math.min(f.avg_balance_ratio, 1) * 15;
+  const comp = f.gst_compliance * 50 + f.epfo_compliance * 35 + Math.min(f.tax_to_revenue / 0.18, 1) * 15;
+  const rev_growth_norm = clip(0.5 + f.revenue_growth * 0.8, 0, 1);
+  const emp_growth_norm = clip(0.5 + (f.emp_growth || 0) * 0.8, 0, 1);
+  const trend_norm = clip((f.revenue_trend_norm || 0) + 0.5, 0, 1);
+  const growth = rev_growth_norm * 45 + emp_growth_norm * 30 + trend_norm * 25;
   const rev_stability = Math.max(0, 1 - f.revenue_cv);
   const buyer_div_norm = Math.min(f.buyer_diversity / 20, 1);
   const years_norm = Math.min(f.years_in_business / 10, 1);
-  const stability = (rev_stability * 35 + buyer_div_norm * 25 + f.salary_stability * 20 + years_norm * 20) * 100;
+  const stability = rev_stability * 35 + buyer_div_norm * 25 + f.salary_stability * 20 + years_norm * 20;
   const credit = f.has_credit_history
     ? f.credit_score_norm * 80 - (f.dpd_30 * 5 + f.dpd_90 * 15) + 20
     : 40;
@@ -22,14 +26,18 @@ function computeScores(f) {
   const gs = clip(growth, 0, 100);
   const ss = clip(stability, 0, 100);
   const cs = clip(credit, 0, 100);
-  const overall = cfs * 0.25 + cos * 0.20 + gs * 0.20 + ss * 0.20 + cs * 0.15;
+  // NTC mode: drop the credit pillar and redistribute its weight (matches backend
+  // compute_pillar_scores), so the simulator's baseline equals the shown score.
+  const overall = ntc
+    ? cfs * 0.30 + cos * 0.24 + gs * 0.23 + ss * 0.23
+    : cfs * 0.25 + cos * 0.20 + gs * 0.20 + ss * 0.20 + cs * 0.15;
 
   return {
     cash_flow: Math.round(cfs * 10) / 10,
     compliance: Math.round(cos * 10) / 10,
     growth: Math.round(gs * 10) / 10,
     stability: Math.round(ss * 10) / 10,
-    credit_worthiness: Math.round(cs * 10) / 10,
+    credit_worthiness: ntc ? null : Math.round(cs * 10) / 10,
     overall: Math.round(overall * 10) / 10,
   };
 }
@@ -67,6 +75,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
   // rawFeatures can be null/undefined if the record pre-dates raw_features storage.
   // We must call all hooks unconditionally (Rules of Hooks), so we fall back to
   // safe defaults and render a disabled state instead of crashing.
+  const isMobile = useIsMobile();
   const safeFeatures = rawFeatures || FALLBACK_FEATURES;
 
   const [sliders, setSliders] = useState({
@@ -77,8 +86,10 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
     revenue_growth: safeFeatures.revenue_growth,
   });
 
+  // NTC businesses have no credit pillar — the backend redistributes its weight.
+  const isNtc = currentScores?.credit_worthiness == null;
   const simFeatures = useMemo(() => ({ ...safeFeatures, ...sliders }), [sliders, safeFeatures]);
-  const simScores = useMemo(() => computeScores(simFeatures), [simFeatures]);
+  const simScores = useMemo(() => computeScores(simFeatures, isNtc), [simFeatures, isNtc]);
 
   const delta = Math.round((simScores.overall - currentScores.overall) * 10) / 10;
   const currentRisk = getRisk(currentScores.overall);
@@ -126,7 +137,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
 
         {/* Sliders */}
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -200,7 +211,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
                     background: `${simRisk.color}22`, border: `1px solid ${simRisk.color}44`,
                     borderRadius: 20, color: simRisk.color, fontWeight: 700,
                   }}>
-                    Band Upgrade!
+                    {simScores.overall >= currentScores.overall ? "Band Upgrade!" : "Band Downgrade"}
                   </div>
                 )}
               </div>
@@ -242,7 +253,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
               { key: "compliance", label: "Compliance" },
               { key: "growth", label: "Growth" },
               { key: "stability", label: "Stability" },
-              { key: "credit_worthiness", label: "Credit" },
+              ...(isNtc ? [] : [{ key: "credit_worthiness", label: "Credit" }]),
             ].map(p => {
               const d = Math.round((simScores[p.key] - currentScores[p.key]) * 10) / 10;
               const color = PILLAR_COLORS[p.key];

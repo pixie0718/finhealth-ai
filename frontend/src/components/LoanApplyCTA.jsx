@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { applyForLoan } from "../api/client";
 
 const PRODUCT_LABELS = {
   msme_loan:        "MSME Loan",
@@ -15,18 +16,15 @@ const PRODUCT_LABELS = {
   standup_india:    "Stand-Up India",
 };
 
-function genRef() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return "FH-" + Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-
 const riskColor = { LOW: "#22c55e", "MEDIUM-LOW": "#eab308", MEDIUM: "#f97316", HIGH: "#ef4444" };
 
 export default function LoanApplyCTA({ data }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState("select"); // select | confirm | done
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [ref] = useState(genRef);
+  const [ref, setRef] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const loan = data.loan_eligibility;
   const eligible = Object.entries(loan?.products || {}).filter(([, p]) => p.eligible);
@@ -34,7 +32,27 @@ export default function LoanApplyCTA({ data }) {
 
   if (!eligible.length || loan?.risk_band === "HIGH") return null;
 
-  const close = () => { setOpen(false); setStep("select"); setSelectedProduct(null); };
+  const close = () => { setOpen(false); setStep("select"); setSelectedProduct(null); setError(""); };
+
+  const submit = async () => {
+    const product = loan.products[selectedProduct];
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await applyForLoan(data.msme_id, {
+        product: selectedProduct,
+        loan_amount: product.amount,
+        interest_rate: product.interest_rate,
+        tenure_months: product.tenure_months,
+      });
+      setRef(res.data.reference);
+      setStep("done");
+    } catch (e) {
+      setError(e?.response?.data?.detail || "Couldn't submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const fmtL = v => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : `₹${Math.round(v).toLocaleString("en-IN")}`;
 
@@ -182,18 +200,24 @@ export default function LoanApplyCTA({ data }) {
                     🔒 By submitting, you authorize IDBI Bank to verify your financial data via the AA framework.
                   </div>
 
+                  {error && (
+                    <div style={{
+                      background: "#dc262611", border: "1px solid #dc262633", borderRadius: 10,
+                      padding: "10px 14px", fontSize: 12, color: "#fca5a5", marginBottom: 14,
+                    }}>{error}</div>
+                  )}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <button onClick={() => setStep("select")} style={{
+                    <button onClick={() => setStep("select")} disabled={submitting} style={{
                       padding: "12px", background: "transparent",
                       border: "1px solid #334155", borderRadius: 12,
-                      color: "#94a3b8", fontSize: 14, cursor: "pointer",
+                      color: "#94a3b8", fontSize: 14, cursor: submitting ? "not-allowed" : "pointer",
                     }}>← Back</button>
-                    <button onClick={() => setStep("done")} style={{
+                    <button onClick={submit} disabled={submitting} style={{
                       padding: "12px",
-                      background: "linear-gradient(135deg, #22c55e, #15803d)",
+                      background: submitting ? "#334155" : "linear-gradient(135deg, #22c55e, #15803d)",
                       border: "none", borderRadius: 12,
-                      color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-                    }}>Submit Application</button>
+                      color: "#fff", fontSize: 14, fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer",
+                    }}>{submitting ? "Submitting…" : "Submit Application"}</button>
                   </div>
                 </>
               );

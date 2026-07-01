@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getHistory, getDemoScore } from "../api/client";
+import { getHistory, getDemoScore, getAllOutcomes, getApplications } from "../api/client";
+import useIsMobile from "../hooks/useIsMobile";
 
 const riskColors = {
   "LOW": "#22c55e",
@@ -16,16 +17,30 @@ const riskBg = {
 };
 
 export default function Dashboard({ onView }) {
+  const isMobile = useIsMobile();
   const [records, setRecords] = useState([]);
+  const [outcomeStats, setOutcomeStats] = useState(null);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [demoing, setDemoing] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
+    setError(false);
     getHistory()
       .then((r) => setRecords(r.data))
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+    getAllOutcomes()
+      .then((r) => setOutcomeStats(r.data?.stats || null))
+      .catch(() => {});
+    getApplications()
+      .then((r) => setApplications(r.data?.applications || []))
+      .catch(() => {});
+  };
+
+  useEffect(() => { load(); }, []);
 
   const runDemo = async () => {
     setDemoing(true);
@@ -71,7 +86,7 @@ export default function Dashboard({ onView }) {
 
       {/* Hero Stats */}
       {records.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
           {[
             {
               label: "TOTAL APPLICATIONS",
@@ -130,7 +145,86 @@ export default function Dashboard({ onView }) {
         </div>
       )}
 
-      {loading ? (
+      {/* Portfolio Outcomes — post-disbursement loan quality */}
+      {outcomeStats && outcomeStats.total > 0 && (
+        <div style={{
+          background: "#1e293b", border: "1px solid #334155",
+          borderRadius: 18, padding: "20px 24px", marginBottom: 32,
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>📈 Portfolio Outcomes</div>
+            <div style={{ fontSize: 11, color: "#475569" }}>{outcomeStats.total} tracked</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 14 }}>
+            {[
+              { label: "NPA RATE", value: `${outcomeStats.npa_rate}%`, color: outcomeStats.npa_rate > 5 ? "#ef4444" : "#22c55e" },
+              { label: "REPAID", value: outcomeStats.repaid ?? 0, color: "#22c55e" },
+              { label: "ACTIVE", value: outcomeStats.active ?? 0, color: "#3b82f6" },
+              { label: "NPA", value: outcomeStats.npa ?? 0, color: "#ef4444" },
+            ].map((s) => (
+              <div key={s.label} style={{
+                background: "#0f172a", border: "1px solid #1e293b",
+                borderRadius: 12, padding: "14px 16px",
+              }}>
+                <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, marginBottom: 6 }}>{s.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Incoming loan applications */}
+      {applications.length > 0 && (
+        <div style={{
+          background: "#1e293b", border: "1px solid #334155",
+          borderRadius: 18, padding: "20px 24px", marginBottom: 32,
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>📥 Loan Applications</div>
+            <div style={{ fontSize: 11, color: "#475569" }}>{applications.length} received</div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {applications.slice(0, 6).map((a) => (
+              <div key={a.reference} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                flexWrap: "wrap", gap: 8,
+                background: "#0f172a", borderRadius: 10, padding: "10px 14px",
+              }}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{a.business_name || "—"}</div>
+                  <div style={{ fontSize: 11, color: "#475569" }}>{a.reference} • {a.product}</div>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#93c5fd" }}>
+                  ₹{((a.loan_amount || 0) / 100000).toFixed(1)}L
+                </div>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, color: "#fbbf24",
+                  background: "#78350f33", border: "1px solid #92400e55",
+                  padding: "3px 10px", borderRadius: 20,
+                }}>{a.status}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {error ? (
+        <div style={{
+          textAlign: "center", padding: 64,
+          background: "#1c1010", borderRadius: 20, border: "1px solid #dc262633",
+        }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+          <div style={{ color: "#fca5a5", fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Couldn't reach the server</div>
+          <div style={{ color: "#64748b", fontSize: 13, marginBottom: 20 }}>
+            Make sure the backend is running on port 8000, then retry.
+          </div>
+          <button onClick={load} style={{
+            padding: "10px 24px", borderRadius: 10, border: "1px solid #ef444455",
+            background: "#dc262611", color: "#f87171", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}>↻ Retry</button>
+        </div>
+      ) : loading ? (
         <div style={{
           textAlign: "center", padding: 80, color: "#475569",
           background: "#1e293b", borderRadius: 20, border: "1px solid #334155",

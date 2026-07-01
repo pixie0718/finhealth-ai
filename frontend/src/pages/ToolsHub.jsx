@@ -52,7 +52,7 @@ function clip(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
 function computeScores(f) {
   const cf   = clip((f.cash_flow_ratio*0.35 + f.inflow_stability*0.25 + (1-f.bounce_rate)*0.25 + Math.min(f.avg_balance_ratio,1)*0.15)*100, 0, 100);
   const comp = clip((f.gst_compliance*0.50 + f.epfo_compliance*0.35 + Math.min(f.tax_to_revenue/0.18,1)*0.15)*100, 0, 100);
-  const growth = clip(((f.revenue_growth+1)/4*0.45 + ((f.emp_growth||0)+1)/4*0.30 + ((f.revenue_trend_norm||0)+0.5)*0.25)*100, 0, 100);
+  const growth = clip((clip(0.5+f.revenue_growth*0.8,0,1)*0.45 + clip(0.5+(f.emp_growth||0)*0.8,0,1)*0.30 + clip((f.revenue_trend_norm||0)+0.5,0,1)*0.25)*100, 0, 100);
   const stability = clip(((1-f.revenue_cv)*0.35 + Math.min(f.buyer_diversity/20,1)*0.25 + f.salary_stability*0.20 + Math.min(f.years_in_business/10,1)*0.20)*100, 0, 100);
   const credit = f.has_credit_history ? clip(f.credit_score_norm*80 - (f.dpd_30*5 + f.dpd_90*15) + 20, 0, 100) : 40;
   const overall = cf*0.25 + comp*0.20 + growth*0.20 + stability*0.20 + credit*0.15;

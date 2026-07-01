@@ -29,15 +29,23 @@ def build_training_data(profiles: list):
     for p in profiles:
         try:
             features = extract_features(p)
-            scores = compute_pillar_scores(features)
+            # Use the SAME NTC-aware scoring the app displays, so the model's notion
+            # of "creditworthy" matches the shown score (a new-to-credit business with
+            # strong cash flow shouldn't be labelled risky just for lacking a CIBIL file).
+            ntc = p.get("ntc_flag", not bool(p["credit_history"]["has_credit_history"]))
+            scores = compute_pillar_scores(features, ntc_mode=ntc)
             all_rows.append((features, scores["overall"]))
             all_scores.append(scores["overall"])
         except Exception:
             continue
 
-    median_score = np.median(all_scores)
+    # Label against an ABSOLUTE, meaningful cut-off (score >= 60 == "MEDIUM-LOW"
+    # risk band or better, i.e. recommend/approve) rather than a relative median.
+    # This keeps the ML CREDITWORTHY/RISKY call consistent with the risk band the
+    # UI shows — no more "Grade A, LOW RISK" cards flagged RISKY.
+    APPROVE_THRESHOLD = 60.0
     for features, overall in all_rows:
-        label = 1 if overall >= median_score else 0
+        label = 1 if overall >= APPROVE_THRESHOLD else 0
         rows.append([features[c] for c in FEATURE_COLS])
         labels.append(label)
 
@@ -59,7 +67,6 @@ def train_model():
         colsample_bytree=0.8,
         eval_metric="logloss",
         random_state=42,
-        use_label_encoder=False,
     )
 
     model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)

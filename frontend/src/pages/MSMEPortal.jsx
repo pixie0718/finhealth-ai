@@ -39,7 +39,7 @@ const BENEFITS = [
   { icon:"🆓", text:"Free credit check"          },
 ];
 
-export default function MSMEPortal({ onBack }) {
+export default function MSMEPortal({ onBack, onResult }) {
   const isMobile = useIsMobile();
   const [phase, setPhase] = useState("form");
   const [form, setForm] = useState({
@@ -57,8 +57,9 @@ export default function MSMEPortal({ onBack }) {
   useEffect(() => {
     if (result && animationDone) {
       setPhase("result");
+      onResult?.(result);  // lift result up so the AI assistant gets this score as context
     }
-  }, [result, animationDone]);
+  }, [result, animationDone, onResult]);
 
   const startFetch = async () => {
     setPhase("loading");
@@ -77,7 +78,7 @@ export default function MSMEPortal({ onBack }) {
   // Called when the loading animation finishes (~5.5 s).
   const onLoadingDone = () => setAnimationDone(true);
 
-  const onReset = () => { setPhase("form"); setResult(null); setAnimationDone(false); };
+  const onReset = () => { setPhase("form"); setResult(null); setAnimationDone(false); onResult?.(null); };
 
   /* ─── RESULT ─── */
   if (phase === "result" && result) {
@@ -91,7 +92,7 @@ export default function MSMEPortal({ onBack }) {
         background:"transparent", border:"none", color:"#475569",
         fontSize:13, cursor:"pointer", marginBottom:20,
         display:"flex", alignItems:"center", gap:6,
-      }}>← Back to Home</button>
+      }}>↺ Start Over</button>
 
       {/* ────── FORM ────── */}
       {phase === "form" && (

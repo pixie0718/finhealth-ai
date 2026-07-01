@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
-import { getHistory } from "../api/client";
+import { getTrend } from "../api/client";
 
 const riskColors = { LOW: "#22c55e", "MEDIUM-LOW": "#eab308", MEDIUM: "#f97316", HIGH: "#ef4444" };
 
@@ -22,13 +22,9 @@ export default function ScoreTrend({ gstin, currentScore }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getHistory()
-      .then(r => {
-        const filtered = (r.data || [])
-          .filter(rec => rec.gstin && rec.gstin === gstin)
-          .sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at));
-        setRecords(filtered);
-      })
+    if (!gstin) { setLoading(false); return; }
+    getTrend(gstin)
+      .then(r => setRecords(r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [gstin]);
@@ -37,8 +33,8 @@ export default function ScoreTrend({ gstin, currentScore }) {
 
   const chartData = records.map((r, i) => ({
     idx: i + 1,
-    score: r.pillar_scores?.overall ?? 0,
-    risk: r.loan_eligibility?.risk_band,
+    score: r.overall ?? 0,
+    risk: r.risk_band,
     date: new Date(r.generated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
   }));
 

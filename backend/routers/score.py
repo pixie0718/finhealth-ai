@@ -17,12 +17,13 @@ from data.synthetic_generator import (
 from ml.feature_engineering import extract_features, compute_pillar_scores, get_loan_eligibility, get_recommendations
 from ml.explainer import get_shap_explanations
 from database import (
-    get_db, save_score, load_all_scores, load_score_by_id, User,
+    get_db, save_score, load_all_scores, load_score_by_id, load_score_trend, User,
     save_consent, load_consent,
     save_outcome, load_outcomes, get_outcome_stats,
+    save_application, load_applications,
     get_cached_benchmark, save_benchmark_cache,
 )
-from routers.auth import get_current_user
+from routers.auth import get_current_user, require_banker
 
 router = APIRouter(prefix="/api/score", tags=["Score"])
 
@@ -250,6 +251,18 @@ def get_all_scores(
     return load_all_scores(db, user_id=current_user.id)
 
 
+# ─── /trend ───────────────────────────────────────────────────────────────────
+
+@router.get("/trend")
+def get_score_trend(
+    gstin: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Chronological score history for a GSTIN — powers the 'Score Journey' chart."""
+    return load_score_trend(db, gstin.upper().strip(), user_id=current_user.id)
+
+
 # ─── /consent/{consent_id} ────────────────────────────────────────────────────
 
 @router.get("/consent/{consent_id}")
@@ -271,17 +284,19 @@ def record_outcome(
     msme_id: str,
     request: dict,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_banker),
 ):
     valid_outcomes = {"repaid", "npa", "active", "rejected"}
     outcome = request.get("outcome", "").lower()
     if outcome not in valid_outcomes:
         raise HTTPException(status_code=400, detail=f"outcome must be one of {valid_outcomes}")
 
-    # Fetch original score for context
-    score_record = load_score_by_id(db, msme_id)
-    original_risk_band = score_record["loan_eligibility"]["risk_band"] if score_record else None
-    original_score = score_record["pillar_scores"]["overall"] if score_record else None
+    # Fetch original score for context — must belong to this banker.
+    score_record = load_score_by_id(db, msme_id, user_id=current_user.id)
+    if not score_record:
+        raise HTTPException(status_code=404, detail="Score not found for this account.")
+    original_risk_band = score_record["loan_eligibility"]["risk_band"]
+    original_score = score_record["pillar_scores"]["overall"]
 
     save_outcome(db, msme_id, {
         "outcome": outcome,
@@ -300,12 +315,49 @@ def record_outcome(
 @router.get("/outcomes/all")
 def get_all_outcomes(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_banker),
 ):
     return {
         "outcomes": load_outcomes(db, user_id=current_user.id),
-        "stats": get_outcome_stats(db),
+        "stats": get_outcome_stats(db, user_id=current_user.id),
     }
+
+
+# ─── /{msme_id}/apply (submit a loan application) ─────────────────────────────
+
+@router.post("/{msme_id}/apply")
+def apply_for_loan(
+    msme_id: str,
+    request: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    score_record = load_score_by_id(db, msme_id, user_id=current_user.id)
+    if not score_record:
+        raise HTTPException(status_code=404, detail="Score not found for this account.")
+    record = save_application(db, {
+        "msme_id": msme_id,
+        "gstin": score_record.get("gstin"),
+        "business_name": score_record.get("business_name"),
+        "product": request.get("product"),
+        "loan_amount": request.get("loan_amount"),
+        "interest_rate": request.get("interest_rate"),
+        "tenure_months": request.get("tenure_months"),
+        "score": (score_record.get("pillar_scores") or {}).get("overall"),
+    }, user_id=current_user.id)
+    return {"status": "submitted", "reference": record.reference, "product": record.product}
+
+
+# ─── /applications/all (banker: incoming applications) ────────────────────────
+
+@router.get("/applications/all")
+def get_all_applications(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Single-bank model: a banker sees every incoming application; an MSME sees only theirs.
+    uid = None if current_user.role == "banker" else current_user.id
+    return {"applications": load_applications(db, user_id=uid)}
 
 
 # ─── /{msme_id} ───────────────────────────────────────────────────────────────

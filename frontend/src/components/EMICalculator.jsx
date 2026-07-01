@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import useIsMobile from "../hooks/useIsMobile";
 
 function calcEMI(principal, annualRate, months) {
   if (!principal || !months) return 0;
@@ -38,6 +39,7 @@ const PRODUCT_ICONS = {
 };
 
 export default function EMICalculator({ products, defaultProduct = "msme_loan" }) {
+  const isMobile = useIsMobile();
   const eligible = Object.entries(products || {}).filter(([, p]) => p.eligible);
 
   const [selected, setSelected] = useState(() => {
@@ -86,7 +88,7 @@ export default function EMICalculator({ products, defaultProduct = "msme_loan" }
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
 
         {/* Inputs */}
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

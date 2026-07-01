@@ -84,31 +84,38 @@ def compute_pillar_scores(features: dict, ntc_mode: bool = False) -> dict:
               15% weight across the four alternate-data pillars — enabling fair scoring
               of credit-invisible MSMEs.
     """
+    # NOTE: each pillar's weights already sum to 100, and the input features are 0–1,
+    # so the weighted sum is already on a 0–100 scale. (An earlier version multiplied
+    # by an extra ×100, overflowing every pillar to a clipped 100 — making all
+    # businesses look "excellent". Do not re-introduce that ×100.)
     cf_raw = (
         features["cash_flow_ratio"] * 35 +
         features["inflow_stability"] * 25 +
         (1 - features["bounce_rate"]) * 25 +
         min(features["avg_balance_ratio"], 1) * 15
-    ) * 100
+    )
     cash_flow_score = float(np.clip(cf_raw, 0, 100))
 
     comp_raw = (
         features["gst_compliance"] * 50 +
         features["epfo_compliance"] * 35 +
         min(features["tax_to_revenue"] / 0.18, 1) * 15
-    ) * 100
+    )
     compliance_score = float(np.clip(comp_raw, 0, 100))
 
-    rev_growth_norm = (features["revenue_growth"] + 1) / 4
-    emp_growth_norm = (features["emp_growth"] + 1) / 4
-    trend_norm = features["revenue_trend_norm"] + 0.5
-    growth_raw = (rev_growth_norm * 45 + emp_growth_norm * 30 + trend_norm * 25) * 100
+    # Centre flat growth at ~0.5 (neutral), reward moderate positive growth and
+    # penalise decline. The old (x+1)/4 mapping capped realistic growth near 0.25,
+    # pinning every business's Growth pillar to ~35.
+    rev_growth_norm = np.clip(0.5 + features["revenue_growth"] * 0.8, 0, 1)
+    emp_growth_norm = np.clip(0.5 + features["emp_growth"] * 0.8, 0, 1)
+    trend_norm = np.clip(features["revenue_trend_norm"] + 0.5, 0, 1)
+    growth_raw = rev_growth_norm * 45 + emp_growth_norm * 30 + trend_norm * 25
     growth_score = float(np.clip(growth_raw, 0, 100))
 
     rev_stability = max(0, 1 - features["revenue_cv"])
     buyer_div_norm = min(features["buyer_diversity"] / 20, 1)
     years_norm = min(features["years_in_business"] / 10, 1)
-    stability_raw = (rev_stability * 35 + buyer_div_norm * 25 + features["salary_stability"] * 20 + years_norm * 20) * 100
+    stability_raw = rev_stability * 35 + buyer_div_norm * 25 + features["salary_stability"] * 20 + years_norm * 20
     stability_score = float(np.clip(stability_raw, 0, 100))
 
     if not ntc_mode:

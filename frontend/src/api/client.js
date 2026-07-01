@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "http://localhost:8000" });
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
+});
 
 // Attach JWT token to every request if present
 api.interceptors.request.use((config) => {
@@ -24,6 +26,7 @@ export const generateScore = (data) => api.post("/api/score/generate", data);
 export const getDemoScore = () => api.get("/api/score/demo");
 export const getHistory = () => api.get("/api/score/history");
 export const getScore = (id) => api.get(`/api/score/${id}`);
+export const getTrend = (gstin) => api.get("/api/score/trend", { params: { gstin } });
 
 // Chat
 export const sendChat = (message, context = null) =>
@@ -35,5 +38,13 @@ export const getConsent = (consentId) => api.get(`/api/score/consent/${consentId
 // Loan outcomes
 export const recordOutcome = (msmeId, data) => api.post(`/api/score/${msmeId}/outcome`, data);
 export const getAllOutcomes = () => api.get("/api/score/outcomes/all");
+
+// Loan applications
+export const applyForLoan = (msmeId, data) => api.post(`/api/score/${msmeId}/apply`, data);
+export const getApplications = () => api.get("/api/score/applications/all");
+
+// Peer benchmark
+export const getBenchmark = (business_type, city) =>
+  api.get("/api/score/benchmark", { params: { business_type, city } });
 
 export default api;

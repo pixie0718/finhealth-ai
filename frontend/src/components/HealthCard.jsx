@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import useIsMobile from "../hooks/useIsMobile";
 import ScoreGauge from "./ScoreGauge";
 import PillarBar from "./PillarBar";
 import RevenueChart from "./RevenueChart";
@@ -44,6 +45,7 @@ export default function HealthCard({ data }) {
   const [showOutcome, setShowOutcome] = useState(false);
   const [recordedOutcome, setRecordedOutcome] = useState(null);
 
+  const isMobile = useIsMobile();
   const { business_name, gstin, city, business_type, years_in_business,
     pillar_scores, loan_eligibility, ml_prediction, explanations, generated_at,
     monthly_revenues, monthly_inflows, recommendations, raw_features } = data;
@@ -168,7 +170,7 @@ export default function HealthCard({ data }) {
       <NTCBanner ntcFlag={data.ntc_flag} ntbFlag={data.ntb_flag} overallScore={pillar_scores.overall} />
 
       {/* Score + Pillars Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 20, marginBottom: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1.8fr", gap: 20, marginBottom: 20 }}>
 
         {/* Left: Gauge + Loan Info */}
         <div style={{
@@ -222,7 +224,7 @@ export default function HealthCard({ data }) {
       </div>
 
       {/* Radar + Explanations Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1.5fr", gap: 20 }}>
 
         {/* Radar Chart */}
         <div style={{
@@ -263,7 +265,7 @@ export default function HealthCard({ data }) {
                   <span style={{ fontSize: 13 }}>✓</span>
                   <div>
                     <div style={{ fontSize: 12, color: "#cbd5e1", fontWeight: 600 }}>{s.label}</div>
-                    <div style={{ fontSize: 11, color: "#64748b" }}>Impact: +{(s.shap_value * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>SHAP impact: +{Number(s.shap_value).toFixed(2)} (log-odds)</div>
                   </div>
                 </div>
               ))}
@@ -283,7 +285,7 @@ export default function HealthCard({ data }) {
                   <span style={{ fontSize: 13 }}>✗</span>
                   <div>
                     <div style={{ fontSize: 12, color: "#cbd5e1", fontWeight: 600 }}>{r.label}</div>
-                    <div style={{ fontSize: 11, color: "#64748b" }}>Impact: {(r.shap_value * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>SHAP impact: {Number(r.shap_value).toFixed(2)} (log-odds)</div>
                   </div>
                 </div>
               ))}

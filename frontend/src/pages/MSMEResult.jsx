@@ -337,6 +337,11 @@ export default function MSMEResult({ result, onReset }) {
           <div style={{ fontSize:11, color:"#22c55e", fontWeight:700, letterSpacing:1.5, marginBottom:14 }}>
             YOUR STRENGTHS
           </div>
+          {(result.explanations?.strengths || []).length === 0 && (
+            <div style={{ fontSize:12, color:"#4ade8088", lineHeight:1.6 }}>
+              No standout strengths yet. Check the recommendations below to build them — improving GST compliance and cash flow lifts your score fastest.
+            </div>
+          )}
           {(result.explanations?.strengths || []).map((s, i) => (
             <div key={i} style={{
               display:"flex", alignItems:"flex-start", gap:10,
@@ -348,7 +353,7 @@ export default function MSMEResult({ result, onReset }) {
               <div>
                 <div style={{ fontSize:13, color:"#86efac", fontWeight:600 }}>{s.label}</div>
                 <div style={{ fontSize:11, color:"#4ade8088", marginTop:2 }}>
-                  Impact: +{(s.shap_value * 100).toFixed(1)}%
+                  Positive contributor to your creditworthiness
                 </div>
               </div>
             </div>
@@ -359,6 +364,11 @@ export default function MSMEResult({ result, onReset }) {
           <div style={{ fontSize:11, color:"#ef4444", fontWeight:700, letterSpacing:1.5, marginBottom:14 }}>
             IMPROVE THESE
           </div>
+          {(result.explanations?.risks || []).length === 0 && (
+            <div style={{ fontSize:12, color:"#f8717188", lineHeight:1.6 }}>
+              No major risk factors flagged — your profile is well-balanced. Keep filings and payments on time to maintain it.
+            </div>
+          )}
           {(result.explanations?.risks || []).map((r, i) => (
             <div key={i} style={{
               display:"flex", alignItems:"flex-start", gap:10,
@@ -370,7 +380,7 @@ export default function MSMEResult({ result, onReset }) {
               <div>
                 <div style={{ fontSize:13, color:"#fca5a5", fontWeight:600 }}>{r.label}</div>
                 <div style={{ fontSize:11, color:"#f8717188", marginTop:2 }}>
-                  Impact: {(r.shap_value * 100).toFixed(1)}%
+                  Weighing down your score — focus here to improve
                 </div>
               </div>
             </div>

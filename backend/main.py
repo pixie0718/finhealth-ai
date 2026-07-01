@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # load SECRET_KEY / GEMINI_API_KEY from backend/.env before routers import
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import score
@@ -14,7 +17,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    # Auth is via Bearer token in the Authorization header, not cookies, so
+    # credentials aren't needed — and wildcard origin + credentials is invalid per CORS spec.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

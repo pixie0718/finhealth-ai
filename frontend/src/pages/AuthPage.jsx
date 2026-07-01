@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { register, login } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,13 +10,41 @@ const inp = {
 };
 const lbl = { fontSize: 11, color: "#64748b", marginBottom: 6, display: "block", letterSpacing: 0.5 };
 
-export default function AuthPage() {
-  const { saveSession } = useAuth();
+// Per-role branding so /owner/login and /manager/login look like distinct pages.
+const ROLE_CONFIG = {
+  msme: {
+    accent: "#3b82f6",
+    gradient: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+    glow: "#3b82f644",
+    icon: "🏭",
+    title: "Business Owner",
+    subtitle: "Check your loan eligibility instantly",
+    home: "/owner",
+  },
+  banker: {
+    accent: "#8b5cf6",
+    gradient: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+    glow: "#8b5cf644",
+    icon: "🏦",
+    title: "Bank Manager",
+    subtitle: "Review AI-scored credit applications",
+    home: "/manager",
+  },
+};
+
+export default function AuthPage({ role = "msme" }) {
+  const cfg = ROLE_CONFIG[role] || ROLE_CONFIG.msme;
+  const { user, saveSession } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState("login"); // "login" | "register"
-  const [role, setRole] = useState("msme");
   const [form, setForm] = useState({ email: "", password: "", full_name: "", confirm_password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Already signed in → send to the matching dashboard.
+  if (user) {
+    return <Navigate to={user.role === "banker" ? "/manager" : "/owner"} replace />;
+  }
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -36,7 +65,19 @@ export default function AuthPage() {
       } else {
         res = await login(form.email, form.password);
       }
-      saveSession(res.data.access_token, res.data.user);
+      const loggedIn = res.data.user;
+      // A manager account can't sign into the owner portal and vice-versa.
+      if (loggedIn.role !== role) {
+        setError(
+          loggedIn.role === "banker"
+            ? "This is a Bank Manager account. Please use the Bank Manager login."
+            : "This is a Business Owner account. Please use the Business Owner login."
+        );
+        setLoading(false);
+        return;
+      }
+      saveSession(res.data.access_token, loggedIn);
+      navigate(cfg.home, { replace: true });
     } catch (err) {
       setError(err?.response?.data?.detail || "Something went wrong. Please try again.");
     } finally {
@@ -46,21 +87,27 @@ export default function AuthPage() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "radial-gradient(ellipse at 50% 0%, #1e3a5f 0%, #0f172a 60%)",
+      minHeight: "100vh",
+      background: `radial-gradient(ellipse at 50% 0%, ${cfg.accent}33 0%, #0f172a 60%)`,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
     }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
 
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
+        {/* Back to home */}
+        <div style={{ marginBottom: 18 }}>
+          <Link to="/" style={{ color: "#64748b", fontSize: 12, textDecoration: "none" }}>← Back to home</Link>
+        </div>
+
+        {/* Logo + role badge */}
+        <div style={{ textAlign: "center", marginBottom: 30 }}>
           <div style={{
             width: 60, height: 60, borderRadius: 16, margin: "0 auto 14px",
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            background: cfg.gradient,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 28, boxShadow: "0 0 40px #3b82f644",
-          }}>📊</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9" }}>FinHealth AI</div>
-          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>MSME Credit Intelligence • IDBI Bank</div>
+            fontSize: 28, boxShadow: `0 0 40px ${cfg.glow}`,
+          }}>{cfg.icon}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9" }}>{cfg.title}</div>
+          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>{cfg.subtitle}</div>
         </div>
 
         <div style={{
@@ -72,7 +119,7 @@ export default function AuthPage() {
             {["login", "register"].map((m) => (
               <button key={m} onClick={() => { setMode(m); setError(""); }} style={{
                 flex: 1, padding: "8px 0", borderRadius: 8, border: "none",
-                background: mode === m ? "#3b82f6" : "transparent",
+                background: mode === m ? cfg.accent : "transparent",
                 color: mode === m ? "#fff" : "#64748b",
                 fontSize: 13, fontWeight: mode === m ? 600 : 400, cursor: "pointer",
                 transition: "all 0.2s",
@@ -87,7 +134,7 @@ export default function AuthPage() {
               <div>
                 <label style={lbl}>FULL NAME</label>
                 <input style={inp} value={form.full_name} onChange={(e) => set("full_name", e.target.value)}
-                  placeholder="e.g. Rajesh Sharma" />
+                  placeholder={role === "banker" ? "e.g. Priya Nair" : "e.g. Rajesh Sharma"} />
               </div>
             )}
 
@@ -104,36 +151,12 @@ export default function AuthPage() {
             </div>
 
             {mode === "register" && (
-              <>
-                <div>
-                  <label style={lbl}>CONFIRM PASSWORD *</label>
-                  <input style={inp} type="password" value={form.confirm_password}
-                    onChange={(e) => set("confirm_password", e.target.value)}
-                    placeholder="Re-enter password" required />
-                </div>
-
-                <div>
-                  <label style={lbl}>I AM A</label>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    {[
-                      { key: "msme", icon: "🏭", label: "Business Owner" },
-                      { key: "banker", icon: "🏦", label: "Bank Officer" },
-                    ].map(({ key, icon, label }) => (
-                      <button type="button" key={key} onClick={() => setRole(key)} style={{
-                        padding: "12px 10px", borderRadius: 10, cursor: "pointer",
-                        border: `1px solid ${role === key ? "#3b82f6" : "#334155"}`,
-                        background: role === key ? "#3b82f622" : "#0f172a",
-                        color: role === key ? "#93c5fd" : "#64748b",
-                        fontSize: 13, fontWeight: role === key ? 600 : 400,
-                        transition: "all 0.2s",
-                      }}>
-                        <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
+              <div>
+                <label style={lbl}>CONFIRM PASSWORD *</label>
+                <input style={inp} type="password" value={form.confirm_password}
+                  onChange={(e) => set("confirm_password", e.target.value)}
+                  placeholder="Re-enter password" required />
+              </div>
             )}
 
             {error && (
@@ -147,7 +170,7 @@ export default function AuthPage() {
 
             <button type="submit" disabled={loading} style={{
               padding: "13px", borderRadius: 12, border: "none",
-              background: loading ? "#334155" : "#3b82f6",
+              background: loading ? "#334155" : cfg.accent,
               color: "#fff", fontSize: 14, fontWeight: 700,
               cursor: loading ? "not-allowed" : "pointer",
               marginTop: 4, transition: "background 0.2s",
@@ -159,7 +182,7 @@ export default function AuthPage() {
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: "#475569" }}>
             {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
             <span onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}
-              style={{ color: "#3b82f6", cursor: "pointer", fontWeight: 600 }}>
+              style={{ color: cfg.accent, cursor: "pointer", fontWeight: 600 }}>
               {mode === "login" ? "Register" : "Sign In"}
             </span>
           </div>

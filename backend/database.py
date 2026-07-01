@@ -32,6 +32,23 @@ class ScoreRecord(Base):
     created_at = Column(DateTime, server_default=func.now())
 
 
+class ScoreSnapshot(Base):
+    """Append-only log of every score run, so a business's score can be trended over time.
+
+    The `scores` table keeps only the latest row per msme_id (upsert via merge), which means
+    re-scoring the same GSTIN overwrites history. This table records each run instead.
+    """
+    __tablename__ = "score_snapshots"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    msme_id = Column(String, nullable=False, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
+    gstin = Column(String, nullable=True, index=True)
+    overall = Column(Float, nullable=True)
+    risk_band = Column(String, nullable=True)
+    generated_at = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 class ConsentArtifact(Base):
     """Stores AA-style consent artifacts per GSTIN application."""
     __tablename__ = "consent_artifacts"
@@ -58,6 +75,24 @@ class LoanOutcome(Base):
     original_score = Column(Float, nullable=True)
     banker_notes = Column(Text, nullable=True)
     recorded_at = Column(DateTime, server_default=func.now())
+
+
+class LoanApplication(Base):
+    """A loan application submitted by an MSME from the result screen."""
+    __tablename__ = "loan_applications"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    reference = Column(String, unique=True, index=True)
+    msme_id = Column(String, nullable=False, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
+    gstin = Column(String, nullable=True)
+    business_name = Column(String, nullable=True)
+    product = Column(String, nullable=True)
+    loan_amount = Column(Float, nullable=True)
+    interest_rate = Column(Float, nullable=True)
+    tenure_months = Column(Integer, nullable=True)
+    score = Column(Float, nullable=True)
+    status = Column(String, default="SUBMITTED")   # SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
+    created_at = Column(DateTime, server_default=func.now())
 
 
 class BenchmarkCache(Base):
@@ -104,7 +139,31 @@ def save_score(db, result: dict, user_id: int = None):
         data_json=json.dumps(result),
     )
     db.merge(record)
+    # Append an immutable snapshot so re-scoring the same GSTIN builds a trend history.
+    db.add(ScoreSnapshot(
+        msme_id=result["msme_id"],
+        user_id=user_id,
+        gstin=result.get("gstin", ""),
+        overall=(result.get("pillar_scores") or {}).get("overall"),
+        risk_band=(result.get("loan_eligibility") or {}).get("risk_band"),
+        generated_at=result.get("generated_at"),
+    ))
     db.commit()
+
+
+def load_score_trend(db, gstin: str, user_id: int = None) -> list:
+    """Chronological score snapshots for one GSTIN (for the Score Journey chart)."""
+    q = db.query(ScoreSnapshot).filter(ScoreSnapshot.gstin == gstin)
+    if user_id is not None:
+        q = q.filter(ScoreSnapshot.user_id == user_id)
+    records = q.order_by(ScoreSnapshot.created_at.asc()).all()
+    return [{
+        "msme_id": r.msme_id,
+        "gstin": r.gstin,
+        "overall": r.overall,
+        "risk_band": r.risk_band,
+        "generated_at": r.generated_at or str(r.created_at),
+    } for r in records]
 
 
 def load_all_scores(db, user_id: int = None) -> list:
@@ -178,9 +237,12 @@ def load_outcomes(db, user_id: int = None) -> list:
     } for r in records]
 
 
-def get_outcome_stats(db) -> dict:
-    """Portfolio quality stats for banker dashboard."""
-    records = db.query(LoanOutcome).all()
+def get_outcome_stats(db, user_id: int = None) -> dict:
+    """Portfolio quality stats for banker dashboard, scoped to the current banker."""
+    q = db.query(LoanOutcome)
+    if user_id is not None:
+        q = q.filter(LoanOutcome.user_id == user_id)
+    records = q.all()
     total = len(records)
     if not total:
         return {"total": 0, "repaid": 0, "npa": 0, "active": 0, "npa_rate": 0}
@@ -189,6 +251,44 @@ def get_outcome_stats(db) -> dict:
         counts[r.outcome] = counts.get(r.outcome, 0) + 1
     npa_rate = round(counts["npa"] / total * 100, 1) if total else 0
     return {"total": total, **counts, "npa_rate": npa_rate}
+
+
+# ─── Loan application helpers ─────────────────────────────────────────────────
+
+def save_application(db, data: dict, user_id: int = None) -> "LoanApplication":
+    import uuid
+    reference = "FH-" + uuid.uuid4().hex[:8].upper()
+    record = LoanApplication(
+        reference=reference,
+        msme_id=data.get("msme_id"),
+        user_id=user_id,
+        gstin=data.get("gstin"),
+        business_name=data.get("business_name"),
+        product=data.get("product"),
+        loan_amount=data.get("loan_amount"),
+        interest_rate=data.get("interest_rate"),
+        tenure_months=data.get("tenure_months"),
+        score=data.get("score"),
+        status="SUBMITTED",
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return record
+
+
+def load_applications(db, user_id: int = None) -> list:
+    q = db.query(LoanApplication)
+    if user_id is not None:
+        q = q.filter(LoanApplication.user_id == user_id)
+    records = q.order_by(LoanApplication.created_at.desc()).all()
+    return [{
+        "reference": r.reference, "msme_id": r.msme_id, "gstin": r.gstin,
+        "business_name": r.business_name, "product": r.product,
+        "loan_amount": r.loan_amount, "interest_rate": r.interest_rate,
+        "tenure_months": r.tenure_months, "score": r.score,
+        "status": r.status, "created_at": str(r.created_at),
+    } for r in records]
 
 
 # ─── Benchmark cache helpers ──────────────────────────────────────────────────

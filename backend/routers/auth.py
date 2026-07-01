@@ -60,6 +60,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
+def require_banker(current_user: User = Depends(get_current_user)) -> User:
+    """Guard for endpoints only bank officers may call (loan-outcome recording, portfolio view)."""
+    if current_user.role != "banker":
+        raise HTTPException(status_code=403, detail="This action is restricted to bank officers.")
+    return current_user
+
+
 @router.post("/register", response_model=TokenResponse)
 def register(req: RegisterRequest, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == req.email).first():
