@@ -9,6 +9,15 @@ from routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
+# Ordered fallback chain — best model first. If one is overloaded (503) or rate-limited
+# (429), the next is tried so users don't hit a hard error on a temporary spike.
+FALLBACK_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
+    "gemini-flash-lite-latest",
+    "gemini-2.5-flash-lite",
+]
+
 _client = None
 
 
@@ -90,13 +99,21 @@ def chat(
     full_prompt = f"{system_prompt}\n\nUser: {body.message}"
 
     client = get_client()  # raises 503 (not configured) — kept outside try so it isn't masked as 502
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=full_prompt,
-        )
-        reply = response.text
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {str(e)}")
 
-    return {"reply": reply}
+    # Try each model in order; if one is overloaded/rate-limited (503/429), fall back
+    # to the next so a temporary spike on a single model doesn't surface to the user.
+    last_error = None
+    for model in FALLBACK_MODELS:
+        try:
+            response = client.models.generate_content(model=model, contents=full_prompt)
+            if response and response.text:
+                return {"reply": response.text}
+        except Exception as e:
+            last_error = e
+            continue
+
+    print(f"[chat] all models failed, last error: {last_error}")
+    raise HTTPException(
+        status_code=503,
+        detail="The AI assistant is busy right now. Please try again in a moment.",
+    )
