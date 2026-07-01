@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 import HealthCard from "./components/HealthCard";
 import ChatAssistant from "./components/ChatAssistant";
 import ToolsHub from "./pages/ToolsHub";
+import OwnerApplications from "./pages/OwnerApplications";
 import BottomNav from "./components/BottomNav";
 import InstallPrompt from "./components/InstallPrompt";
 import useIsMobile from "./hooks/useIsMobile";
@@ -25,6 +26,7 @@ const MANAGER_BOTTOM = [
 ];
 const OWNER_BOTTOM = [
   { key: "Check Eligibility", label: "Score", icon: "📊" },
+  { key: "Applications", label: "Loans", icon: "📄" },
   { key: "Tools", label: "Tools", icon: "🧰" },
   { key: "Settings", label: "Settings", icon: "⚙️" },
 ];
@@ -184,7 +186,7 @@ function OwnerShell() {
         </div>
         {!isMobile && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-            {["Check Eligibility", "Tools", "Settings"].map((t) => (
+            {["Check Eligibility", "Applications", "Tools", "Settings"].map((t) => (
               <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{t}</button>
             ))}
           </div>
@@ -197,7 +199,7 @@ function OwnerShell() {
           }}>Logout</button>
         </div>
       </div>
-      {msmeTab === "Tools" ? <ToolsHub /> : msmeTab === "Settings" ? <Settings /> : <MSMEPortal onBack={() => setMsmeTab("Check Eligibility")} onResult={setOwnerResult} />}
+      {msmeTab === "Tools" ? <ToolsHub /> : msmeTab === "Settings" ? <Settings /> : msmeTab === "Applications" ? <OwnerApplications /> : <MSMEPortal onBack={() => setMsmeTab("Check Eligibility")} onResult={setOwnerResult} />}
       <ChatAssistant scoreContext={ownerResult} liftForNav={isMobile} />
       {isMobile && (
         <BottomNav tabs={OWNER_BOTTOM} active={msmeTab} onSelect={setMsmeTab} />

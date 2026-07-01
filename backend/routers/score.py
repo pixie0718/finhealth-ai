@@ -20,7 +20,7 @@ from database import (
     get_db, save_score, load_all_scores, load_score_by_id, load_score_trend, User,
     save_consent, load_consent,
     save_outcome, load_outcomes, get_outcome_stats,
-    save_application, load_applications,
+    save_application, load_applications, update_application_status,
     get_cached_benchmark, save_benchmark_cache,
 )
 from routers.auth import get_current_user, require_banker
@@ -358,6 +358,23 @@ def get_all_applications(
     # Single-bank model: a banker sees every incoming application; an MSME sees only theirs.
     uid = None if current_user.role == "banker" else current_user.id
     return {"applications": load_applications(db, user_id=uid)}
+
+
+@router.patch("/applications/{reference}/status")
+def set_application_status(
+    reference: str,
+    request: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_banker),
+):
+    status = (request.get("status") or "").upper()
+    valid = {"SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED"}
+    if status not in valid:
+        raise HTTPException(status_code=400, detail=f"status must be one of {valid}")
+    updated = update_application_status(db, reference, status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    return updated
 
 
 # ─── /{msme_id} ───────────────────────────────────────────────────────────────

@@ -277,6 +277,15 @@ def save_application(db, data: dict, user_id: int = None) -> "LoanApplication":
     return record
 
 
+def update_application_status(db, reference: str, status: str):
+    rec = db.query(LoanApplication).filter(LoanApplication.reference == reference).first()
+    if not rec:
+        return None
+    rec.status = status
+    db.commit()
+    return {"reference": rec.reference, "status": rec.status, "msme_id": rec.msme_id}
+
+
 def load_applications(db, user_id: int = None) -> list:
     q = db.query(LoanApplication)
     if user_id is not None:

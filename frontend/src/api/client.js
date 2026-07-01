@@ -42,6 +42,8 @@ export const getAllOutcomes = () => api.get("/api/score/outcomes/all");
 // Loan applications
 export const applyForLoan = (msmeId, data) => api.post(`/api/score/${msmeId}/apply`, data);
 export const getApplications = () => api.get("/api/score/applications/all");
+export const setApplicationStatus = (reference, status) =>
+  api.patch(`/api/score/applications/${reference}/status`, { status });
 
 // Peer benchmark
 export const getBenchmark = (business_type, city) =>

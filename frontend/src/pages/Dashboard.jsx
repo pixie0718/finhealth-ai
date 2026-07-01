@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getHistory, getDemoScore, getAllOutcomes, getApplications } from "../api/client";
+import { getHistory, getDemoScore, getAllOutcomes, getApplications, setApplicationStatus } from "../api/client";
 import useIsMobile from "../hooks/useIsMobile";
+import PortfolioAnalytics from "../components/PortfolioAnalytics";
+
+const appStatusColors = {
+  SUBMITTED: "#fbbf24", UNDER_REVIEW: "#3b82f6", APPROVED: "#22c55e", REJECTED: "#ef4444",
+};
 
 const riskColors = {
   "LOW": "#22c55e",
@@ -41,6 +46,17 @@ export default function Dashboard({ onView }) {
   };
 
   useEffect(() => { load(); }, []);
+
+  const updateApp = async (reference, status) => {
+    // optimistic update, then refresh
+    setApplications((apps) => apps.map((a) => (a.reference === reference ? { ...a, status } : a)));
+    try {
+      await setApplicationStatus(reference, status);
+      getApplications().then((r) => setApplications(r.data?.applications || [])).catch(() => {});
+    } catch {
+      alert("Couldn't update application status.");
+    }
+  };
 
   const runDemo = async () => {
     setDemoing(true);
@@ -145,6 +161,9 @@ export default function Dashboard({ onView }) {
         </div>
       )}
 
+      {/* Portfolio analytics — score/risk/sector charts */}
+      {!loading && !error && <PortfolioAnalytics records={records} />}
+
       {/* Portfolio Outcomes — post-disbursement loan quality */}
       {outcomeStats && outcomeStats.total > 0 && (
         <div style={{
@@ -185,26 +204,50 @@ export default function Dashboard({ onView }) {
             <div style={{ fontSize: 11, color: "#475569" }}>{applications.length} received</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {applications.slice(0, 6).map((a) => (
-              <div key={a.reference} style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                flexWrap: "wrap", gap: 8,
-                background: "#0f172a", borderRadius: 10, padding: "10px 14px",
-              }}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{a.business_name || "—"}</div>
-                  <div style={{ fontSize: 11, color: "#475569" }}>{a.reference} • {a.product}</div>
+            {applications.slice(0, 8).map((a) => {
+              const sc = appStatusColors[a.status] || "#64748b";
+              const pending = a.status === "SUBMITTED" || a.status === "UNDER_REVIEW";
+              return (
+                <div key={a.reference} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  flexWrap: "wrap", gap: 10,
+                  background: "#0f172a", borderRadius: 10, padding: "10px 14px",
+                }}>
+                  <div style={{ minWidth: 150, flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{a.business_name || "—"}</div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>{a.reference} • {a.product}</div>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#93c5fd" }}>
+                    ₹{((a.loan_amount || 0) / 100000).toFixed(1)}L
+                  </div>
+                  <div style={{
+                    fontSize: 10, fontWeight: 700, color: sc,
+                    background: `${sc}18`, border: `1px solid ${sc}44`,
+                    padding: "3px 10px", borderRadius: 20, whiteSpace: "nowrap",
+                  }}>{a.status.replace("_", " ")}</div>
+                  {pending ? (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button onClick={() => updateApp(a.reference, "APPROVED")} style={{
+                        fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        color: "#22c55e", background: "#15803d22", border: "1px solid #15803d55",
+                        padding: "5px 12px", borderRadius: 8,
+                      }}>✓ Approve</button>
+                      <button onClick={() => updateApp(a.reference, "REJECTED")} style={{
+                        fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        color: "#f87171", background: "#dc262611", border: "1px solid #dc262655",
+                        padding: "5px 12px", borderRadius: 8,
+                      }}>✕ Reject</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => updateApp(a.reference, "UNDER_REVIEW")} style={{
+                      fontSize: 11, fontWeight: 600, cursor: "pointer",
+                      color: "#94a3b8", background: "transparent", border: "1px solid #334155",
+                      padding: "5px 12px", borderRadius: 8,
+                    }}>Reopen</button>
+                  )}
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#93c5fd" }}>
-                  ₹{((a.loan_amount || 0) / 100000).toFixed(1)}L
-                </div>
-                <div style={{
-                  fontSize: 10, fontWeight: 700, color: "#fbbf24",
-                  background: "#78350f33", border: "1px solid #92400e55",
-                  padding: "3px 10px", borderRadius: 20,
-                }}>{a.status}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
