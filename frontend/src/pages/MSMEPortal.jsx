@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { generateScore } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 import LoadingSteps from "../components/LoadingSteps";
 import MSMEResult from "./MSMEResult";
+
+const STORAGE_KEY = "fh_owner_last_result";
+
+// Restore the last result/form for the current user (survives tab switches & refresh).
+function readSaved(email) {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (s && s.email && s.email === email) return s;
+  } catch (e) { /* ignore */ }
+  return null;
+}
 
 /* ─── responsive hook ─── */
 function useIsMobile() {
@@ -41,24 +53,37 @@ const BENEFITS = [
 
 export default function MSMEPortal({ onBack, onResult }) {
   const isMobile = useIsMobile();
-  const [phase, setPhase] = useState("form");
-  const [form, setForm] = useState({
+  const { user } = useAuth();
+  const saved = readSaved(user?.email);
+  const [phase, setPhase] = useState(saved?.result ? "result" : "form");
+  const [form, setForm] = useState(saved?.form || {
     business_name: "", gstin: "", business_type: "Textile",
     city: "Mumbai", years_in_business: 3,
   });
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(saved?.result || null);
   // animationDone tracks whether the loading animation has completed.
   // Both the animation callback and the API response set their respective flags;
   // the useEffect below transitions to "result" only when BOTH are true.
   const [animationDone, setAnimationDone] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  // On mount, if a saved result was restored, hand it to the AI assistant too.
+  useEffect(() => {
+    if (saved?.result) onResult?.(saved.result);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Transition to result screen once BOTH the API data AND the animation are ready.
   useEffect(() => {
     if (result && animationDone) {
       setPhase("result");
       onResult?.(result);  // lift result up so the AI assistant gets this score as context
+      // Persist so the score survives tab switches / page refresh for this user.
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ email: user?.email, result, form }));
+      } catch (e) { /* ignore */ }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result, animationDone, onResult]);
 
   const startFetch = async () => {
@@ -78,7 +103,10 @@ export default function MSMEPortal({ onBack, onResult }) {
   // Called when the loading animation finishes (~5.5 s).
   const onLoadingDone = () => setAnimationDone(true);
 
-  const onReset = () => { setPhase("form"); setResult(null); setAnimationDone(false); onResult?.(null); };
+  const onReset = () => {
+    setPhase("form"); setResult(null); setAnimationDone(false); onResult?.(null);
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+  };
 
   /* ─── RESULT ─── */
   if (phase === "result" && result) {

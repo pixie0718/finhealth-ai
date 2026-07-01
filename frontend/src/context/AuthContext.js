@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem("fh_token");
+    localStorage.removeItem("fh_owner_last_result");  // don't leak last score to the next user
     setUser(null);
   };
 
