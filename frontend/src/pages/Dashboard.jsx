@@ -45,7 +45,19 @@ export default function Dashboard({ onView }) {
       .catch(() => {});
   };
 
+  const refreshLive = () => {
+    getApplications().then((r) => setApplications(r.data?.applications || [])).catch(() => {});
+    getAllOutcomes().then((r) => setOutcomeStats(r.data?.stats || null)).catch(() => {});
+  };
+
   useEffect(() => { load(); }, []);
+
+  // Poll applications/outcomes so new submissions appear live without a reload.
+  useEffect(() => {
+    const id = setInterval(refreshLive, 15000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateApp = async (reference, status) => {
     // optimistic update, then refresh
@@ -201,7 +213,13 @@ export default function Dashboard({ onView }) {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>📥 Loan Applications</div>
-            <div style={{ fontSize: 11, color: "#475569" }}>{applications.length} received</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 11, color: "#475569" }}>{applications.length} received</span>
+              <button onClick={refreshLive} title="Refresh" style={{
+                background: "transparent", border: "1px solid #334155", color: "#94a3b8",
+                borderRadius: 8, padding: "3px 10px", fontSize: 11, cursor: "pointer",
+              }}>↻ Refresh</button>
+            </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {applications.slice(0, 8).map((a) => {
