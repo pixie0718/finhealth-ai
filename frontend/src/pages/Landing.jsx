@@ -1,13 +1,51 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useIsMobile from "../hooks/useIsMobile";
+import Reveal from "../components/Reveal";
+import CountUp from "../components/CountUp";
 
 const STATS = [
-  { value: "10,000+", label: "MSMEs Assessed" },
-  { value: "98.2%", label: "ML Accuracy" },
-  { value: "< 30s", label: "Score Generated" },
-  { value: "11", label: "Loan Products" },
+  { end: 10000, separator: true, suffix: "+", label: "MSMEs Assessed" },
+  { end: 98.2, decimals: 1, suffix: "%", label: "ML Accuracy" },
+  { end: 30, prefix: "< ", suffix: "s", label: "Score Generated" },
+  { end: 11, label: "Loan Products" },
 ];
+
+// Animated score ring for the hero mock card — counts up + fills when in view.
+function HeroScoreRing() {
+  const ref = useRef(null);
+  const started = useRef(false);
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        const t0 = performance.now();
+        const tick = (now) => {
+          const t = Math.min(1, (now - t0) / 1500);
+          setV(84 * (1 - Math.pow(1 - t, 3)));
+          if (t < 1) requestAnimationFrame(tick); else setV(84);
+        };
+        requestAnimationFrame(tick);
+        io.disconnect();
+      }
+    }), { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const deg = (v / 100) * 360;
+  return (
+    <div ref={ref} style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
+      <div style={{ width: 96, height: 96, borderRadius: "50%", background: `conic-gradient(#22c55e ${deg}deg, #1e293b ${deg}deg)`, transition: "background 0.1s linear" }} />
+      <div style={{ position: "absolute", inset: 7, borderRadius: "50%", background: "#0d1526", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#f1f5f9", lineHeight: 1 }}>{Math.round(v)}</div>
+        <div style={{ fontSize: 8.5, color: "#64748b", letterSpacing: 0.5 }}>/ 100</div>
+      </div>
+    </div>
+  );
+}
 
 const DATA_SOURCES = [
   { icon: "📊", label: "GST Network", desc: "Filing history & turnover" },
@@ -107,9 +145,9 @@ export default function Landing() {
           maskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%)",
           WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%)",
         }} />
-        {/* glow blobs */}
-        <div style={{ position: "absolute", top: "-18%", left: "2%", width: 540, height: 540, background: "radial-gradient(circle, #3b82f625 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: "8%", right: "-4%", width: 500, height: 500, background: "radial-gradient(circle, #8b5cf625 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+        {/* drifting glow blobs */}
+        <div style={{ position: "absolute", top: "-18%", left: "2%", width: 540, height: 540, background: "radial-gradient(circle, #3b82f630 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none", animation: "fhDrift1 15s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", top: "8%", right: "-4%", width: 500, height: 500, background: "radial-gradient(circle, #8b5cf630 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none", animation: "fhDrift2 18s ease-in-out infinite" }} />
 
         <div style={{
           maxWidth: 1120, margin: "0 auto", position: "relative", zIndex: 1,
@@ -128,7 +166,7 @@ export default function Landing() {
             </div>
 
             <h1 style={{ fontSize: isMobile ? 36 : 56, fontWeight: 900, color: "#f8fafc", letterSpacing: -2, lineHeight: 1.06, marginBottom: 20 }}>
-              Loan-ready in <span style={{ background: "linear-gradient(120deg, #3b82f6, #8b5cf6 60%, #06b6d4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>30 seconds.</span>
+              Loan-ready in <span style={{ background: "linear-gradient(110deg, #3b82f6, #8b5cf6, #06b6d4, #8b5cf6, #3b82f6)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "fhShimmer 4s linear infinite" }}>30 seconds.</span>
               <br />Not 30 days.
             </h1>
 
@@ -194,13 +232,7 @@ export default function Landing() {
 
                 {/* score ring + grade */}
                 <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 18 }}>
-                  <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
-                    <div style={{ width: 96, height: 96, borderRadius: "50%", background: "conic-gradient(#22c55e 302deg, #1e293b 302deg)" }} />
-                    <div style={{ position: "absolute", inset: 7, borderRadius: "50%", background: "#0d1526", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ fontSize: 28, fontWeight: 900, color: "#f1f5f9", lineHeight: 1 }}>84</div>
-                      <div style={{ fontSize: 8.5, color: "#64748b", letterSpacing: 0.5 }}>/ 100</div>
-                    </div>
-                  </div>
+                  <HeroScoreRing />
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: "#4ade80" }}>Grade A · Excellent</div>
                     <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>Eligible loan amount</div>
@@ -237,7 +269,8 @@ export default function Landing() {
         }}>
           {STATS.map((s, i) => (
             <div key={i} style={{ padding: "20px 16px", textAlign: "center", borderRight: !isMobile && i < STATS.length - 1 ? "1px solid #1e293b" : "none", borderBottom: isMobile && i < 2 ? "1px solid #1e293b" : "none" }}>
-              <div style={{ fontSize: 25, fontWeight: 900, background: "linear-gradient(135deg, #93c5fd, #c4b5fd)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{s.value}</div>
+              <CountUp end={s.end} decimals={s.decimals || 0} prefix={s.prefix || ""} suffix={s.suffix || ""} separator={s.separator}
+                style={{ fontSize: 25, fontWeight: 900, background: "linear-gradient(135deg, #93c5fd, #c4b5fd)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }} />
               <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 4 }}>{s.label}</div>
             </div>
           ))}
@@ -245,10 +278,10 @@ export default function Landing() {
       </section>
 
       {/* ─── What is it ─────────────────────────────────────────── */}
-      <section style={{ padding: "56px 24px", borderTop: "1px solid #111a2e" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+      <section style={{ padding: "60px 24px", borderTop: "1px solid #111a2e" }}>
+        <Reveal style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 14 }}>WHAT IS FINHEALTH AI?</div>
-          <h2 style={{ fontSize: 30, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.3, marginBottom: 18 }}>
+          <h2 style={{ fontSize: isMobile ? 26 : 30, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.3, marginBottom: 18 }}>
             43 million Indian MSMEs are "credit invisible". We fix that.
           </h2>
           <p style={{ fontSize: 16, color: "#94a3b8", lineHeight: 1.75 }}>
@@ -258,56 +291,64 @@ export default function Landing() {
             explainable reason for every score. Built for the <strong style={{ color: "#cbd5e1" }}>RBI Account Aggregator</strong> framework,
             it serves both the business owner and the lending officer.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* ─── Features ───────────────────────────────────────────── */}
-      <section id="features" style={{ padding: "56px 24px", background: "#0b1120", borderTop: "1px solid #111a2e" }}>
+      <section id="features" style={{ padding: "60px 24px", background: "#0b1120", borderTop: "1px solid #111a2e" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 44 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 12 }}>WHAT IT CAN DO</div>
-            <h2 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9" }}>Everything you need to assess credit, fast</h2>
-          </div>
+            <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, color: "#f1f5f9" }}>Everything you need to assess credit, fast</h2>
+          </Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
             {FEATURES.map((f, i) => (
-              <div key={i} style={{
-                background: "#111a2e", border: "1px solid #1e293b", borderRadius: 18, padding: 26,
-                transition: "all 0.25s",
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#3b82f655"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#1e293b"; e.currentTarget.style.transform = "translateY(0)"; }}
-              >
+              <Reveal key={i} delay={(i % 3) * 0.09}>
                 <div style={{
-                  width: 48, height: 48, borderRadius: 12, marginBottom: 16, fontSize: 24,
-                  background: "#3b82f615", border: "1px solid #3b82f622",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>{f.icon}</div>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{f.title}</h3>
-                <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.65 }}>{f.desc}</p>
-              </div>
+                  background: "#111a2e", border: "1px solid #1e293b", borderRadius: 18, padding: 26,
+                  transition: "all 0.25s", height: "100%",
+                }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#3b82f677"; e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 20px 44px #3b82f622"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#1e293b"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 12, marginBottom: 16, fontSize: 24,
+                    background: "linear-gradient(135deg, #3b82f622, #8b5cf622)", border: "1px solid #3b82f633",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>{f.icon}</div>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{f.title}</h3>
+                  <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.65 }}>{f.desc}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ─── How it works ───────────────────────────────────────── */}
-      <section id="how" style={{ padding: "56px 24px", borderTop: "1px solid #111a2e" }}>
+      <section id="how" style={{ padding: "60px 24px", borderTop: "1px solid #111a2e" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 44 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 12 }}>HOW IT WORKS</div>
-            <h2 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9" }}>From GSTIN to decision in four steps</h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 20 }}>
+            <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, color: "#f1f5f9" }}>From GSTIN to decision in four steps</h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(230px, 1fr))", gap: 20 }}>
             {STEPS.map((s, i) => (
-              <div key={i} style={{ background: "#111a2e", border: "1px solid #1e293b", borderRadius: 18, padding: 24, position: "relative" }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: "50%", marginBottom: 16,
-                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", color: "#fff",
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800,
-                }}>{s.n}</div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{s.title}</h3>
-                <p style={{ fontSize: 13.5, color: "#94a3b8", lineHeight: 1.6 }}>{s.desc}</p>
-              </div>
+              <Reveal key={i} delay={i * 0.1}>
+                <div style={{ background: "#111a2e", border: "1px solid #1e293b", borderRadius: 18, padding: 24, position: "relative", height: "100%", transition: "all 0.25s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#8b5cf655"; e.currentTarget.style.transform = "translateY(-5px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#1e293b"; e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <div style={{
+                    width: 40, height: 40, borderRadius: "50%", marginBottom: 16,
+                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", color: "#fff",
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800,
+                    boxShadow: "0 6px 20px #3b82f655",
+                  }}>{s.n}</div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{s.title}</h3>
+                  <p style={{ fontSize: 13.5, color: "#94a3b8", lineHeight: 1.6 }}>{s.desc}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
 
@@ -335,16 +376,17 @@ export default function Landing() {
       </section>
 
       {/* ─── Who it's for (role cards) ──────────────────────────── */}
-      <section id="audience" style={{ padding: "56px 24px", background: "#0b1120", borderTop: "1px solid #111a2e" }}>
+      <section id="audience" style={{ padding: "60px 24px", background: "#0b1120", borderTop: "1px solid #111a2e" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 40 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 12 }}>WHO IT'S FOR</div>
-            <h2 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9" }}>Two portals, one platform</h2>
-          </div>
+            <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, color: "#f1f5f9" }}>Two portals, one platform</h2>
+          </Reveal>
 
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
             {/* Business Owner */}
-            <div onClick={() => navigate("/owner/login")} style={{
+            <Reveal delay={0}><div onClick={() => navigate("/owner/login")} style={{
+              height: "100%", boxSizing: "border-box",
               background: "linear-gradient(135deg, #1e293b, #0f1f3d)", border: "1px solid #1e3a5f",
               borderRadius: 22, padding: 32, cursor: "pointer", transition: "all 0.3s",
             }}
@@ -358,10 +400,11 @@ export default function Landing() {
                 Get your Financial Health Score, see how much you can borrow, and learn exactly what to improve — instantly, using just your GSTIN.
               </p>
               <div style={{ fontSize: 13, color: "#3b82f6", fontWeight: 700 }}>Get My Score →</div>
-            </div>
+            </div></Reveal>
 
             {/* Bank Manager */}
-            <div onClick={() => navigate("/manager/login")} style={{
+            <Reveal delay={0.12}><div onClick={() => navigate("/manager/login")} style={{
+              height: "100%", boxSizing: "border-box",
               background: "linear-gradient(135deg, #1e293b, #1a0f3d)", border: "1px solid #2d1f5e",
               borderRadius: 22, padding: 32, cursor: "pointer", transition: "all 0.3s",
             }}
@@ -375,14 +418,14 @@ export default function Landing() {
                 AI-scored, SHAP-explained credit reports with a portfolio dashboard, loan-outcome tracking and one-click PDF exports for faster, fairer decisions.
               </p>
               <div style={{ fontSize: 13, color: "#8b5cf6", fontWeight: 700 }}>Open Console →</div>
-            </div>
+            </div></Reveal>
           </div>
         </div>
       </section>
 
       {/* ─── Security / trust ───────────────────────────────────── */}
-      <section id="security" style={{ padding: "56px 24px", borderTop: "1px solid #111a2e" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+      <section id="security" style={{ padding: "60px 24px", borderTop: "1px solid #111a2e" }}>
+        <Reveal style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 14 }}>PRIVACY & SECURITY</div>
           <h2 style={{ fontSize: 30, fontWeight: 800, color: "#f1f5f9", marginBottom: 18 }}>Consent-first, by design</h2>
           <p style={{ fontSize: 16, color: "#94a3b8", lineHeight: 1.75, marginBottom: 32 }}>
@@ -397,16 +440,18 @@ export default function Landing() {
               }}>{t}</span>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ─── CTA band ───────────────────────────────────────────── */}
       <section style={{ padding: "24px 24px 64px" }}>
-        <div style={{
+        <Reveal style={{
           maxWidth: 1000, margin: "0 auto", textAlign: "center",
-          background: "linear-gradient(135deg, #1e293b, #1a1240)", border: "1px solid #3b82f633",
-          borderRadius: 24, padding: "48px 32px",
+          background: "linear-gradient(135deg, #1e293b, #1a1240)", border: "1px solid #3b82f644",
+          borderRadius: 24, padding: isMobile ? "36px 22px" : "48px 32px",
+          position: "relative", overflow: "hidden",
         }}>
+          <div style={{ position: "absolute", top: "-40%", left: "50%", width: 400, height: 400, transform: "translateX(-50%)", background: "radial-gradient(circle, #6366f130 0%, transparent 70%)", pointerEvents: "none" }} />
           <h2 style={{ fontSize: 30, fontWeight: 900, color: "#f1f5f9", marginBottom: 12 }}>Ready to see your score?</h2>
           <p style={{ fontSize: 15, color: "#94a3b8", marginBottom: 26 }}>It takes under 30 seconds. No documents required.</p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
@@ -419,7 +464,7 @@ export default function Landing() {
               padding: "14px 30px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer",
             }}>Bank Officer Login</button>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
