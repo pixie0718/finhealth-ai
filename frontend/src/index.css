@@ -17,3 +17,7 @@ body {
   0%, 100% { box-shadow: 0 12px 40px #000000aa, 0 0 0 0 #6366f177; }
   50%      { box-shadow: 0 12px 40px #000000aa, 0 0 0 9px #6366f100; }
 }
+@keyframes fhFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes fhFadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fhFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fhGrow { from { width: 0; } }

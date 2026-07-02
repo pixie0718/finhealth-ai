@@ -35,6 +35,13 @@ const STEPS = [
 
 const accent = "#3b82f6";
 
+const HERO_PILLARS = [
+  { label: "Cash Flow", val: 82, color: "#3b82f6" },
+  { label: "Compliance", val: 91, color: "#8b5cf6" },
+  { label: "Growth", val: 76, color: "#06b6d4" },
+  { label: "Stability", val: 84, color: "#f59e0b" },
+];
+
 function scrollTo(id) {
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -91,54 +98,146 @@ export default function Landing() {
       </header>
 
       {/* ─── Hero ───────────────────────────────────────────────── */}
-      <section id="top" style={{ position: "relative", overflow: "hidden", padding: "80px 24px 64px" }}>
-        <div style={{ position: "absolute", top: "-10%", left: "15%", width: 500, height: 500, background: "radial-gradient(circle, #3b82f618 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-20%", right: "10%", width: 460, height: 460, background: "radial-gradient(circle, #8b5cf618 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+      <section id="top" style={{ position: "relative", overflow: "hidden", padding: isMobile ? "36px 20px 44px" : "64px 24px 60px" }}>
+        {/* subtle grid pattern */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          backgroundImage: "linear-gradient(#ffffff08 1px, transparent 1px), linear-gradient(90deg, #ffffff08 1px, transparent 1px)",
+          backgroundSize: "46px 46px",
+          maskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%)",
+        }} />
+        {/* glow blobs */}
+        <div style={{ position: "absolute", top: "-18%", left: "2%", width: 540, height: 540, background: "radial-gradient(circle, #3b82f625 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: "8%", right: "-4%", width: 500, height: 500, background: "radial-gradient(circle, #8b5cf625 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 860, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            background: "#1e293b", border: "1px solid #3b82f633",
-            padding: "6px 18px", borderRadius: 20, marginBottom: 26,
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
-            <span style={{ fontSize: 12, color: "#94a3b8" }}>IDBI Bank &nbsp;•&nbsp; RBI AA Compliant &nbsp;•&nbsp; IDBI Innovate 2026</span>
+        <div style={{
+          maxWidth: 1120, margin: "0 auto", position: "relative", zIndex: 1,
+          display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.05fr 0.95fr",
+          gap: isMobile ? 34 : 48, alignItems: "center",
+        }}>
+          {/* LEFT — copy */}
+          <div style={{ textAlign: isMobile ? "center" : "left", animation: "fhFadeUp 0.6s ease-out both" }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "#1e293b88", border: "1px solid #3b82f644", backdropFilter: "blur(6px)",
+              padding: "6px 16px", borderRadius: 20, marginBottom: 22,
+            }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
+              <span style={{ fontSize: 11.5, color: "#94a3b8", letterSpacing: 0.2 }}>Powered by RBI Account Aggregator · IDBI Innovate 2026</span>
+            </div>
+
+            <h1 style={{ fontSize: isMobile ? 36 : 56, fontWeight: 900, color: "#f8fafc", letterSpacing: -2, lineHeight: 1.06, marginBottom: 20 }}>
+              Loan-ready in <span style={{ background: "linear-gradient(120deg, #3b82f6, #8b5cf6 60%, #06b6d4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>30 seconds.</span>
+              <br />Not 30 days.
+            </h1>
+
+            <p style={{ fontSize: isMobile ? 15.5 : 18, color: "#94a3b8", maxWidth: 520, margin: isMobile ? "0 auto 28px" : "0 0 30px", lineHeight: 1.65 }}>
+              FinHealth AI turns a business's GST, UPI &amp; bank data into an instant, explainable credit score —
+              so India's MSMEs get faster loans and banks lend with confidence.
+              <strong style={{ color: "#e2e8f0" }}> No documents. No branch visits.</strong>
+            </p>
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start" }}>
+              <button onClick={() => navigate("/owner/login")} style={{
+                background: "linear-gradient(135deg, #3b82f6, #6366f1)", border: "none", color: "#fff",
+                padding: "14px 26px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 10px 34px #3b82f655",
+              }}>Get My Business Score →</button>
+              <button onClick={() => navigate("/manager/login")} style={{
+                background: "#1e293baa", border: "1px solid #334155", color: "#e2e8f0", backdropFilter: "blur(6px)",
+                padding: "14px 26px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer",
+              }}>🏦 I'm a Bank Officer</button>
+            </div>
+
+            {/* data source chips */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 26, justifyContent: isMobile ? "center" : "flex-start" }}>
+              <span style={{ fontSize: 11, color: "#475569", alignSelf: "center", marginRight: 2 }}>Reads:</span>
+              {["📊 GST", "📱 UPI", "🏦 Bank (AA)", "👥 EPFO", "💳 CIBIL"].map((t) => (
+                <span key={t} style={{ fontSize: 11.5, color: "#94a3b8", background: "#111a2e", border: "1px solid #1e293b", padding: "5px 12px", borderRadius: 20 }}>{t}</span>
+              ))}
+            </div>
           </div>
 
-          <h1 style={{ fontSize: isMobile ? 34 : 54, fontWeight: 900, color: "#f1f5f9", letterSpacing: -2, lineHeight: 1.08, marginBottom: 20 }}>
-            Credit scores for MSMEs,<br />from{" "}
-            <span style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              data they already have
-            </span>
-          </h1>
+          {/* RIGHT — live product mockup */}
+          <div style={{ display: "flex", justifyContent: "center", animation: "fhFadeUp 0.7s 0.15s ease-out both" }}>
+            <div style={{ position: "relative", width: "100%", maxWidth: 380 }}>
+              {/* floating chips */}
+              <div style={{
+                position: "absolute", top: -14, right: isMobile ? 6 : -14, zIndex: 3,
+                background: "#0d2618", border: "1px solid #22c55e55", color: "#4ade80",
+                fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 20,
+                boxShadow: "0 8px 24px #00000055", animation: "fhFloat 4s ease-in-out infinite",
+              }}>✓ GST verified</div>
+              <div style={{
+                position: "absolute", bottom: 64, left: isMobile ? 4 : -18, zIndex: 3,
+                background: "#1a1140", border: "1px solid #8b5cf655", color: "#c4b5fd",
+                fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 20,
+                boxShadow: "0 8px 24px #00000055", animation: "fhFloat 4.6s 0.6s ease-in-out infinite",
+              }}>🤖 SHAP explained</div>
 
-          <p style={{ fontSize: 18, color: "#94a3b8", maxWidth: 620, margin: "0 auto 32px", lineHeight: 1.65 }}>
-            FinHealth AI turns a business's GST, UPI and Account-Aggregator data into an instant, explainable
-            financial health score — so small businesses get faster loans and banks lend with confidence.
-            <strong style={{ color: "#cbd5e1" }}> No documents. No branch visits.</strong>
-          </p>
+              {/* the card */}
+              <div style={{
+                background: "linear-gradient(160deg, #131d33, #0d1526)",
+                border: "1px solid #2a3a5f", borderRadius: 22, padding: 24,
+                boxShadow: "0 30px 70px #00000088, inset 0 1px 0 #ffffff0f",
+                animation: "fhFloat 6s ease-in-out infinite",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+                  <div>
+                    <div style={{ fontSize: 9.5, color: "#64748b", letterSpacing: 1.2, fontWeight: 700 }}>FINANCIAL HEALTH REPORT</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "#f1f5f9", marginTop: 3 }}>Sharma Textiles</div>
+                    <div style={{ fontSize: 10.5, color: "#475569", marginTop: 1 }}>27AAPFU0939F1ZV · Surat</div>
+                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#22c55e", background: "#15803d22", border: "1px solid #15803d55", padding: "3px 10px", borderRadius: 20 }}>LOW RISK</div>
+                </div>
 
-          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => navigate("/owner/login")} style={{
-              background: "linear-gradient(135deg, #3b82f6, #06b6d4)", border: "none", color: "#fff",
-              padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 8px 30px #3b82f644",
-            }}>🏭 Get My Business Score →</button>
-            <button onClick={() => navigate("/manager/login")} style={{
-              background: "#1e293b", border: "1px solid #334155", color: "#e2e8f0",
-              padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer",
-            }}>🏦 I'm a Bank Officer</button>
+                {/* score ring + grade */}
+                <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 18 }}>
+                  <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
+                    <div style={{ width: 96, height: 96, borderRadius: "50%", background: "conic-gradient(#22c55e 302deg, #1e293b 302deg)" }} />
+                    <div style={{ position: "absolute", inset: 7, borderRadius: "50%", background: "#0d1526", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: "#f1f5f9", lineHeight: 1 }}>84</div>
+                      <div style={{ fontSize: 8.5, color: "#64748b", letterSpacing: 0.5 }}>/ 100</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#4ade80" }}>Grade A · Excellent</div>
+                    <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>Eligible loan amount</div>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: "#f1f5f9" }}>₹18.5L</div>
+                  </div>
+                </div>
+
+                {/* pillar bars */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 18 }}>
+                  {HERO_PILLARS.map((p) => (
+                    <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 72, fontSize: 11, color: "#94a3b8" }}>{p.label}</div>
+                      <div style={{ flex: 1, height: 6, background: "#1e293b", borderRadius: 4, overflow: "hidden" }}>
+                        <div style={{ width: `${p.val}%`, height: "100%", background: p.color, borderRadius: 4, animation: "fhGrow 1.1s ease-out" }} />
+                      </div>
+                      <div style={{ width: 22, fontSize: 11, fontWeight: 700, color: "#cbd5e1", textAlign: "right" }}>{p.val}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={() => navigate("/owner/login")} style={{
+                  width: "100%", background: "linear-gradient(135deg, #22c55e, #16a34a)", border: "none",
+                  color: "#fff", padding: "11px", borderRadius: 12, fontSize: 13.5, fontWeight: 800, cursor: "pointer",
+                }}>✓ APPROVED — Apply Now</button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Stats strip */}
         <div style={{
-          maxWidth: 760, margin: "56px auto 0", display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
-          background: "#111a2e", border: "1px solid #1e293b", borderRadius: 16, overflow: "hidden", position: "relative", zIndex: 1,
+          maxWidth: 900, margin: isMobile ? "40px auto 0" : "52px auto 0", display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
+          background: "#111a2ecc", border: "1px solid #1e293b", borderRadius: 16, overflow: "hidden", position: "relative", zIndex: 1, backdropFilter: "blur(6px)",
         }}>
           {STATS.map((s, i) => (
-            <div key={i} style={{ padding: "22px 16px", textAlign: "center", borderRight: i < STATS.length - 1 ? "1px solid #1e293b" : "none" }}>
-              <div style={{ fontSize: 26, fontWeight: 900, color: "#f1f5f9" }}>{s.value}</div>
+            <div key={i} style={{ padding: "20px 16px", textAlign: "center", borderRight: !isMobile && i < STATS.length - 1 ? "1px solid #1e293b" : "none", borderBottom: isMobile && i < 2 ? "1px solid #1e293b" : "none" }}>
+              <div style={{ fontSize: 25, fontWeight: 900, background: "linear-gradient(135deg, #93c5fd, #c4b5fd)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{s.value}</div>
               <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 4 }}>{s.label}</div>
             </div>
           ))}
