@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import Landing from "./pages/Landing";
+import LandingSplit from "./pages/landing/LandingSplit";
+import LandingSpotlight from "./pages/landing/LandingSpotlight";
+import LandingBento from "./pages/landing/LandingBento";
 import MSMEPortal from "./pages/MSMEPortal";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
@@ -216,6 +219,10 @@ export default function App() {
         <InstallPrompt />
         <Routes>
           <Route path="/" element={<Landing />} />
+          {/* landing design previews — pick one to become "/" */}
+          <Route path="/design/split" element={<LandingSplit />} />
+          <Route path="/design/spotlight" element={<LandingSpotlight />} />
+          <Route path="/design/bento" element={<LandingBento />} />
           <Route path="/owner/login" element={<AuthPage role="msme" />} />
           <Route path="/manager/login" element={<AuthPage role="banker" />} />
           <Route path="/owner/*" element={<RequireRole role="msme"><OwnerShell /></RequireRole>} />
