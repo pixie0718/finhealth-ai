@@ -99,7 +99,7 @@ export default function Landing() {
         borderBottom: "1px solid #1e293b",
       }}>
         <div style={{
-          maxWidth: 1160, margin: "0 auto", padding: "0 24px", height: 64,
+          maxWidth: 1200, margin: "0 auto", padding: "0 28px", height: 64,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => scrollTo("top")}>
@@ -150,7 +150,7 @@ export default function Landing() {
         <div style={{ position: "absolute", top: "8%", right: "-4%", width: 500, height: 500, background: "radial-gradient(circle, #8b5cf630 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none", animation: "fhDrift2 18s ease-in-out infinite" }} />
 
         <div style={{
-          maxWidth: 1120, margin: "0 auto", position: "relative", zIndex: 1,
+          maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1,
           display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.05fr 0.95fr",
           gap: isMobile ? 34 : 48, alignItems: "center",
         }}>
@@ -264,7 +264,7 @@ export default function Landing() {
 
         {/* Stats strip */}
         <div style={{
-          maxWidth: 900, margin: isMobile ? "40px auto 0" : "52px auto 0", display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
+          maxWidth: 1100, margin: isMobile ? "40px auto 0" : "52px auto 0", display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
           background: "#111a2ecc", border: "1px solid #1e293b", borderRadius: 16, overflow: "hidden", position: "relative", zIndex: 1, backdropFilter: "blur(6px)",
         }}>
           {STATS.map((s, i) => (
@@ -279,7 +279,7 @@ export default function Landing() {
 
       {/* ─── What is it ─────────────────────────────────────────── */}
       <section style={{ padding: "60px 24px", borderTop: "1px solid #111a2e" }}>
-        <Reveal style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+        <Reveal style={{ maxWidth: 980, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 14 }}>WHAT IS FINHEALTH AI?</div>
           <h2 style={{ fontSize: isMobile ? 26 : 30, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.3, marginBottom: 18 }}>
             43 million Indian MSMEs are "credit invisible". We fix that.
@@ -296,7 +296,7 @@ export default function Landing() {
 
       {/* ─── Features ───────────────────────────────────────────── */}
       <section id="features" style={{ padding: "60px 24px", background: "#0b1120", borderTop: "1px solid #111a2e" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 44 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 12 }}>WHAT IT CAN DO</div>
             <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, color: "#f1f5f9" }}>Everything you need to assess credit, fast</h2>
@@ -327,7 +327,7 @@ export default function Landing() {
 
       {/* ─── How it works ───────────────────────────────────────── */}
       <section id="how" style={{ padding: "60px 24px", borderTop: "1px solid #111a2e" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 44 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 12 }}>HOW IT WORKS</div>
             <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, color: "#f1f5f9" }}>From GSTIN to decision in four steps</h2>
@@ -377,7 +377,7 @@ export default function Landing() {
 
       {/* ─── Who it's for (role cards) ──────────────────────────── */}
       <section id="audience" style={{ padding: "60px 24px", background: "#0b1120", borderTop: "1px solid #111a2e" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 40 }}>
             <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 12 }}>WHO IT'S FOR</div>
             <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, color: "#f1f5f9" }}>Two portals, one platform</h2>
@@ -425,7 +425,7 @@ export default function Landing() {
 
       {/* ─── Security / trust ───────────────────────────────────── */}
       <section id="security" style={{ padding: "60px 24px", borderTop: "1px solid #111a2e" }}>
-        <Reveal style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+        <Reveal style={{ maxWidth: 980, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 12, letterSpacing: 2, color: accent, fontWeight: 700, marginBottom: 14 }}>PRIVACY & SECURITY</div>
           <h2 style={{ fontSize: 30, fontWeight: 800, color: "#f1f5f9", marginBottom: 18 }}>Consent-first, by design</h2>
           <p style={{ fontSize: 16, color: "#94a3b8", lineHeight: 1.75, marginBottom: 32 }}>
@@ -446,7 +446,7 @@ export default function Landing() {
       {/* ─── CTA band ───────────────────────────────────────────── */}
       <section style={{ padding: "24px 24px 64px" }}>
         <Reveal style={{
-          maxWidth: 1000, margin: "0 auto", textAlign: "center",
+          maxWidth: 1100, margin: "0 auto", textAlign: "center",
           background: "linear-gradient(135deg, #1e293b, #1a1240)", border: "1px solid #3b82f644",
           borderRadius: 24, padding: isMobile ? "36px 22px" : "48px 32px",
           position: "relative", overflow: "hidden",
@@ -469,7 +469,7 @@ export default function Landing() {
 
       {/* ─── Footer ─────────────────────────────────────────────── */}
       <footer style={{ borderTop: "1px solid #1e293b", background: "#0a0f1e", padding: "40px 24px 28px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 32, marginBottom: 32 }}>
             <div style={{ maxWidth: 300 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
