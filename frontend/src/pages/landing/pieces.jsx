@@ -27,13 +27,13 @@ export function LandingHeader({ navigate }) {
         {!isMobile && (
           <nav style={{ display: "flex", gap: 30 }}>
             {[["Features", "features"], ["How it Works", "how"], ["Who it's For", "audience"]].map(([l, id]) => (
-              <button key={id} onClick={() => scrollTo(id)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 13.5, cursor: "pointer", fontWeight: 500 }}>{l}</button>
+              <button key={id} className="fh-nav" onClick={() => scrollTo(id)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 13.5, cursor: "pointer", fontWeight: 500 }}>{l}</button>
             ))}
           </nav>
         )}
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => navigate("/owner/login")} style={{ background: "transparent", border: "1px solid #334155", color: "#cbd5e1", padding: "8px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{isMobile ? "Business" : "Business Login"}</button>
-          <button onClick={() => navigate("/manager/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "none", color: "#fff", padding: "8px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{isMobile ? "Bank" : "Bank Login"}</button>
+          <button className="fh-btn" onClick={() => navigate("/owner/login")} style={{ background: "transparent", border: "1px solid #334155", color: "#cbd5e1", padding: "8px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{isMobile ? "Business" : "Business Login"}</button>
+          <button className="fh-btn fh-btn-primary" onClick={() => navigate("/manager/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "none", color: "#fff", padding: "8px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{isMobile ? "Bank" : "Bank Login"}</button>
         </div>
       </div>
     </header>
@@ -105,7 +105,7 @@ export function ProductCard({ navigate, float = true }) {
           </div>
         ))}
       </div>
-      <button onClick={() => navigate("/owner/login")} style={{ width: "100%", background: "linear-gradient(135deg, #22c55e, #16a34a)", border: "none", color: "#fff", padding: "11px", borderRadius: 12, fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>✓ APPROVED — Apply Now</button>
+      <button className="fh-btn fh-btn-primary" onClick={() => navigate("/owner/login")} style={{ width: "100%", background: "linear-gradient(135deg, #22c55e, #16a34a)", border: "none", color: "#fff", padding: "11px", borderRadius: 12, fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>✓ APPROVED — Apply Now</button>
     </div>
   );
 }
@@ -141,7 +141,7 @@ export function LandingFooter({ navigate }) {
           <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>Explainable MSME credit scoring on alternate data. Built for IDBI Innovate 2026.</p>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "none", color: "#fff", padding: "11px 22px", borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: "pointer", height: "fit-content" }}>Get My Score →</button>
+          <button className="fh-btn fh-btn-primary" onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "none", color: "#fff", padding: "11px 22px", borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: "pointer", height: "fit-content" }}>Get My Score <span className="fh-arrow">→</span></button>
         </div>
       </div>
       <div style={{ maxWidth: 1240, margin: "26px auto 0", borderTop: "1px solid #1e293b", paddingTop: 18, fontSize: 12.5, color: "#475569", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 10 }}>

@@ -6,9 +6,7 @@ import CountUp from "../../components/CountUp";
 import { LandingHeader, LandingFooter, ProductCard, ScoreRing } from "./pieces";
 import { STEPS, DATA_SOURCES } from "./data";
 
-const tile = { background: "#0f1a30", border: "1px solid #1e293b", borderRadius: 20, padding: 22, transition: "all 0.25s", height: "100%", boxSizing: "border-box" };
-const hIn = (e) => { e.currentTarget.style.borderColor = "#6366f166"; e.currentTarget.style.transform = "translateY(-4px)"; };
-const hOut = (e) => { e.currentTarget.style.borderColor = "#1e293b"; e.currentTarget.style.transform = "translateY(0)"; };
+const tile = { background: "#0f1a30", border: "1px solid #1e293b", borderRadius: 20, padding: 22, height: "100%", boxSizing: "border-box" };
 
 const SectionHead = ({ tag, title, sub, isMobile }) => (
   <Reveal style={{ textAlign: "center", marginBottom: 44, maxWidth: 720, marginLeft: "auto", marginRight: "auto" }}>
@@ -78,8 +76,8 @@ export default function LandingMega() {
               FinHealth AI turns a business's GST, UPI &amp; bank data into an instant, explainable credit score. <strong style={{ color: "#e2e8f0" }}>No documents. No branch visits.</strong>
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start" }}>
-              <button onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", border: "none", color: "#fff", padding: "15px 28px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 12px 36px #3b82f655" }}>Get My Business Score →</button>
-              <button onClick={() => navigate("/manager/login")} style={{ background: "#1e293baa", border: "1px solid #334155", color: "#e2e8f0", padding: "15px 28px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer" }}>🏦 I'm a Bank Officer</button>
+              <button className="fh-btn fh-btn-primary" onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", border: "none", color: "#fff", padding: "15px 28px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 12px 36px #3b82f655" }}>Get My Business Score <span className="fh-arrow">→</span></button>
+              <button className="fh-btn" onClick={() => navigate("/manager/login")} style={{ background: "#1e293baa", border: "1px solid #334155", color: "#e2e8f0", padding: "15px 28px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer" }}>🏦 I'm a Bank Officer</button>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 28, justifyContent: isMobile ? "center" : "flex-start" }}>
               {["📊 GST", "📱 UPI", "🏦 Bank (AA)", "👥 EPFO", "💳 CIBIL"].map((t) => (
@@ -124,7 +122,7 @@ export default function LandingMega() {
         <SectionHead tag="WHAT IT CAN DO" title="Everything you need to assess credit" isMobile={isMobile} />
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gap: 16, gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gridTemplateAreas: isMobile ? "none" : `"score score chat stat" "score score chat ntc" "pillar pillar loan shap"` }}>
           <Reveal style={{ gridArea: isMobile ? "auto" : "score" }}>
-            <div style={{ ...tile, background: "linear-gradient(160deg, #12213f, #0c1424)", padding: 26 }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile, background: "linear-gradient(160deg, #12213f, #0c1424)", padding: 26 }} className="fh-card">
               <div style={{ fontSize: 28, marginBottom: 12 }}>⚡</div>
               <h3 style={{ fontSize: 21, fontWeight: 800, color: "#f1f5f9", marginBottom: 10 }}>Instant Score from GSTIN</h3>
               <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.6, marginBottom: 18 }}>Type a GST number and get a 0–100 financial health score in seconds — no balance sheets, no paperwork.</p>
@@ -135,7 +133,7 @@ export default function LandingMega() {
             </div>
           </Reveal>
           <Reveal delay={0.05} style={{ gridArea: isMobile ? "auto" : "chat" }}>
-            <div style={{ ...tile }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile }} className="fh-card">
               <div style={{ fontSize: 22, marginBottom: 8 }}>🤖</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 10 }}>Built-in AI Assistant</h3>
               <div style={{ background: "#0b1220", border: "1px solid #1e293b", borderRadius: 10, padding: 10, fontSize: 11.5, marginBottom: 8 }}><span style={{ color: "#93c5fd" }}>"How can I improve my cash flow score?"</span></div>
@@ -143,34 +141,34 @@ export default function LandingMega() {
             </div>
           </Reveal>
           <Reveal delay={0.08} style={{ gridArea: isMobile ? "auto" : "stat" }}>
-            <div style={{ ...tile, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }} className="fh-card">
               <CountUp end={98.2} decimals={1} suffix="%" style={{ fontSize: 32, fontWeight: 900, background: "linear-gradient(135deg, #93c5fd, #c4b5fd)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }} />
               <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 4 }}>ML Accuracy</div>
             </div>
           </Reveal>
           <Reveal delay={0.1} style={{ gridArea: isMobile ? "auto" : "ntc" }}>
-            <div style={{ ...tile }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile }} className="fh-card">
               <div style={{ fontSize: 22, marginBottom: 8 }}>🌱</div>
               <h3 style={{ fontSize: 14.5, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>New-to-Credit Fair</h3>
               <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>No CIBIL? Scored on GST &amp; cash-flow.</p>
             </div>
           </Reveal>
           <Reveal delay={0.05} style={{ gridArea: isMobile ? "auto" : "pillar" }}>
-            <div style={{ ...tile }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile }} className="fh-card">
               <div style={{ fontSize: 22, marginBottom: 8 }}>🧩</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 12 }}>5-Pillar Breakdown</h3>
               <Bar l="Cash Flow" v={82} c="#3b82f6" /><Bar l="Compliance" v={91} c="#8b5cf6" /><Bar l="Growth" v={76} c="#06b6d4" />
             </div>
           </Reveal>
           <Reveal delay={0.08} style={{ gridArea: isMobile ? "auto" : "loan" }}>
-            <div style={{ ...tile }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile }} className="fh-card">
               <div style={{ fontSize: 22, marginBottom: 8 }}>💰</div>
               <h3 style={{ fontSize: 14.5, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>11 Loan Products</h3>
               <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>MUDRA · CGTMSE · Stand-Up India, auto-matched.</p>
             </div>
           </Reveal>
           <Reveal delay={0.1} style={{ gridArea: isMobile ? "auto" : "shap" }}>
-            <div style={{ ...tile }} onMouseEnter={hIn} onMouseLeave={hOut}>
+            <div style={{ ...tile }} className="fh-card">
               <div style={{ fontSize: 22, marginBottom: 8 }}>🔍</div>
               <h3 style={{ fontSize: 14.5, fontWeight: 700, color: "#f1f5f9", marginBottom: 6 }}>Explainable AI</h3>
               <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>SHAP shows why — not a black box.</p>
@@ -221,7 +219,7 @@ export default function LandingMega() {
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", gap: 16 }}>
           {STEPS.map((s, i) => (
             <Reveal key={i} delay={i * 0.1}>
-              <div style={{ ...tile }} onMouseEnter={hIn} onMouseLeave={hOut}>
+              <div style={{ ...tile }} className="fh-card">
                 <div style={{ width: 40, height: 40, borderRadius: "50%", marginBottom: 16, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, boxShadow: "0 6px 20px #3b82f655" }}>{s.n}</div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{s.title}</h3>
                 <p style={{ fontSize: 13.5, color: "#94a3b8", lineHeight: 1.6 }}>{s.desc}</p>
@@ -292,7 +290,7 @@ export default function LandingMega() {
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 18 }}>
           {TESTIMONIALS.map((t, i) => (
             <Reveal key={i} delay={i * 0.1}>
-              <div style={{ ...tile, display: "flex", flexDirection: "column", justifyContent: "space-between" }} onMouseEnter={hIn} onMouseLeave={hOut}>
+              <div style={{ ...tile, display: "flex", flexDirection: "column", justifyContent: "space-between" }} className="fh-card">
                 <div>
                   <div style={{ color: "#fbbf24", fontSize: 14, marginBottom: 10 }}>★★★★★</div>
                   <p style={{ fontSize: 14.5, color: "#cbd5e1", lineHeight: 1.65, marginBottom: 18 }}>"{t.quote}"</p>
@@ -311,14 +309,14 @@ export default function LandingMega() {
       <section id="audience" style={{ padding: isMobile ? "52px 20px" : "72px 28px" }}>
         <SectionHead tag="WHO IT'S FOR" title="Two portals, one platform" isMobile={isMobile} />
         <div style={{ maxWidth: 1060, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18 }}>
-          <Reveal><div onClick={() => navigate("/owner/login")} style={{ height: "100%", boxSizing: "border-box", background: "linear-gradient(135deg, #1e293b, #0f1f3d)", border: "1px solid #1e3a5f", borderRadius: 22, padding: 32, cursor: "pointer" }} onMouseEnter={hIn} onMouseLeave={hOut}>
+          <Reveal><div onClick={() => navigate("/owner/login")} style={{ height: "100%", boxSizing: "border-box", background: "linear-gradient(135deg, #1e293b, #0f1f3d)", border: "1px solid #1e3a5f", borderRadius: 22, padding: 32, cursor: "pointer" }} className="fh-card">
             <div style={{ fontSize: 32, marginBottom: 14 }}>🏭</div>
             <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 700, letterSpacing: 1.5, marginBottom: 8 }}>BUSINESS OWNER</div>
             <h3 style={{ fontSize: 21, fontWeight: 800, color: "#f1f5f9", marginBottom: 10 }}>Check Loan Eligibility</h3>
             <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7, marginBottom: 18 }}>Get your Financial Health Score, see how much you can borrow, apply in one click, and track your application status.</p>
             <div style={{ fontSize: 13.5, color: "#3b82f6", fontWeight: 700 }}>Get My Score →</div>
           </div></Reveal>
-          <Reveal delay={0.1}><div onClick={() => navigate("/manager/login")} style={{ height: "100%", boxSizing: "border-box", background: "linear-gradient(135deg, #1e293b, #1a0f3d)", border: "1px solid #2d1f5e", borderRadius: 22, padding: 32, cursor: "pointer" }} onMouseEnter={hIn} onMouseLeave={hOut}>
+          <Reveal delay={0.1}><div onClick={() => navigate("/manager/login")} style={{ height: "100%", boxSizing: "border-box", background: "linear-gradient(135deg, #1e293b, #1a0f3d)", border: "1px solid #2d1f5e", borderRadius: 22, padding: 32, cursor: "pointer" }} className="fh-card">
             <div style={{ fontSize: 32, marginBottom: 14 }}>🏦</div>
             <div style={{ fontSize: 11, color: "#8b5cf6", fontWeight: 700, letterSpacing: 1.5, marginBottom: 8 }}>BANK MANAGER</div>
             <h3 style={{ fontSize: 21, fontWeight: 800, color: "#f1f5f9", marginBottom: 10 }}>Review Applications</h3>
@@ -363,8 +361,8 @@ export default function LandingMega() {
           <h2 style={{ fontSize: isMobile ? 28 : 40, fontWeight: 900, color: "#f1f5f9", marginBottom: 12, letterSpacing: -1, position: "relative" }}>Ready to see your score?</h2>
           <p style={{ fontSize: 16, color: "#94a3b8", marginBottom: 28, position: "relative" }}>It takes under 30 seconds. No documents required.</p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", position: "relative" }}>
-            <button onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #06b6d4)", border: "none", color: "#fff", padding: "15px 32px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 12px 36px #3b82f655" }}>Get My Business Score →</button>
-            <button onClick={() => navigate("/manager/login")} style={{ background: "transparent", border: "1px solid #475569", color: "#e2e8f0", padding: "15px 32px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer" }}>Bank Officer Login</button>
+            <button className="fh-btn fh-btn-primary" onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #06b6d4)", border: "none", color: "#fff", padding: "15px 32px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 12px 36px #3b82f655" }}>Get My Business Score <span className="fh-arrow">→</span></button>
+            <button className="fh-btn" onClick={() => navigate("/manager/login")} style={{ background: "transparent", border: "1px solid #475569", color: "#e2e8f0", padding: "15px 32px", borderRadius: 12, fontSize: 15.5, fontWeight: 700, cursor: "pointer" }}>Bank Officer Login</button>
           </div>
         </Reveal>
       </section>
