@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import useIsMobile from "../hooks/useIsMobile";
+import { setApplicationStatus } from "../api/client";
 import ScoreGauge from "./ScoreGauge";
 import PillarBar from "./PillarBar";
 import RevenueChart from "./RevenueChart";
@@ -39,16 +40,47 @@ async function exportPDF(ref, business_name) {
   pdf.save(`FinHealth-${business_name.replace(/\s+/g, "-")}.pdf`);
 }
 
-export default function HealthCard({ data }) {
+export default function HealthCard({ data, isManagerView = false }) {
   const printRef = useRef(null);
   const [exporting, setExporting] = useState(false);
   const [showOutcome, setShowOutcome] = useState(false);
   const [recordedOutcome, setRecordedOutcome] = useState(null);
+  const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [actionMessage, setActionMessage] = useState(null);
 
   const isMobile = useIsMobile();
   const { business_name, gstin, city, business_type, years_in_business,
     pillar_scores, loan_eligibility, ml_prediction, explanations, generated_at,
-    monthly_revenues, monthly_inflows, recommendations, raw_features } = data;
+    monthly_revenues, monthly_inflows, recommendations, raw_features, _appRef } = data;
+
+  const handleApprove = async () => {
+    if (!_appRef) return;
+    setApproving(true);
+    try {
+      await setApplicationStatus(_appRef, "APPROVED");
+      setActionMessage({ type: "success", text: "✓ Application Approved! Notification sent to owner." });
+      setTimeout(() => setActionMessage(null), 4000);
+    } catch {
+      setActionMessage({ type: "error", text: "Failed to approve application" });
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!_appRef) return;
+    setRejecting(true);
+    try {
+      await setApplicationStatus(_appRef, "REJECTED");
+      setActionMessage({ type: "error", text: "✗ Application Rejected. Notification sent to owner." });
+      setTimeout(() => setActionMessage(null), 4000);
+    } catch {
+      setActionMessage({ type: "error", text: "Failed to reject application" });
+    } finally {
+      setRejecting(false);
+    }
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -75,11 +107,24 @@ export default function HealthCard({ data }) {
     { id: "hc-emi",        label: "EMI Calc",    icon: "💰" },
     { id: "hc-simulator",  label: "Simulator",   icon: "🎯" },
     { id: "hc-benchmark",  label: "Benchmarks",  icon: "📈" },
-    { id: "hc-apply",      label: "Apply",       icon: "✅" },
+    ...(isManagerView ? [] : [{ id: "hc-apply",      label: "Apply",       icon: "✅" }]),
   ];
 
   return (
     <div ref={printRef} style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px" }}>
+
+      {/* Action Message Toast */}
+      {actionMessage && (
+        <div style={{
+          padding: "12px 16px", borderRadius: 8, marginBottom: 16,
+          background: actionMessage.type === "success" ? "#15803d22" : "#dc262622",
+          border: `1px solid ${actionMessage.type === "success" ? "#22c55e44" : "#dc262655"}`,
+          color: actionMessage.type === "success" ? "#22c55e" : "#f87171",
+          fontSize: 13, fontWeight: 600,
+        }}>
+          {actionMessage.text}
+        </div>
+      )}
 
       {/* Quick-nav bar */}
       <div style={{
@@ -141,7 +186,29 @@ export default function HealthCard({ data }) {
             }}>
               {loan_eligibility.recommendation}
             </div>
-            <div style={{ display:"flex", gap:6 }}>
+            <div style={{ display:"flex", gap:6, flexWrap: "wrap" }}>
+              {isManagerView && _appRef && (
+                <>
+                  <button onClick={handleApprove} disabled={approving} style={{
+                    padding: "6px 14px", borderRadius: 8,
+                    background: approving ? "#15803d44" : "#15803d22",
+                    border: "1px solid #15803d55", color: "#22c55e",
+                    fontSize: 11, cursor: approving ? "not-allowed" : "pointer",
+                    fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
+                  }}>
+                    {approving ? "⏳ Approving…" : "✓ Approve"}
+                  </button>
+                  <button onClick={handleReject} disabled={rejecting} style={{
+                    padding: "6px 14px", borderRadius: 8,
+                    background: rejecting ? "#dc262644" : "#dc262611",
+                    border: "1px solid #dc262655", color: "#f87171",
+                    fontSize: 11, cursor: rejecting ? "not-allowed" : "pointer",
+                    fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
+                  }}>
+                    {rejecting ? "⏳ Rejecting…" : "✕ Reject"}
+                  </button>
+                </>
+              )}
               <button onClick={() => setShowOutcome(true)} style={{
                 padding: "6px 14px", borderRadius: 8,
                 background: recordedOutcome ? "#22c55e22" : "#1e293b",
@@ -374,13 +441,15 @@ export default function HealthCard({ data }) {
         <PeerBenchmark businessType={business_type} city={city} myScores={pillar_scores} />
       </div>
 
-      {/* Apply for Loan CTA */}
-      <div id="hc-apply" style={{ marginTop: 20 }}>
-        <LoanApplyCTA data={data} />
-      </div>
+      {/* Apply for Loan CTA — only for customer view */}
+      {!isManagerView && (
+        <div id="hc-apply" style={{ marginTop: 20 }}>
+          <LoanApplyCTA data={data} />
+        </div>
+      )}
 
-      {/* AA Consent Artifact */}
-      {data.consent_id && (
+      {/* AA Consent Artifact — only for customer view */}
+      {!isManagerView && data.consent_id && (
         <div style={{ marginTop: 20 }}>
           <ConsentCard consentId={data.consent_id} />
         </div>

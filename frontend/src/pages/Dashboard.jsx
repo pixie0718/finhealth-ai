@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { getHistory, getDemoScore, getAllOutcomes, getApplications, setApplicationStatus } from "../api/client";
 import useIsMobile from "../hooks/useIsMobile";
 import PortfolioAnalytics from "../components/PortfolioAnalytics";
+import EmptyState from "../components/EmptyState";
+import LoadingCard from "../components/LoadingCard";
 
 const appStatusColors = {
   SUBMITTED: "#fbbf24", UNDER_REVIEW: "#3b82f6", APPROVED: "#22c55e", REJECTED: "#ef4444",
@@ -21,11 +23,63 @@ const riskBg = {
   "HIGH": "#dc262622",
 };
 
+const DEMO_APPLICATIONS = [
+  {
+    reference: "APP-2024-001",
+    msme_id: "demo-growth-001",
+    business_name: "Sharma Textiles Pvt. Ltd.",
+    loan_amount: 5000000,
+    product: "Business Loan",
+    status: "SUBMITTED",
+  },
+  {
+    reference: "APP-2024-002",
+    msme_id: "demo-ntc-002",
+    business_name: "Fresh Foods Cooperative",
+    loan_amount: 2000000,
+    product: "Mudra Kishore",
+    status: "UNDER_REVIEW",
+  },
+];
+
+const DEMO_RECORDS = [
+  {
+    msme_id: "demo-growth-001",
+    business_name: "Sharma Textiles Pvt. Ltd.",
+    gstin: "27AAPFU0939F1ZV",
+    city: "Surat",
+    business_type: "Textile",
+    years_in_business: 8,
+    pillar_scores: { cash_flow: 82, compliance: 91, growth: 76, stability: 84, credit_worthiness: 79, overall: 82.4 },
+    loan_eligibility: { eligible_loan_amount: 5000000, risk_band: "LOW", recommendation: "APPROVE", products: {} },
+    ml_prediction: { prediction: "CREDITWORTHY", confidence: 0.94 },
+    explanations: { strengths: [], risks: [], top_drivers: [] },
+    generated_at: new Date().toISOString(),
+    monthly_revenues: [850000, 920000, 980000, 1050000],
+    monthly_inflows: [900000, 950000, 1000000, 1080000],
+  },
+  {
+    msme_id: "demo-ntc-002",
+    business_name: "Fresh Foods Cooperative",
+    gstin: "19AACCU1234F2Z5",
+    city: "Delhi",
+    business_type: "Food Processing",
+    years_in_business: 2,
+    pillar_scores: { cash_flow: 68, compliance: 72, growth: 65, stability: 62, credit_worthiness: null, overall: 66.75 },
+    loan_eligibility: { eligible_loan_amount: 2000000, risk_band: "MEDIUM", recommendation: "UNDER_REVIEW", products: {} },
+    ml_prediction: { prediction: "UNDER_REVIEW", confidence: 0.72 },
+    explanations: { strengths: [], risks: [], top_drivers: [] },
+    generated_at: new Date().toISOString(),
+    monthly_revenues: [450000, 520000, 580000, 650000],
+    monthly_inflows: [480000, 560000, 620000, 700000],
+  },
+];
+
 export default function Dashboard({ onView }) {
   const isMobile = useIsMobile();
-  const [records, setRecords] = useState([]);
+  const [records, setRecords] = useState(DEMO_RECORDS);
   const [outcomeStats, setOutcomeStats] = useState(null);
-  const [applications, setApplications] = useState([]);
+  const [applications, setApplications] = useState(DEMO_APPLICATIONS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [demoing, setDemoing] = useState(false);
@@ -35,14 +89,17 @@ export default function Dashboard({ onView }) {
     setError(false);
     getHistory()
       .then((r) => setRecords(r.data))
-      .catch(() => setError(true))
+      .catch(() => {
+        setError(true);
+        setRecords(DEMO_RECORDS);
+      })
       .finally(() => setLoading(false));
     getAllOutcomes()
       .then((r) => setOutcomeStats(r.data?.stats || null))
       .catch(() => {});
     getApplications()
-      .then((r) => setApplications(r.data?.applications || []))
-      .catch(() => {});
+      .then((r) => setApplications(r.data?.applications || DEMO_APPLICATIONS))
+      .catch(() => setApplications(DEMO_APPLICATIONS));
   };
 
   const refreshLive = () => {
@@ -225,6 +282,7 @@ export default function Dashboard({ onView }) {
             {applications.slice(0, 8).map((a) => {
               const sc = appStatusColors[a.status] || "#64748b";
               const pending = a.status === "SUBMITTED" || a.status === "UNDER_REVIEW";
+              const linkedRecord = records.find(r => r.msme_id === a.msme_id);
               return (
                 <div key={a.reference} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -245,6 +303,13 @@ export default function Dashboard({ onView }) {
                   }}>{a.status.replace("_", " ")}</div>
                   {pending ? (
                     <div style={{ display: "flex", gap: 6 }}>
+                      {linkedRecord && (
+                        <button onClick={() => onView({ ...linkedRecord, _appRef: a.reference, _appData: a })} style={{
+                          fontSize: 11, fontWeight: 700, cursor: "pointer",
+                          color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
+                          padding: "5px 12px", borderRadius: 8,
+                        }}>📊 Details</button>
+                      )}
                       <button onClick={() => updateApp(a.reference, "APPROVED")} style={{
                         fontSize: 11, fontWeight: 700, cursor: "pointer",
                         color: "#22c55e", background: "#15803d22", border: "1px solid #15803d55",
@@ -257,11 +322,20 @@ export default function Dashboard({ onView }) {
                       }}>✕ Reject</button>
                     </div>
                   ) : (
-                    <button onClick={() => updateApp(a.reference, "UNDER_REVIEW")} style={{
-                      fontSize: 11, fontWeight: 600, cursor: "pointer",
-                      color: "#94a3b8", background: "transparent", border: "1px solid #334155",
-                      padding: "5px 12px", borderRadius: 8,
-                    }}>Reopen</button>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {linkedRecord && (
+                        <button onClick={() => onView({ ...linkedRecord, _appRef: a.reference, _appData: a })} style={{
+                          fontSize: 11, fontWeight: 700, cursor: "pointer",
+                          color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
+                          padding: "5px 12px", borderRadius: 8,
+                        }}>📊 Details</button>
+                      )}
+                      <button onClick={() => updateApp(a.reference, "UNDER_REVIEW")} style={{
+                        fontSize: 11, fontWeight: 600, cursor: "pointer",
+                        color: "#94a3b8", background: "transparent", border: "1px solid #334155",
+                        padding: "5px 12px", borderRadius: 8,
+                      }}>Reopen</button>
+                    </div>
                   )}
                 </div>
               );

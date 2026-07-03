@@ -12,6 +12,7 @@ import HealthCard from "./components/HealthCard";
 import ChatAssistant from "./components/ChatAssistant";
 import ToolsHub from "./pages/ToolsHub";
 import OwnerApplications from "./pages/OwnerApplications";
+import DemoPortal from "./pages/DemoPortal";
 import BottomNav from "./components/BottomNav";
 import InstallPrompt from "./components/InstallPrompt";
 import useIsMobile from "./hooks/useIsMobile";
@@ -133,7 +134,7 @@ function ManagerShell() {
             }}>← Back</button>
             <span style={{ color: "#64748b", fontSize: 13 }}>Financial Health Card</span>
           </div>
-          <HealthCard data={viewData} />
+          <HealthCard data={viewData} isManagerView={true} />
         </div>
       ) : tab === "Dashboard" ? (
         <Dashboard onView={setViewData} />
@@ -216,6 +217,7 @@ export default function App() {
         <InstallPrompt />
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/demo/:scenario" element={<DemoPortal />} />
           <Route path="/owner/login" element={<AuthPage role="msme" />} />
           <Route path="/manager/login" element={<AuthPage role="banker" />} />
           <Route path="/owner/*" element={<RequireRole role="msme"><OwnerShell /></RequireRole>} />
