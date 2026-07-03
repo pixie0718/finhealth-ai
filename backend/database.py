@@ -3,7 +3,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine, Column, String, Text, DateTime, func, Integer, Float, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "sqlite:///./finhealth.db"
+import os
+# Configurable so Docker can point the SQLite file at a persistent volume;
+# defaults to the local file for normal `uvicorn` runs.
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./finhealth.db")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
