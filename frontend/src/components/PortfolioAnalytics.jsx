@@ -48,6 +48,29 @@ export default function PortfolioAnalytics({ records }) {
 
   const avgScore = (records.reduce((a, r) => a + (r.pillar_scores?.overall ?? 0), 0) / records.length).toFixed(1);
 
+  // Geographic (city-wise) distribution — count + avg score
+  const cities = {};
+  records.forEach((r) => {
+    const c = r.city || "Other";
+    (cities[c] = cities[c] || []).push(r.pillar_scores?.overall ?? 0);
+  });
+  const cityData = Object.entries(cities)
+    .map(([name, arr]) => ({ name, count: arr.length, avg: +(arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+  const maxCityCount = Math.max(...cityData.map((c) => c.count), 1);
+
+  // Risk heatmap — top sectors × risk bands (cell = count)
+  const topSectors = sectorData.map((s) => s.name).slice(0, 6);
+  const heat = topSectors.map((sec) => ({
+    sector: sec,
+    cells: BANDS.map((band) => ({
+      band,
+      count: records.filter((r) => (r.business_type || "Other") === sec && r.loan_eligibility?.risk_band === band).length,
+    })),
+  }));
+  const maxHeat = Math.max(1, ...heat.flatMap((h) => h.cells.map((c) => c.count)));
+
   return (
     <div style={{ marginBottom: 32 }}>
       <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14, fontWeight: 700 }}>
@@ -104,6 +127,66 @@ export default function PortfolioAnalytics({ records }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Second row: risk heatmap + geographic distribution */}
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.5fr 1fr", gap: 16, marginTop: 16 }}>
+
+        {/* Risk heatmap: sector × risk band */}
+        <div style={card}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>Risk Heatmap</div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Applications by sector &amp; risk band</div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 4, minWidth: 340 }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, padding: "2px 6px" }}></th>
+                  {BANDS.map((b) => (
+                    <th key={b} style={{ fontSize: 9.5, color: bandColor[b], fontWeight: 700, padding: "2px 4px", textAlign: "center" }}>{b}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {heat.map((row) => (
+                  <tr key={row.sector}>
+                    <td style={{ fontSize: 11, color: "#cbd5e1", padding: "2px 6px", whiteSpace: "nowrap" }}>{row.sector}</td>
+                    {row.cells.map((c) => {
+                      const intensity = c.count / maxHeat;
+                      return (
+                        <td key={c.band} style={{ padding: 0 }}>
+                          <div title={`${row.sector} · ${c.band}: ${c.count}`} style={{
+                            height: 34, borderRadius: 6,
+                            background: c.count ? `${bandColor[c.band]}${Math.round(20 + intensity * 200).toString(16).padStart(2, "0")}` : "#0f172a",
+                            border: `1px solid ${c.count ? bandColor[c.band] + "55" : "#1e293b"}`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 12, fontWeight: 700, color: c.count ? "#fff" : "#334155",
+                          }}>{c.count || ""}</div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Geographic distribution */}
+        <div style={card}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>Geographic Spread</div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Applications by city</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {cityData.map((c) => (
+              <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 78, fontSize: 11.5, color: "#94a3b8", whiteSpace: "nowrap" }}>📍 {c.name}</div>
+                <div style={{ flex: 1, height: 18, background: "#0f172a", borderRadius: 5, overflow: "hidden", position: "relative" }}>
+                  <div style={{ width: `${(c.count / maxCityCount) * 100}%`, height: "100%", background: "linear-gradient(90deg, #3b82f6, #8b5cf6)", borderRadius: 5 }} />
+                  <span style={{ position: "absolute", right: 8, top: 0, lineHeight: "18px", fontSize: 10.5, color: "#cbd5e1", fontWeight: 700 }}>{c.count} · avg {c.avg}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
