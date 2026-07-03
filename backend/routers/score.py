@@ -158,6 +158,13 @@ def generate_health_score(
 
     result = build_result(profile, business_name, gstin, business_type, city, years_in_business)
 
+    # Record GST data provenance (real GST SETU fetch vs synthetic fallback)
+    from services.gst_setu import gst_provenance
+    prov = gst_provenance(gstin) if gstin else {"source": "SYNTHETIC", "mode": "SANDBOX", "live": False}
+    result["data_provenance"] = prov
+    if result.get("data_sources", {}).get("gst"):
+        result["data_sources"]["gst"]["status"] = "FETCHED (REAL)" if prov.get("live") else "FETCHED"
+
     # Generate & store AA consent artifact
     consent_id = str(uuid.uuid4())
     artifact = _make_consent_artifact(consent_id, gstin, business_name)
@@ -359,6 +366,17 @@ def get_all_applications(
     # Single-bank model: a banker sees every incoming application; an MSME sees only theirs.
     uid = None if current_user.role == "banker" else current_user.id
     return {"applications": load_applications(db, user_id=uid)}
+
+
+@router.get("/integrations/status")
+def integrations_status(current_user: User = Depends(get_current_user)):
+    """External integration readiness (GST SETU, OCEN) — for the demo status panel."""
+    from services.gst_setu import is_configured
+    return {
+        "gst_setu": {"configured": is_configured(), "mode": "LIVE" if is_configured() else "SANDBOX"},
+        "ocen": {"connected": True, "mode": "SANDBOX", "node": "IDBI-OCEN-NODE-001"},
+        "account_aggregator": {"framework": "RBI AA", "consent": "ARTIFACT_MINTED"},
+    }
 
 
 @router.get("/audit/logs")

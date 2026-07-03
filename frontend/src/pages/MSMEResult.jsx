@@ -259,6 +259,17 @@ export default function MSMEResult({ result, onReset }) {
           display:"flex", gap:12, flexWrap:"wrap", alignItems:"center",
         }}>
           <span style={{ fontSize:11, color:"#475569", letterSpacing:1 }}>DATA FETCHED FROM:</span>
+          {result.data_provenance && (
+            <div style={{
+              display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:20,
+              background: result.data_provenance.live ? "#22c55e18" : "#f59e0b12",
+              border: `1px solid ${result.data_provenance.live ? "#22c55e55" : "#f59e0b44"}`,
+            }} title={result.data_provenance.note}>
+              <span style={{ fontSize:11, fontWeight:700, color: result.data_provenance.live ? "#4ade80" : "#fbbf24" }}>
+                {result.data_provenance.live ? "🟢 LIVE" : "🟡 SANDBOX"}
+              </span>
+            </div>
+          )}
           {Object.entries(result.data_sources).map(([key, src]) => (
             <div key={key} style={{
               display:"flex", alignItems:"center", gap:6,
