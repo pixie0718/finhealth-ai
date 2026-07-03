@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
-import Landing from "./pages/Landing";
+import Landing from "./pages/landing/LandingMega";
 import MSMEPortal from "./pages/MSMEPortal";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";

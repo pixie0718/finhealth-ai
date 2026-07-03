@@ -1,6 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import useIsMobile from "../hooks/useIsMobile";
+import { getAuditLogs } from "../api/client";
+
+function AuditTrail() {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const load = () => {
+    setLoading(true);
+    getAuditLogs(50).then((r) => setLogs(r.data?.logs || [])).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+  return (
+    <>
+      <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>🧾 COMPLIANCE AUDIT TRAIL</span>
+        <button onClick={load} style={{ background: "transparent", border: "1px solid #334155", color: "#94a3b8", borderRadius: 8, padding: "3px 10px", fontSize: 11, cursor: "pointer" }}>↻ Refresh</button>
+      </div>
+      <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
+        <div style={{ fontSize: 11.5, color: "#64748b", marginBottom: 12 }}>Every state-changing action is logged for regulatory verification.</div>
+        {loading ? (
+          <div style={{ color: "#475569", fontSize: 13, padding: "12px 0" }}>Loading…</div>
+        ) : logs.length === 0 ? (
+          <div style={{ color: "#475569", fontSize: 13, padding: "12px 0" }}>No audit entries yet.</div>
+        ) : (
+          <div style={{ maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+            {logs.map((l) => (
+              <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#0f172a", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>
+                <span style={{ color: "#475569", minWidth: 128 }}>{new Date(l.created_at).toLocaleString("en-IN")}</span>
+                <span style={{ color: l.role === "banker" ? "#c4b5fd" : l.role === "msme" ? "#93c5fd" : "#64748b", fontWeight: 600, minWidth: 54 }}>{l.role || "—"}</span>
+                <span style={{ color: "#cbd5e1", flex: 1, fontFamily: "monospace" }}>{l.action}</span>
+                <span style={{ color: l.status_code < 400 ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{l.status_code}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
 
 const DATA_SOURCES = [
   { icon: "📊", name: "GST Portal", desc: "Revenue & compliance data", color: "#3b82f6", status: "Connected" },
@@ -166,6 +204,9 @@ export default function Settings() {
           📋 Consent valid for 90 days • Data used only for credit assessment • No third-party sharing
         </div>
       </div>
+
+      {/* Audit trail — banker/compliance only */}
+      {user?.role === "banker" && <AuditTrail />}
 
       {/* Privacy Policy */}
       <div style={sectionTitle}>PRIVACY & LEGAL</div>

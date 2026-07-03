@@ -1,12 +1,13 @@
 from dotenv import load_dotenv
 load_dotenv()  # load SECRET_KEY / GEMINI_API_KEY from backend/.env before routers import
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from routers import score
 from routers import auth
 from routers import chat
-from database import init_db
+from routers import ocen
+from database import init_db, SessionLocal, write_audit, User
 
 app = FastAPI(
     title="MSME Financial Health Score API",
@@ -27,6 +28,49 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(score.router)
 app.include_router(chat.router)
+app.include_router(ocen.router)
+
+
+# ─── Audit/compliance middleware ──────────────────────────────────────────────
+# Logs every meaningful (mutating) API action with the acting user, for a
+# compliance trail banks can verify. Read-only polling GETs are skipped to avoid noise.
+def _user_from_request(request: Request, db):
+    from jose import jwt, JWTError
+    authz = request.headers.get("authorization", "")
+    if not authz.lower().startswith("bearer "):
+        return None
+    try:
+        payload = jwt.decode(authz.split(" ", 1)[1], auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        email = payload.get("sub")
+        if not email:
+            return None
+        return db.query(User).filter(User.email == email).first()
+    except JWTError:
+        return None
+
+
+@app.middleware("http")
+async def audit_middleware(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    # Only log state-changing calls to our API (register/login/generate/apply/outcome/ocen/chat…)
+    if path.startswith("/api/") and request.method in ("POST", "PATCH", "PUT", "DELETE"):
+        db = SessionLocal()
+        try:
+            user = _user_from_request(request, db)
+            write_audit(
+                db,
+                user_id=getattr(user, "id", None),
+                user_email=getattr(user, "email", None),
+                role=getattr(user, "role", None),
+                action=f"{request.method} {path}",
+                method=request.method, path=path,
+                status_code=response.status_code,
+                ip_address=request.client.host if request.client else None,
+            )
+        finally:
+            db.close()
+    return response
 
 
 @app.get("/")

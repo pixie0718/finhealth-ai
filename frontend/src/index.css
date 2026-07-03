@@ -21,3 +21,49 @@ body {
 @keyframes fhFadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fhFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fhGrow { from { width: 0; } }
+@keyframes fhShimmer { to { background-position: 200% center; } }
+@keyframes fhDrift1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(50px, 40px) scale(1.08); } }
+@keyframes fhDrift2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-46px, 26px) scale(1.1); } }
+@keyframes fhSpinSlow { to { transform: rotate(360deg); } }
+
+/* ─── Button micro-interactions ─── */
+.fh-btn {
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, filter 0.2s;
+  position: relative;
+}
+.fh-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.fh-btn:active { transform: translateY(0) scale(0.98); }
+.fh-btn:hover .fh-arrow { transform: translateX(4px); }
+.fh-arrow { display: inline-block; transition: transform 0.2s ease; }
+
+/* subtle sheen sweep across primary buttons on hover */
+.fh-btn-primary { overflow: hidden; }
+.fh-btn-primary::after {
+  content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, #ffffff44, transparent);
+  transform: skewX(-18deg); transition: left 0.55s ease; pointer-events: none;
+}
+.fh-btn-primary:hover::after { left: 140%; }
+
+/* ─── Card hover: lift + glow + shine sweep ─── */
+.fh-card {
+  transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), border-color 0.28s, box-shadow 0.28s;
+  position: relative; overflow: hidden;
+}
+.fh-card::before {
+  content: ""; position: absolute; top: 0; left: -80%; width: 55%; height: 100%;
+  background: linear-gradient(100deg, transparent, #6366f114, transparent);
+  transform: skewX(-18deg); transition: left 0.6s ease; pointer-events: none; z-index: 0;
+}
+.fh-card:hover { transform: translateY(-6px); border-color: #6366f166 !important; box-shadow: 0 20px 44px #6366f122; }
+.fh-card:hover::before { left: 130%; }
+.fh-card > * { position: relative; z-index: 1; }
+
+/* link/nav underline grow */
+.fh-nav { position: relative; }
+.fh-nav::after {
+  content: ""; position: absolute; left: 0; bottom: -4px; height: 2px; width: 0;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.22s ease;
+}
+.fh-nav:hover::after { width: 100%; }
+.fh-nav:hover { color: #e2e8f0 !important; }

@@ -68,7 +68,19 @@ finhealth-ai/
 
 ## Getting Started
 
-### Prerequisites
+### Option A — Docker (one command)
+
+```bash
+cp backend/.env.example backend/.env    # add SECRET_KEY / GEMINI_API_KEY
+docker compose up --build
+```
+
+Then open **http://localhost:3002** (API + Swagger docs at **http://localhost:8000/docs**).
+The SQLite DB is persisted in a named volume, so scores/applications/audit logs survive restarts.
+
+### Option B — Local dev
+
+#### Prerequisites
 - Python 3.10+ and Node.js 18+
 
 ### 1. Backend
@@ -128,9 +140,19 @@ The frontend points at `http://localhost:8000` by default; override with `REACT_
 | POST | `/api/score/{id}/apply` | Submit a loan application |
 | GET | `/api/score/applications/all` | Incoming applications (banker) |
 | POST | `/api/score/{id}/outcome`, `GET /api/score/outcomes/all` | Loan outcomes & portfolio stats (banker) |
+| POST | `/api/ocen/submit-credit-request` | Submit assessment to bank OCEN node (banker) |
+| GET | `/api/score/audit/logs` | Compliance audit trail (banker) |
+| GET | `/api/score/integrations/status` | GST SETU / OCEN / AA readiness |
 | POST | `/api/chat` | AI assistant (Gemini) |
 
 All endpoints except register/login require a Bearer JWT.
+
+### Integrations
+
+- **OCEN** — `/api/ocen/*` submits a completed assessment to a bank's OCEN node (sandbox mock; swap the endpoint URL for production).
+- **GST SETU** — real GST data is fetched when `GST_SETU_API_KEY` is set; otherwise the platform falls back to deterministic synthetic data (SANDBOX mode), shown via a LIVE/SANDBOX badge.
+- **Account Aggregator** — every assessment mints a signed, time-bound RBI-AA consent artifact.
+- **Audit logging** — every state-changing API call is recorded for compliance.
 
 ---
 
