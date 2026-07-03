@@ -49,4 +49,7 @@ export const setApplicationStatus = (reference, status) =>
 export const getBenchmark = (business_type, city) =>
   api.get("/api/score/benchmark", { params: { business_type, city } });
 
+// OCEN (bank network) integration
+export const submitToOcen = (msmeId) => api.post("/api/ocen/submit-credit-request", { msme_id: msmeId });
+
 export default api;

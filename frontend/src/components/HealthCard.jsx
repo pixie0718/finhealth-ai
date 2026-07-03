@@ -14,6 +14,8 @@ import ScoreTrend from "./ScoreTrend";
 import ConsentCard from "./ConsentCard";
 import NTCBanner from "./NTCBanner";
 import OutcomeModal from "./OutcomeModal";
+import OcenModal from "./OcenModal";
+import { submitToOcen } from "../api/client";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
 
 const riskColors = {
@@ -44,6 +46,8 @@ export default function HealthCard({ data }) {
   const [exporting, setExporting] = useState(false);
   const [showOutcome, setShowOutcome] = useState(false);
   const [recordedOutcome, setRecordedOutcome] = useState(null);
+  const [ocen, setOcen] = useState(null);        // OCEN request+response
+  const [ocenLoading, setOcenLoading] = useState(false);
 
   const isMobile = useIsMobile();
   const { business_name, gstin, city, business_type, years_in_business,
@@ -54,6 +58,18 @@ export default function HealthCard({ data }) {
     setExporting(true);
     try { await exportPDF(printRef.current, business_name); }
     finally { setExporting(false); }
+  };
+
+  const handleOcen = async () => {
+    setOcenLoading(true);
+    try {
+      const res = await submitToOcen(data.msme_id);
+      setOcen(res.data);
+    } catch (e) {
+      alert(e?.response?.data?.detail || "Couldn't reach the OCEN node.");
+    } finally {
+      setOcenLoading(false);
+    }
   };
 
   // NTC mode: credit_worthiness is null — replace with 0 so Recharts doesn't
@@ -160,6 +176,15 @@ export default function HealthCard({ data }) {
                 display: "flex", alignItems: "center", gap: 5,
               }}>
                 {exporting ? "⏳ Exporting…" : "⬇ Export PDF"}
+              </button>
+              <button onClick={handleOcen} disabled={ocenLoading} style={{
+                padding: "6px 14px", borderRadius: 8,
+                background: ocenLoading ? "#334155" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                border: "none", color: "#fff",
+                fontSize: 11, fontWeight: 700, cursor: ocenLoading ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", gap: 5,
+              }}>
+                {ocenLoading ? "⏳ Submitting…" : "🏦 Submit to OCEN"}
               </button>
             </div>
           </div>
@@ -394,6 +419,9 @@ export default function HealthCard({ data }) {
           onSaved={(outcome) => setRecordedOutcome(outcome)}
         />
       )}
+
+      {/* OCEN submission flow */}
+      {ocen && <OcenModal ocen={ocen} onClose={() => setOcen(null)} />}
     </div>
   );
 }

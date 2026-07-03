@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import score
 from routers import auth
 from routers import chat
+from routers import ocen
 from database import init_db
 
 app = FastAPI(
@@ -27,6 +28,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(score.router)
 app.include_router(chat.router)
+app.include_router(ocen.router)
 
 
 @app.get("/")
