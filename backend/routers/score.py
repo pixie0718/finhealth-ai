@@ -21,6 +21,7 @@ from database import (
     save_consent, load_consent,
     save_outcome, load_outcomes, get_outcome_stats,
     save_application, load_applications, update_application_status,
+    load_audit_logs,
     get_cached_benchmark, save_benchmark_cache,
 )
 from routers.auth import get_current_user, require_banker
@@ -358,6 +359,16 @@ def get_all_applications(
     # Single-bank model: a banker sees every incoming application; an MSME sees only theirs.
     uid = None if current_user.role == "banker" else current_user.id
     return {"applications": load_applications(db, user_id=uid)}
+
+
+@router.get("/audit/logs")
+def get_audit_logs(
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_banker),
+):
+    """Compliance audit trail (banker-only)."""
+    return {"logs": load_audit_logs(db, limit=min(limit, 500))}
 
 
 @router.patch("/applications/{reference}/status")

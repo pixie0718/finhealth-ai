@@ -95,6 +95,21 @@ class LoanApplication(Base):
     created_at = Column(DateTime, server_default=func.now())
 
 
+class AuditLog(Base):
+    """Compliance audit trail — one row per meaningful API action / data access."""
+    __tablename__ = "audit_logs"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=True, index=True)
+    user_email = Column(String, nullable=True)
+    role = Column(String, nullable=True)
+    action = Column(String, nullable=False)          # e.g. "POST /api/score/generate"
+    method = Column(String, nullable=True)
+    path = Column(String, nullable=True)
+    status_code = Column(Integer, nullable=True)
+    ip_address = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now(), index=True)
+
+
 class BenchmarkCache(Base):
     """Pre-computed peer benchmark statistics per (business_type, city)."""
     __tablename__ = "benchmark_cache"
@@ -297,6 +312,29 @@ def load_applications(db, user_id: int = None) -> list:
         "loan_amount": r.loan_amount, "interest_rate": r.interest_rate,
         "tenure_months": r.tenure_months, "score": r.score,
         "status": r.status, "created_at": str(r.created_at),
+    } for r in records]
+
+
+# ─── Audit log helpers ────────────────────────────────────────────────────────
+
+def write_audit(db, *, user_id=None, user_email=None, role=None, action="",
+                method=None, path=None, status_code=None, ip_address=None):
+    try:
+        db.add(AuditLog(
+            user_id=user_id, user_email=user_email, role=role, action=action,
+            method=method, path=path, status_code=status_code, ip_address=ip_address,
+        ))
+        db.commit()
+    except Exception:
+        db.rollback()
+
+
+def load_audit_logs(db, limit: int = 100) -> list:
+    records = db.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
+    return [{
+        "id": r.id, "user_email": r.user_email, "role": r.role,
+        "action": r.action, "status_code": r.status_code,
+        "ip_address": r.ip_address, "created_at": str(r.created_at),
     } for r in records]
 
 
