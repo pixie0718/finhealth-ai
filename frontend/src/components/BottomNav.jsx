@@ -6,7 +6,7 @@ export default function BottomNav({ tabs, active, onSelect }) {
     <nav style={{
       position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 300,
       display: "flex",
-      background: "rgba(15,23,42,0.94)",
+      background: "var(--c-navbar)",
       backdropFilter: "blur(14px)",
       borderTop: "1px solid var(--c-border-soft)",
       paddingBottom: "env(safe-area-inset-bottom, 0px)",
@@ -23,7 +23,7 @@ export default function BottomNav({ tabs, active, onSelect }) {
               padding: "9px 0 11px",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
               position: "relative",
-              color: on ? "#93c5fd" : "#64748b",
+              color: on ? "#3b82f6" : "#64748b",
               transition: "color 0.15s",
             }}
           >

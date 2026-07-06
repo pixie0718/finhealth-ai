@@ -34,6 +34,7 @@
   --c-tile: #ffffff;
   --c-tile2: #f6f9fc;
   --c-header: rgba(244, 246, 251, 0.85);
+  --c-navbar: rgba(255, 255, 255, 0.94);
 }
 :root[data-theme="dark"] {
   --c-bg: #0f172a;
@@ -59,6 +60,7 @@
   --c-tile: #0f1a30;
   --c-tile2: #101c34;
   --c-header: rgba(8, 12, 24, 0.8);
+  --c-navbar: rgba(15, 23, 42, 0.94);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -84,6 +86,7 @@
     --c-tile: #0f1a30;
     --c-tile2: #101c34;
     --c-header: rgba(8, 12, 24, 0.8);
+    --c-navbar: rgba(15, 23, 42, 0.94);
   }
 }
 
