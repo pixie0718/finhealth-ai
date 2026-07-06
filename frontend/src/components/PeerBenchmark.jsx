@@ -88,7 +88,7 @@ export default function PeerBenchmark({ businessType, city, myScores }) {
 
       {/* Overall comparison */}
       <div style={{
-        background: "#0f172a", border: "1px solid #334155",
+        background: "var(--c-bg)", border: "1px solid var(--c-border)",
         borderRadius: 14, padding: "18px 20px", marginBottom: 16,
       }}>
         <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1, marginBottom: 14 }}>
@@ -134,14 +134,14 @@ export default function PeerBenchmark({ businessType, city, myScores }) {
           const maxVal = mine != null ? Math.max(mine, avg, 100) : 100;
           return (
             <div key={key} style={{
-              background: "#0f172a", border: "1px solid #1e293b",
+              background: "var(--c-bg)", border: "1px solid var(--c-border-soft)",
               borderRadius: 12, padding: "12px 16px",
               display: "grid",
               gridTemplateColumns: mine != null ? "80px 1fr 60px 60px" : "80px 1fr 60px",
               alignItems: "center", gap: 12,
             }}>
               <div style={{ fontSize: 12, color: "#64748b" }}>{label}</div>
-              <div style={{ position: "relative", height: 6, background: "#1e293b", borderRadius: 3 }}>
+              <div style={{ position: "relative", height: 6, background: "var(--c-surface)", borderRadius: 3 }}>
                 <div style={{
                   position: "absolute", left: `${(avg / maxVal) * 100}%`,
                   top: -3, width: 2, height: 12, background: "#475569",
@@ -166,7 +166,7 @@ export default function PeerBenchmark({ businessType, city, myScores }) {
             </div>
           );
         })}
-        <div style={{ fontSize: 10, color: "#334155", textAlign: "right", marginTop: 4 }}>
+        <div style={{ fontSize: 10, color: "#64748b", textAlign: "right", marginTop: 4 }}>
           ▏ = industry average
         </div>
       </div>

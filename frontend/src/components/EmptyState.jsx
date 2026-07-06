@@ -4,8 +4,8 @@ import React from "react";
 export default function EmptyState({ icon = "📊", title, message, actionLabel, onAction, disabled }) {
   return (
     <div style={{
-      background: "linear-gradient(135deg, #1e293b, #0f172a)",
-      border: "1px solid #334155",
+      background: "linear-gradient(135deg, var(--c-surface), var(--c-bg))",
+      border: "1px solid var(--c-border)",
       borderRadius: 24, padding: 64, textAlign: "center",
     }}>
       <div style={{
@@ -14,7 +14,7 @@ export default function EmptyState({ icon = "📊", title, message, actionLabel,
         border: "1px solid #3b82f633",
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32,
       }}>{icon}</div>
-      <div style={{ color: "#f1f5f9", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{title}</div>
+      <div style={{ color: "var(--c-text)", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{title}</div>
       {message && <div style={{ color: "#64748b", fontSize: 14, marginBottom: 24 }}>{message}</div>}
       {actionLabel && (
         <button onClick={onAction} disabled={disabled} style={{

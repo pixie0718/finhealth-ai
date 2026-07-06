@@ -29,8 +29,8 @@ function Message({ msg }) {
         maxWidth: "78%",
         padding: "10px 14px",
         borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-        background: isUser ? "#3b82f6" : "#1e293b",
-        border: isUser ? "none" : "1px solid #334155",
+        background: isUser ? "#3b82f6" : "var(--c-surface)",
+        border: isUser ? "none" : "1px solid var(--c-border)",
         fontSize: 13,
         color: isUser ? "#fff" : "#cbd5e1",
         lineHeight: 1.55,
@@ -104,7 +104,7 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
           height: 54,
           borderRadius: "50%",
           background: open
-            ? "#334155"
+            ? "var(--c-surface-2)"
             : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
           border: "none",
           cursor: "pointer",
@@ -128,8 +128,8 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
           right: liftForNav ? 12 : 28,
           width: "min(360px, calc(100vw - 24px))",
           height: liftForNav ? "min(520px, calc(100vh - 200px))" : 520,
-          background: "#0f172a",
-          border: "1px solid #334155",
+          background: "var(--c-bg)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           display: "flex",
           flexDirection: "column",
@@ -141,11 +141,11 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
           {/* Header */}
           <div style={{
             padding: "14px 18px",
-            borderBottom: "1px solid #1e293b",
+            borderBottom: "1px solid var(--c-border-soft)",
             display: "flex",
             alignItems: "center",
             gap: 10,
-            background: "#0f172a",
+            background: "var(--c-bg)",
           }}>
             <div style={{
               width: 32, height: 32, borderRadius: 10,
@@ -154,7 +154,7 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
               fontSize: 16,
             }}>✦</div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>FinHealth AI Assistant</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>FinHealth AI Assistant</div>
               <div style={{ fontSize: 10, color: "#22c55e", display: "flex", alignItems: "center", gap: 4 }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
                 Online
@@ -187,7 +187,7 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
                 }}>✦</div>
                 <div style={{
                   padding: "10px 14px",
-                  background: "#1e293b", border: "1px solid #334155",
+                  background: "var(--c-surface)", border: "1px solid var(--c-border)",
                   borderRadius: "16px 16px 16px 4px",
                   display: "flex", gap: 4, alignItems: "center",
                 }}>
@@ -216,8 +216,8 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
                   onClick={() => send(s)}
                   style={{
                     padding: "5px 10px",
-                    background: "#1e293b",
-                    border: "1px solid #334155",
+                    background: "var(--c-surface)",
+                    border: "1px solid var(--c-border)",
                     borderRadius: 20,
                     color: "#94a3b8",
                     fontSize: 11,
@@ -235,7 +235,7 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
           {/* Input */}
           <div style={{
             padding: "10px 14px 14px",
-            borderTop: "1px solid #1e293b",
+            borderTop: "1px solid var(--c-border-soft)",
             display: "flex", gap: 8,
           }}>
             <textarea
@@ -247,11 +247,11 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
               rows={1}
               style={{
                 flex: 1,
-                background: "#1e293b",
-                border: "1px solid #334155",
+                background: "var(--c-surface)",
+                border: "1px solid var(--c-border)",
                 borderRadius: 12,
                 padding: "10px 14px",
-                color: "#f1f5f9",
+                color: "var(--c-text)",
                 fontSize: 13,
                 outline: "none",
                 resize: "none",
@@ -267,8 +267,8 @@ export default function ChatAssistant({ scoreContext = null, liftForNav = false 
                 borderRadius: 12, flexShrink: 0,
                 background: input.trim() && !loading
                   ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
-                  : "#1e293b",
-                border: "1px solid #334155",
+                  : "var(--c-surface)",
+                border: "1px solid var(--c-border)",
                 color: input.trim() && !loading ? "#fff" : "#475569",
                 fontSize: 16,
                 cursor: input.trim() && !loading ? "pointer" : "not-allowed",

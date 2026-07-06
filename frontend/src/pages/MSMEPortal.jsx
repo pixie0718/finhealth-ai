@@ -30,8 +30,8 @@ const BUSINESS_TYPES = ["Textile","Pharma","Electronics","Food Processing","Reta
 const CITIES = ["Mumbai","Delhi","Surat","Ahmedabad","Pune","Bangalore","Chennai","Hyderabad","Kolkata","Jaipur"];
 
 const inp = {
-  width: "100%", background: "#0f172a", border: "1px solid #334155",
-  borderRadius: 10, padding: "12px 16px", color: "#f1f5f9",
+  width: "100%", background: "var(--c-bg)", border: "1px solid var(--c-border)",
+  borderRadius: 10, padding: "12px 16px", color: "var(--c-text)",
   fontSize: 14, outline: "none", boxSizing: "border-box",
 };
 const lbl = { fontSize: 11, color: "#64748b", marginBottom: 6, display: "block", letterSpacing: 0.8, fontWeight: 600 };
@@ -134,14 +134,14 @@ export default function MSMEPortal({ onBack, onResult }) {
 
           {/* Left: form card */}
           <div style={{
-            background:"#1e293b", border:"1px solid #334155",
+            background:"var(--c-surface)", border:"1px solid var(--c-border)",
             borderRadius:24, padding: isMobile ? "24px 20px" : "36px 32px",
           }}>
             <div style={{ marginBottom:28 }}>
               <div style={{ fontSize:11, color:"#3b82f6", letterSpacing:2, fontWeight:700, marginBottom:6 }}>
                 MSME LOAN APPLICATION
               </div>
-              <h2 style={{ fontSize: isMobile ? 22 : 28, fontWeight:800, color:"#f1f5f9", lineHeight:1.2 }}>
+              <h2 style={{ fontSize: isMobile ? 22 : 28, fontWeight:800, color:"var(--c-text)", lineHeight:1.2 }}>
                 Check Your<br/>Loan Eligibility
               </h2>
               <p style={{ fontSize:13, color:"#64748b", marginTop:8 }}>
@@ -207,7 +207,7 @@ export default function MSMEPortal({ onBack, onResult }) {
                 width:"100%", marginTop:28, padding:"16px",
                 background: form.business_name && form.gstin
                   ? "linear-gradient(135deg, #3b82f6, #6366f1)"
-                  : "#334155",
+                  : "var(--c-surface-2)",
                 border:"none", borderRadius:14,
                 color: form.business_name && form.gstin ? "#fff" : "#475569",
                 fontSize:15, fontWeight:700, cursor:"pointer",
@@ -236,7 +236,7 @@ export default function MSMEPortal({ onBack, onResult }) {
 
               {/* Data sources */}
               <div style={{
-                background:"#1e293b", border:"1px solid #334155",
+                background:"var(--c-surface)", border:"1px solid var(--c-border)",
                 borderRadius:20, padding:"24px",
               }}>
                 <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:16 }}>
@@ -246,11 +246,11 @@ export default function MSMEPortal({ onBack, onResult }) {
                   <div key={i} style={{
                     display:"flex", alignItems:"center", gap:12,
                     padding:"10px 0",
-                    borderBottom: i < TRUST_ITEMS.length - 1 ? "1px solid #1e293b" : "none",
+                    borderBottom: i < TRUST_ITEMS.length - 1 ? "1px solid var(--c-border-soft)" : "none",
                   }}>
                     <div style={{
                       width:36, height:36, borderRadius:10,
-                      background:"#0f172a", border:"1px solid #334155",
+                      background:"var(--c-bg)", border:"1px solid var(--c-border)",
                       display:"flex", alignItems:"center", justifyContent:"center",
                       fontSize:16, flexShrink:0,
                     }}>{t.icon}</div>
@@ -287,7 +287,7 @@ export default function MSMEPortal({ onBack, onResult }) {
 
               {/* Score preview */}
               <div style={{
-                background:"#1e293b", border:"1px solid #334155",
+                background:"var(--c-surface)", border:"1px solid var(--c-border)",
                 borderRadius:20, padding:"20px 24px",
               }}>
                 <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:14 }}>
@@ -318,7 +318,7 @@ export default function MSMEPortal({ onBack, onResult }) {
       {phase === "consent" && (
         <div style={{ maxWidth:520, margin:"0 auto" }}>
           <div style={{
-            background:"#1e293b", border:"1px solid #334155",
+            background:"var(--c-surface)", border:"1px solid var(--c-border)",
             borderRadius:24, overflow:"hidden",
           }}>
             {/* Header */}
@@ -336,25 +336,25 @@ export default function MSMEPortal({ onBack, onResult }) {
               <h2 style={{ fontSize:22, fontWeight:800, color:"#f1f5f9", marginBottom:6 }}>
                 Data Sharing Consent
               </h2>
-              <div style={{ fontSize:12, color:"#64748b" }}>
+              <div style={{ fontSize:12, color:"#cbd5e1" }}>
                 As per RBI Account Aggregator framework
               </div>
             </div>
 
             <div style={{ padding:"28px" }}>
               <div style={{
-                background:"#0f172a", border:"1px solid #334155",
+                background:"var(--c-bg)", border:"1px solid var(--c-border)",
                 borderRadius:14, padding:"20px", marginBottom:20,
               }}>
                 <div style={{ fontSize:12, color:"#94a3b8", marginBottom:14, lineHeight:1.5 }}>
-                  <strong style={{ color:"#f1f5f9" }}>{form.business_name}</strong>, you are
+                  <strong style={{ color:"var(--c-text)" }}>{form.business_name}</strong>, you are
                   consenting to share the following data for credit assessment:
                 </div>
                 {TRUST_ITEMS.map((item, i) => (
                   <div key={i} style={{
                     display:"flex", alignItems:"center", gap:10,
                     padding:"9px 0",
-                    borderBottom: i < TRUST_ITEMS.length - 1 ? "1px solid #1e293b" : "none",
+                    borderBottom: i < TRUST_ITEMS.length - 1 ? "1px solid var(--c-border-soft)" : "none",
                   }}>
                     <div style={{
                       width:30, height:30, borderRadius:8, background:"#15803d11",
@@ -389,7 +389,7 @@ export default function MSMEPortal({ onBack, onResult }) {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1.4fr", gap:12 }}>
                 <button onClick={() => setPhase("form")} style={{
                   padding:"14px", background:"transparent",
-                  border:"1px solid #334155", borderRadius:12,
+                  border:"1px solid var(--c-border)", borderRadius:12,
                   color:"#94a3b8", fontSize:14, cursor:"pointer",
                 }}>← Back</button>
                 <button onClick={startFetch} style={{
@@ -409,14 +409,14 @@ export default function MSMEPortal({ onBack, onResult }) {
       {phase === "loading" && (
         <div style={{ maxWidth:480, margin:"0 auto" }}>
           <div style={{
-            background:"#1e293b", border:"1px solid #334155",
+            background:"var(--c-surface)", border:"1px solid var(--c-border)",
             borderRadius:24, padding:"40px 32px",
           }}>
             <div style={{ textAlign:"center", marginBottom:32 }}>
               <div style={{ fontSize:11, color:"#3b82f6", letterSpacing:2, marginBottom:8 }}>
                 PROCESSING YOUR APPLICATION
               </div>
-              <h2 style={{ fontSize:20, fontWeight:700, color:"#f1f5f9" }}>
+              <h2 style={{ fontSize:20, fontWeight:700, color:"var(--c-text)" }}>
                 Fetching Your Financial Data
               </h2>
               <p style={{ fontSize:13, color:"#64748b", marginTop:6 }}>

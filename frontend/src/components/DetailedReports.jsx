@@ -7,12 +7,12 @@ import {
 const TABS = ["Revenue", "Compliance", "Stability", "Growth"];
 
 const cardStyle = {
-  background: "#0f172a", border: "1px solid #1e293b",
+  background: "var(--c-bg)", border: "1px solid var(--c-border-soft)",
   borderRadius: 12, padding: "16px 20px",
 };
 
 const statLabel = { fontSize: 10, color: "#475569", letterSpacing: 1, marginBottom: 4 };
-const statValue = { fontSize: 22, fontWeight: 800, color: "#f1f5f9" };
+const statValue = { fontSize: 22, fontWeight: 800, color: "var(--c-text)" };
 const statSub = { fontSize: 11, color: "#64748b", marginTop: 2 };
 
 const MONTH_LABELS = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12","M13","M14","M15","M16","M17","M18"];
@@ -22,7 +22,7 @@ const fmtL = (v) => `₹${(v / 100000).toFixed(1)}L`;
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontSize: 12 }}>
+    <div style={{ background: "var(--c-bg)", border: "1px solid var(--c-border)", borderRadius: 8, padding: "8px 12px", fontSize: 12 }}>
       <div style={{ color: "#64748b", marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color, fontWeight: 700 }}>
@@ -63,7 +63,7 @@ function RevenueTab({ data, raw }) {
         ].map((s, i) => (
           <div key={i} style={cardStyle}>
             <div style={statLabel}>{s.label}</div>
-            <div style={{ ...statValue, color: s.color || "#f1f5f9" }}>{s.value}</div>
+            <div style={{ ...statValue, color: s.color || "var(--c-text)" }}>{s.value}</div>
             <div style={statSub}>{s.sub}</div>
           </div>
         ))}
@@ -73,7 +73,7 @@ function RevenueTab({ data, raw }) {
         <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14 }}>MONTHLY REVENUE vs BANK INFLOW</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--c-surface)" />
             <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={fmtL} width={48} />
             <Tooltip content={<CustomTooltip />} />
@@ -94,7 +94,7 @@ function RevenueTab({ data, raw }) {
         <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14 }}>REVENUE TREND LINE</div>
         <ResponsiveContainer width="100%" height={140}>
           <LineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--c-surface)" />
             <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={fmtL} width={48} />
             <Tooltip content={<CustomTooltip />} />
@@ -150,7 +150,7 @@ function ComplianceTab({ raw }) {
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: c }}>{m.value.toFixed(1)}%</div>
                 </div>
-                <div style={{ background: "#1e293b", borderRadius: 6, height: 10, overflow: "hidden" }}>
+                <div style={{ background: "var(--c-surface)", borderRadius: 6, height: 10, overflow: "hidden" }}>
                   <div style={{
                     height: "100%", width: `${m.value}%`,
                     background: `linear-gradient(90deg, ${c}88, ${c})`,
@@ -239,7 +239,7 @@ function StabilityTab({ raw }) {
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 700, color: c }}>{item.score.toFixed(0)}</span>
                 </div>
-                <div style={{ background: "#1e293b", borderRadius: 6, height: 6, overflow: "hidden" }}>
+                <div style={{ background: "var(--c-surface)", borderRadius: 6, height: 6, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${item.score}%`, background: `linear-gradient(90deg, ${c}88, ${c})`, borderRadius: 6 }} />
                 </div>
               </div>
@@ -287,7 +287,7 @@ function GrowthTab({ raw, data }) {
         <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14 }}>REVENUE vs 3-MONTH ROLLING AVERAGE</div>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={rolling} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--c-surface)" />
             <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={fmtL} width={48} />
             <Tooltip content={<CustomTooltip />} />
@@ -339,11 +339,11 @@ export default function DetailedReports({ data }) {
       <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 16 }}>DETAILED REPORTS</div>
 
       {/* Tab bar */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, background: "#0f172a", borderRadius: 10, padding: 4 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 20, background: "var(--c-bg)", borderRadius: 10, padding: 4 }}>
         {TABS.map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{
             flex: 1, padding: "8px 0", borderRadius: 8, border: "none",
-            background: tab === t ? "#1e293b" : "transparent",
+            background: tab === t ? "var(--c-surface)" : "transparent",
             color: tab === t ? "#93c5fd" : "#475569",
             fontSize: 13, fontWeight: tab === t ? 600 : 400,
             cursor: "pointer", transition: "all 0.2s",

@@ -70,7 +70,7 @@ export default function LoanApplyCTA({ data }) {
           <div style={{ fontSize: 11, color: rc, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>
             YOU'RE PRE-QUALIFIED
           </div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: "#f1f5f9" }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--c-text)" }}>
             Apply for up to {fmtL(loan.eligible_loan_amount)}
           </div>
           <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
@@ -98,7 +98,7 @@ export default function LoanApplyCTA({ data }) {
           padding: 16,
         }} onClick={e => e.target === e.currentTarget && close()}>
           <div style={{
-            background: "#0f172a", border: "1px solid #334155",
+            background: "var(--c-bg)", border: "1px solid var(--c-border)",
             borderRadius: 24, width: "100%", maxWidth: 520,
             padding: 32, position: "relative",
           }}>
@@ -113,7 +113,7 @@ export default function LoanApplyCTA({ data }) {
               <>
                 <div style={{ marginBottom: 24 }}>
                   <div style={{ fontSize: 11, color: "#3b82f6", letterSpacing: 2, marginBottom: 6 }}>LOAN APPLICATION</div>
-                  <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f1f5f9" }}>Select a Loan Product</h2>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--c-text)" }}>Select a Loan Product</h2>
                   <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
                     {data.business_name} • {data.city} • Score {data.pillar_scores?.overall}
                   </p>
@@ -122,14 +122,14 @@ export default function LoanApplyCTA({ data }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
                   {eligible.map(([key, product]) => (
                     <div key={key} onClick={() => setSelectedProduct(key)} style={{
-                      background: selectedProduct === key ? "#3b82f611" : "#1e293b",
-                      border: selectedProduct === key ? "1px solid #3b82f655" : "1px solid #334155",
+                      background: selectedProduct === key ? "#3b82f611" : "var(--c-surface)",
+                      border: selectedProduct === key ? "1px solid #3b82f655" : "1px solid var(--c-border)",
                       borderRadius: 12, padding: "14px 18px", cursor: "pointer",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                       transition: "all 0.15s",
                     }}>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "#f1f5f9" }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--c-text)" }}>
                           {PRODUCT_LABELS[key]}
                         </div>
                         <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
@@ -149,7 +149,7 @@ export default function LoanApplyCTA({ data }) {
                   disabled={!selectedProduct}
                   style={{
                     width: "100%", padding: "14px",
-                    background: selectedProduct ? `linear-gradient(135deg, #3b82f6, #8b5cf6)` : "#1e293b",
+                    background: selectedProduct ? `linear-gradient(135deg, #3b82f6, #8b5cf6)` : "var(--c-surface)",
                     border: "none", borderRadius: 12,
                     color: selectedProduct ? "#fff" : "#475569",
                     fontSize: 14, fontWeight: 700,
@@ -167,10 +167,10 @@ export default function LoanApplyCTA({ data }) {
                 <>
                   <div style={{ marginBottom: 24 }}>
                     <div style={{ fontSize: 11, color: "#3b82f6", letterSpacing: 2, marginBottom: 6 }}>CONFIRM APPLICATION</div>
-                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f1f5f9" }}>Review & Submit</h2>
+                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--c-text)" }}>Review & Submit</h2>
                   </div>
 
-                  <div style={{ background: "#1e293b", borderRadius: 14, padding: 20, marginBottom: 20 }}>
+                  <div style={{ background: "var(--c-surface)", borderRadius: 14, padding: 20, marginBottom: 20 }}>
                     {[
                       { label: "Business", value: data.business_name },
                       { label: "GSTIN", value: data.gstin },
@@ -183,11 +183,11 @@ export default function LoanApplyCTA({ data }) {
                     ].map(({ label, value }) => (
                       <div key={label} style={{
                         display: "flex", justifyContent: "space-between",
-                        padding: "8px 0", borderBottom: "1px solid #0f172a",
+                        padding: "8px 0", borderBottom: "1px solid var(--c-border-strong)",
                         fontSize: 13,
                       }}>
                         <span style={{ color: "#64748b" }}>{label}</span>
-                        <span style={{ color: "#f1f5f9", fontWeight: 500 }}>{value}</span>
+                        <span style={{ color: "var(--c-text)", fontWeight: 500 }}>{value}</span>
                       </div>
                     ))}
                   </div>
@@ -209,12 +209,12 @@ export default function LoanApplyCTA({ data }) {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <button onClick={() => setStep("select")} disabled={submitting} style={{
                       padding: "12px", background: "transparent",
-                      border: "1px solid #334155", borderRadius: 12,
+                      border: "1px solid var(--c-border)", borderRadius: 12,
                       color: "#94a3b8", fontSize: 14, cursor: submitting ? "not-allowed" : "pointer",
                     }}>← Back</button>
                     <button onClick={submit} disabled={submitting} style={{
                       padding: "12px",
-                      background: submitting ? "#334155" : "linear-gradient(135deg, #22c55e, #15803d)",
+                      background: submitting ? "var(--c-surface-2)" : "linear-gradient(135deg, #22c55e, #15803d)",
                       border: "none", borderRadius: 12,
                       color: "#fff", fontSize: 14, fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer",
                     }}>{submitting ? "Submitting…" : "Submit Application"}</button>
@@ -232,7 +232,7 @@ export default function LoanApplyCTA({ data }) {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 32, margin: "0 auto 20px",
                 }}>✓</div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", marginBottom: 8 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--c-text)", marginBottom: 8 }}>
                   Application Submitted!
                 </h2>
                 <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20, lineHeight: 1.6 }}>
@@ -240,7 +240,7 @@ export default function LoanApplyCTA({ data }) {
                   A relationship manager will contact you within 2 business days.
                 </p>
                 <div style={{
-                  background: "#1e293b", borderRadius: 12, padding: "14px 20px",
+                  background: "var(--c-surface)", borderRadius: 12, padding: "14px 20px",
                   marginBottom: 24,
                 }}>
                   <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>REFERENCE NUMBER</div>
@@ -251,7 +251,7 @@ export default function LoanApplyCTA({ data }) {
                 </div>
                 <button onClick={close} style={{
                   width: "100%", padding: "12px",
-                  background: "#1e293b", border: "1px solid #334155",
+                  background: "var(--c-surface)", border: "1px solid var(--c-border)",
                   borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer",
                 }}>Close</button>
               </div>

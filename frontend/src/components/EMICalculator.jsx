@@ -79,7 +79,7 @@ export default function EMICalculator({ products, defaultProduct = "msme_loan" }
           <button key={key} onClick={() => selectProduct(key)} style={{
             padding: "6px 14px",
             background: selected === key ? "#3b82f622" : "transparent",
-            border: selected === key ? "1px solid #3b82f644" : "1px solid #334155",
+            border: selected === key ? "1px solid #3b82f644" : "1px solid var(--c-border)",
             borderRadius: 20, color: selected === key ? "#93c5fd" : "#64748b",
             fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
           }}>
@@ -116,14 +116,14 @@ export default function EMICalculator({ products, defaultProduct = "msme_loan" }
             <div key={label}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 12, color: "#64748b" }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{format(value)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>{format(value)}</span>
               </div>
               <input
                 type="range" min={min} max={max} step={step} value={value}
                 onChange={e => onChange(parseFloat(e.target.value))}
                 style={{ width: "100%", accentColor: "#3b82f6", cursor: "pointer" }}
               />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#334155", marginTop: 2 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#64748b", marginTop: 2 }}>
                 <span>{format(min)}</span><span>{format(max)}</span>
               </div>
             </div>
@@ -147,10 +147,10 @@ export default function EMICalculator({ products, defaultProduct = "msme_loan" }
           {[
             { label: "Principal Amount", value: fmtL(amount), color: "#3b82f6" },
             { label: "Total Interest", value: fmtL(Math.round(totalInterest)), color: "#f59e0b" },
-            { label: "Total Payment", value: fmtL(Math.round(totalPayment)), color: "#f1f5f9" },
+            { label: "Total Payment", value: fmtL(Math.round(totalPayment)), color: "var(--c-text)" },
           ].map(({ label, value, color }) => (
             <div key={label} style={{
-              background: "#0f172a", border: "1px solid #1e293b",
+              background: "var(--c-bg)", border: "1px solid var(--c-border-soft)",
               borderRadius: 10, padding: "12px 16px",
               display: "flex", justifyContent: "space-between", alignItems: "center",
             }}>
@@ -164,7 +164,7 @@ export default function EMICalculator({ products, defaultProduct = "msme_loan" }
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#475569", marginBottom: 4 }}>
               <span>Principal</span><span>Interest</span>
             </div>
-            <div style={{ height: 8, background: "#1e293b", borderRadius: 4, overflow: "hidden", display: "flex" }}>
+            <div style={{ height: 8, background: "var(--c-surface)", borderRadius: 4, overflow: "hidden", display: "flex" }}>
               <div style={{
                 width: `${(amount / totalPayment) * 100}%`,
                 background: "#3b82f6", transition: "width 0.3s",

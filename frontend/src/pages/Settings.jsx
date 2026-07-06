@@ -15,9 +15,9 @@ function AuditTrail() {
     <>
       <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span>🧾 COMPLIANCE AUDIT TRAIL</span>
-        <button onClick={load} style={{ background: "transparent", border: "1px solid #334155", color: "#94a3b8", borderRadius: 8, padding: "3px 10px", fontSize: 11, cursor: "pointer" }}>↻ Refresh</button>
+        <button onClick={load} style={{ background: "transparent", border: "1px solid var(--c-border)", color: "#94a3b8", borderRadius: 8, padding: "3px 10px", fontSize: 11, cursor: "pointer" }}>↻ Refresh</button>
       </div>
-      <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
+      <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
         <div style={{ fontSize: 11.5, color: "#64748b", marginBottom: 12 }}>Every state-changing action is logged for regulatory verification.</div>
         {loading ? (
           <div style={{ color: "#475569", fontSize: 13, padding: "12px 0" }}>Loading…</div>
@@ -26,7 +26,7 @@ function AuditTrail() {
         ) : (
           <div style={{ maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
             {logs.map((l) => (
-              <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#0f172a", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>
+              <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "var(--c-bg)", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>
                 <span style={{ color: "#475569", minWidth: 128 }}>{new Date(l.created_at).toLocaleString("en-IN")}</span>
                 <span style={{ color: l.role === "banker" ? "#c4b5fd" : l.role === "msme" ? "#93c5fd" : "#64748b", fontWeight: 600, minWidth: 54 }}>{l.role || "—"}</span>
                 <span style={{ color: "#cbd5e1", flex: 1, fontFamily: "monospace" }}>{l.action}</span>
@@ -58,7 +58,7 @@ const CONSENT_ITEMS = [
 ];
 
 const sectionTitle = { fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 14 };
-const card = { background: "#1e293b", border: "1px solid #334155", borderRadius: 16, padding: "20px 24px", marginBottom: 16 };
+const card = { background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 16, padding: "20px 24px", marginBottom: 16 };
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -77,7 +77,7 @@ export default function Settings() {
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 16px" }}>
       <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9" }}>Profile & Settings</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--c-text)" }}>Profile & Settings</h2>
         <p style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>Manage your account and data access</p>
       </div>
 
@@ -96,7 +96,7 @@ export default function Settings() {
             {user?.role === "banker" ? "🏦" : "🏭"}
           </div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#f1f5f9" }}>{user?.full_name || "User"}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--c-text)" }}>{user?.full_name || "User"}</div>
             <div style={{ fontSize: 13, color: "#64748b", marginTop: 3 }}>{user?.email}</div>
             <div style={{
               marginTop: 6, display: "inline-block",
@@ -117,7 +117,7 @@ export default function Settings() {
             { label: "ACCOUNT ID", value: `USR-${String(user?.id || 0).padStart(5, "0")}` },
             { label: "SESSION", value: "Active (24hr JWT)" },
           ].map((f) => (
-            <div key={f.label} style={{ background: "#0f172a", borderRadius: 10, padding: "10px 14px" }}>
+            <div key={f.label} style={{ background: "var(--c-bg)", borderRadius: 10, padding: "10px 14px" }}>
               <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, marginBottom: 4 }}>{f.label}</div>
               <div style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 500 }}>{f.value}</div>
             </div>
@@ -137,7 +137,7 @@ export default function Settings() {
             ds = { ...ds, status };
             return (
             <div key={ds.name} style={{
-              background: "#0f172a",
+              background: "var(--c-bg)",
               border: `1px solid ${ds.color}22`,
               borderRadius: 12, padding: "12px 14px",
               display: "flex", alignItems: "center", gap: 12,
@@ -151,8 +151,8 @@ export default function Settings() {
                 fontSize: 10, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap",
                 color: ds.status === "Connected" ? "#22c55e" : "#64748b",
                 padding: "2px 8px", borderRadius: 20,
-                background: ds.status === "Connected" ? "#15803d22" : "#1e293b",
-                border: ds.status === "Connected" ? "1px solid #15803d33" : "1px solid #334155",
+                background: ds.status === "Connected" ? "#15803d22" : "var(--c-surface)",
+                border: ds.status === "Connected" ? "1px solid #15803d33" : "1px solid var(--c-border)",
               }}>
                 {ds.status === "Connected" ? "✓" : "–"} {ds.status}
               </div>
@@ -181,7 +181,7 @@ export default function Settings() {
             return (
               <div key={i} style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "10px 14px", background: "#0f172a", borderRadius: 10,
+                padding: "10px 14px", background: "var(--c-bg)", borderRadius: 10,
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ color: active ? "#22c55e" : "#64748b", fontSize: 13 }}>{active ? "✓" : "✕"}</span>
@@ -200,7 +200,7 @@ export default function Settings() {
             );
           })}
         </div>
-        <div style={{ fontSize: 11, color: "#475569", padding: "10px 14px", background: "#0f172a", borderRadius: 10 }}>
+        <div style={{ fontSize: 11, color: "#475569", padding: "10px 14px", background: "var(--c-bg)", borderRadius: 10 }}>
           📋 Consent valid for 90 days • Data used only for credit assessment • No third-party sharing
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function Settings() {
           ].map((item) => (
             <div key={item.label} style={{
               display: "flex", alignItems: "center", gap: 14,
-              padding: "10px 14px", background: "#0f172a", borderRadius: 10,
+              padding: "10px 14px", background: "var(--c-bg)", borderRadius: 10,
             }}>
               <span style={{ fontSize: 18 }}>{item.icon}</span>
               <div>

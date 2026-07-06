@@ -36,7 +36,7 @@ const recBg = {
 async function exportPDF(ref, business_name) {
   const { default: html2canvas } = await import("html2canvas");
   const { default: jsPDF } = await import("jspdf");
-  const canvas = await html2canvas(ref, { backgroundColor: "#0f172a", scale: 1.5, useCORS: true });
+  const canvas = await html2canvas(ref, { backgroundColor: "var(--c-bg)", scale: 1.5, useCORS: true });
   const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width / 1.5, canvas.height / 1.5] });
   pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width / 1.5, canvas.height / 1.5);
   pdf.save(`FinHealth-${business_name.replace(/\s+/g, "-")}.pdf`);
@@ -145,15 +145,15 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* Quick-nav bar */}
       <div style={{
         position: "sticky", top: 60, zIndex: 50,
-        background: "#0f172aee", backdropFilter: "blur(8px)",
-        borderBottom: "1px solid #1e293b",
+        background: "var(--c-header)", backdropFilter: "blur(8px)",
+        borderBottom: "1px solid var(--c-border-soft)",
         display: "flex", gap: 6, padding: "10px 0", marginBottom: 20,
         overflowX: "auto",
       }}>
         {HC_SECTIONS.map(s => (
           <button key={s.id} onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{
             padding: "6px 14px", borderRadius: 20, flexShrink: 0,
-            background: "#1e293b", border: "1px solid #334155",
+            background: "var(--c-surface)", border: "1px solid var(--c-border)",
             color: "#94a3b8", fontSize: 12, cursor: "pointer",
             display: "flex", alignItems: "center", gap: 5,
           }}>
@@ -166,8 +166,8 @@ export default function HealthCard({ data, isManagerView = false }) {
 
       {/* Header */}
       <div style={{
-        background: "linear-gradient(135deg, #1e293b, #0f172a)",
-        border: "1px solid #334155",
+        background: "linear-gradient(135deg, var(--c-surface), var(--c-bg))",
+        border: "1px solid var(--c-border)",
         borderRadius: 20,
         padding: "28px 32px",
         marginBottom: 20,
@@ -184,9 +184,9 @@ export default function HealthCard({ data, isManagerView = false }) {
             <div style={{ fontSize: 11, color: "#3b82f6", letterSpacing: 2, fontWeight: 600, marginBottom: 6 }}>
               MSME FINANCIAL HEALTH CARD
             </div>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 }}>{business_name}</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--c-text)", marginBottom: 4 }}>{business_name}</h1>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
-              <span style={{ fontSize: 12, color: "#64748b", background: "#1e293b", padding: "3px 10px", borderRadius: 20 }}>{gstin}</span>
+              <span style={{ fontSize: 12, color: "#64748b", background: "var(--c-surface)", padding: "3px 10px", borderRadius: 20 }}>{gstin}</span>
               <span style={{ fontSize: 12, color: "#64748b" }}>📍 {city}</span>
               <span style={{ fontSize: 12, color: "#64748b" }}>🏭 {business_type}</span>
               <span style={{ fontSize: 12, color: "#64748b" }}>⏱ {years_in_business} yrs in business</span>
@@ -196,7 +196,7 @@ export default function HealthCard({ data, isManagerView = false }) {
             <div style={{ fontSize: 11, color: "#475569" }}>Generated: {date}</div>
             <div style={{
               padding: "6px 16px", borderRadius: 8,
-              background: recBg[loan_eligibility.recommendation] || "#1e293b",
+              background: recBg[loan_eligibility.recommendation] || "var(--c-surface)",
               border: `1px solid ${riskColor}44`,
               fontSize: 12, fontWeight: 700, color: riskColor, letterSpacing: 0.5,
             }}>
@@ -227,8 +227,8 @@ export default function HealthCard({ data, isManagerView = false }) {
               )}
               <button onClick={() => setShowOutcome(true)} style={{
                 padding: "6px 14px", borderRadius: 8,
-                background: recordedOutcome ? "#22c55e22" : "#1e293b",
-                border: recordedOutcome ? "1px solid #22c55e44" : "1px solid #334155",
+                background: recordedOutcome ? "#22c55e22" : "var(--c-surface)",
+                border: recordedOutcome ? "1px solid #22c55e44" : "1px solid var(--c-border)",
                 color: recordedOutcome ? "#22c55e" : "#94a3b8",
                 fontSize: 11, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 5,
@@ -237,8 +237,8 @@ export default function HealthCard({ data, isManagerView = false }) {
               </button>
               <button onClick={handleExport} disabled={exporting} style={{
                 padding: "6px 14px", borderRadius: 8,
-                background: exporting ? "#334155" : "#1e293b",
-                border: "1px solid #334155", color: exporting ? "#475569" : "#94a3b8",
+                background: exporting ? "var(--c-surface-2)" : "var(--c-surface)",
+                border: "1px solid var(--c-border)", color: exporting ? "#475569" : "#94a3b8",
                 fontSize: 11, cursor: exporting ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", gap: 5,
               }}>
@@ -246,7 +246,7 @@ export default function HealthCard({ data, isManagerView = false }) {
               </button>
               <button onClick={handleOcen} disabled={ocenLoading} style={{
                 padding: "6px 14px", borderRadius: 8,
-                background: ocenLoading ? "#334155" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                background: ocenLoading ? "var(--c-surface-2)" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                 border: "none", color: "#fff",
                 fontSize: 11, fontWeight: 700, cursor: ocenLoading ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", gap: 5,
@@ -266,8 +266,8 @@ export default function HealthCard({ data, isManagerView = false }) {
 
         {/* Left: Gauge + Loan Info */}
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
           display: "flex",
@@ -276,9 +276,9 @@ export default function HealthCard({ data, isManagerView = false }) {
           gap: 20,
         }}>
           <ScoreGauge score={pillar_scores.overall} />
-          <div style={{ width: "100%", borderTop: "1px solid #334155", paddingTop: 16 }}>
+          <div style={{ width: "100%", borderTop: "1px solid var(--c-border)", paddingTop: 16 }}>
             <div style={{ fontSize: 11, color: "#475569", marginBottom: 12, letterSpacing: 1.5 }}>LOAN ELIGIBILITY</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "var(--c-text)", marginBottom: 4 }}>
               ₹{(loan_eligibility.eligible_loan_amount / 100000).toFixed(1)}L
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -305,8 +305,8 @@ export default function HealthCard({ data, isManagerView = false }) {
 
         {/* Right: Pillars */}
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
         }}>
@@ -320,15 +320,15 @@ export default function HealthCard({ data, isManagerView = false }) {
 
         {/* Radar Chart */}
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
         }}>
           <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 10 }}>PERFORMANCE RADAR</div>
           <ResponsiveContainer width="100%" height={220}>
             <RadarChart data={radarData}>
-              <PolarGrid stroke="#334155" />
+              <PolarGrid stroke="var(--c-surface-2)" />
               <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748b", fontSize: 11 }} />
               <Radar dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={2} dot={{ fill: "#3b82f6", r: 3 }} />
             </RadarChart>
@@ -337,8 +337,8 @@ export default function HealthCard({ data, isManagerView = false }) {
 
         {/* SHAP Explanations */}
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
         }}>
@@ -389,8 +389,8 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* Revenue Trend Chart — full width */}
       {monthly_revenues && monthly_revenues.length > 0 && (
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
           marginTop: 20,
@@ -402,8 +402,8 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* Loan Products Matrix */}
       {loan_eligibility?.products && (
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
           marginTop: 20,
@@ -415,8 +415,8 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* Recommendations */}
       {recommendations && recommendations.length > 0 && (
         <div style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
+          background: "var(--c-surface)",
+          border: "1px solid var(--c-border)",
           borderRadius: 20,
           padding: 28,
           marginTop: 20,
@@ -428,14 +428,14 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* Detailed Reports */}
       <div id="hc-reports" />
       {raw_features && (
-        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+        <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
           <DetailedReports data={data} />
         </div>
       )}
 
       {/* Score Journey Trend */}
       {gstin && (
-        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+        <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
           <ScoreTrend gstin={gstin} currentScore={pillar_scores.overall} />
         </div>
       )}
@@ -443,7 +443,7 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* EMI Calculator */}
       <div id="hc-emi" />
       {loan_eligibility?.products && (
-        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+        <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
           <EMICalculator products={loan_eligibility.products} />
         </div>
       )}
@@ -451,7 +451,7 @@ export default function HealthCard({ data, isManagerView = false }) {
       {/* What-If Score Simulator */}
       <div id="hc-simulator" />
       {raw_features && (
-        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+        <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
           <ScoreSimulator
             rawFeatures={raw_features}
             currentScores={pillar_scores}
@@ -462,7 +462,7 @@ export default function HealthCard({ data, isManagerView = false }) {
 
       {/* Peer Benchmarking */}
       <div id="hc-benchmark" />
-      <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginTop: 20 }}>
+      <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
         <PeerBenchmark businessType={business_type} city={city} myScores={pillar_scores} />
       </div>
 

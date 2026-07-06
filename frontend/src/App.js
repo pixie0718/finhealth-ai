@@ -15,6 +15,7 @@ import OwnerApplications from "./pages/OwnerApplications";
 import DemoPortal from "./pages/DemoPortal";
 import BottomNav from "./components/BottomNav";
 import InstallPrompt from "./components/InstallPrompt";
+import ThemeToggle from "./components/ThemeToggle";
 import useIsMobile from "./hooks/useIsMobile";
 
 // Short labels + icons for the mobile bottom tab bar (keys match the shells' tab state).
@@ -47,7 +48,7 @@ const navStyle = (active) => ({
 
 const LoadingScreen = () => (
   <div style={{
-    minHeight: "100vh", background: "#0f172a",
+    minHeight: "100vh", background: "var(--c-bg)",
     display: "flex", alignItems: "center", justifyContent: "center",
     color: "#475569", fontSize: 14,
   }}>
@@ -76,9 +77,9 @@ function ManagerShell() {
   const doLogout = () => { logout(); navigate("/"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a", paddingBottom: isMobile ? 74 : 0 }}>
+    <div style={{ minHeight: "100vh", background: "var(--c-bg)", paddingBottom: isMobile ? 74 : 0 }}>
       <div style={{
-        borderBottom: "1px solid #1e293b",
+        borderBottom: "1px solid var(--c-border-soft)",
         padding: "8px 16px",
         display: "flex",
         alignItems: "center",
@@ -87,7 +88,7 @@ function ManagerShell() {
         rowGap: 8,
         minHeight: 60,
         position: "sticky", top: 0,
-        background: "#0f172a",
+        background: "var(--c-bg)",
         zIndex: 100,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -98,7 +99,7 @@ function ManagerShell() {
             fontSize: 16,
           }}>🏦</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", lineHeight: 1 }}>FinHealth AI</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", lineHeight: 1 }}>FinHealth AI</div>
             <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Bank Manager Console</div>
           </div>
         </div>
@@ -116,6 +117,7 @@ function ManagerShell() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ fontSize: 12, color: "#475569" }}>🏦 IDBI Bank</div>
           {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
+          <ThemeToggle />
           <button onClick={doLogout} style={{
             background: "transparent", border: "1px solid #ef444433",
             color: "#ef4444", padding: "5px 12px", borderRadius: 8,
@@ -128,7 +130,7 @@ function ManagerShell() {
         <div>
           <div style={{ padding: "16px 32px", display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={() => setViewData(null)} style={{
-              background: "transparent", border: "1px solid #334155",
+              background: "transparent", border: "1px solid var(--c-border)",
               color: "#94a3b8", padding: "6px 14px", borderRadius: 8,
               fontSize: 12, cursor: "pointer",
             }}>← Back</button>
@@ -167,12 +169,12 @@ function OwnerShell() {
   const doLogout = () => { logout(); navigate("/"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a", paddingBottom: isMobile ? 74 : 0 }}>
+    <div style={{ minHeight: "100vh", background: "var(--c-bg)", paddingBottom: isMobile ? 74 : 0 }}>
       <div style={{
-        borderBottom: "1px solid #1e293b", padding: "8px 16px",
+        borderBottom: "1px solid var(--c-border-soft)", padding: "8px 16px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         flexWrap: "wrap", rowGap: 8,
-        minHeight: 60, position: "sticky", top: 0, background: "#0f172a", zIndex: 100,
+        minHeight: 60, position: "sticky", top: 0, background: "var(--c-bg)", zIndex: 100,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
@@ -181,7 +183,7 @@ function OwnerShell() {
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
           }}>🏭</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", lineHeight: 1 }}>FinHealth AI</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", lineHeight: 1 }}>FinHealth AI</div>
             <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Business Owner Portal</div>
           </div>
         </div>
@@ -194,6 +196,7 @@ function OwnerShell() {
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
+          <ThemeToggle />
           <button onClick={doLogout} style={{
             background: "transparent", border: "1px solid #ef444433",
             color: "#ef4444", padding: "5px 12px", borderRadius: 8, fontSize: 11, cursor: "pointer",

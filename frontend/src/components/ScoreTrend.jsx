@@ -9,8 +9,8 @@ const CustomTooltip = ({ active, payload }) => {
   const d = payload[0].payload;
   const color = riskColors[d.risk] || "#64748b";
   return (
-    <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
-      <div style={{ color: "#f1f5f9", fontWeight: 700, marginBottom: 4 }}>{d.date}</div>
+    <div style={{ background: "var(--c-bg)", border: "1px solid var(--c-border)", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
+      <div style={{ color: "var(--c-text)", fontWeight: 700, marginBottom: 4 }}>{d.date}</div>
       <div style={{ fontSize: 20, fontWeight: 900, color: payload[0].color }}>{d.score}</div>
       <div style={{ color, marginTop: 2, fontSize: 11 }}>{d.risk}</div>
     </div>
@@ -64,7 +64,7 @@ export default function ScoreTrend({ gstin, currentScore }) {
 
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--c-surface)" />
           <XAxis dataKey="date" tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} />
           <YAxis domain={[Math.max(0, Math.min(...chartData.map(d => d.score)) - 10), 100]}
             tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
@@ -75,9 +75,9 @@ export default function ScoreTrend({ gstin, currentScore }) {
           <Line type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={2.5}
             dot={({ cx, cy, payload }) => {
               const color = riskColors[payload.risk] || "#3b82f6";
-              return <circle key={`dot-${payload.idx}`} cx={cx} cy={cy} r={5} fill={color} stroke="#0f172a" strokeWidth={2} />;
+              return <circle key={`dot-${payload.idx}`} cx={cx} cy={cy} r={5} fill={color} stroke="var(--c-bg)" strokeWidth={2} />;
             }}
-            activeDot={{ r: 7, fill: "#93c5fd", stroke: "#0f172a", strokeWidth: 2 }}
+            activeDot={{ r: 7, fill: "#93c5fd", stroke: "var(--c-bg)", strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>

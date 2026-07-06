@@ -19,8 +19,8 @@ export default function OutcomeModal({ data, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
 
   const inp = {
-    width:"100%", background:"#0f172a", border:"1px solid #334155",
-    borderRadius:10, padding:"10px 14px", color:"#f1f5f9",
+    width:"100%", background:"var(--c-bg)", border:"1px solid var(--c-border)",
+    borderRadius:10, padding:"10px 14px", color:"var(--c-text)",
     fontSize:13, outline:"none", boxSizing:"border-box",
   };
 
@@ -50,14 +50,14 @@ export default function OutcomeModal({ data, onClose, onSaved }) {
       alignItems:"center", justifyContent:"center", padding:20,
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background:"#1e293b", border:"1px solid #334155",
+        background:"var(--c-surface)", border:"1px solid var(--c-border)",
         borderRadius:24, padding:28, width:"100%", maxWidth:480,
       }}>
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:4 }}>
             LOAN OUTCOME TRACKING
           </div>
-          <div style={{ fontSize:18, fontWeight:700, color:"#f1f5f9" }}>
+          <div style={{ fontSize:18, fontWeight:700, color:"var(--c-text)" }}>
             Record Outcome
           </div>
           <div style={{ fontSize:12, color:"#64748b", marginTop:4 }}>
@@ -70,12 +70,12 @@ export default function OutcomeModal({ data, onClose, onSaved }) {
           {OUTCOMES.map(o => (
             <button key={o.value} onClick={() => setSelected(o.value)} style={{
               padding:"12px", borderRadius:12, cursor:"pointer", textAlign:"left",
-              background: selected === o.value ? `${o.color}18` : "#0f172a",
-              border: selected === o.value ? `1.5px solid ${o.color}` : "1px solid #334155",
+              background: selected === o.value ? `${o.color}18` : "var(--c-bg)",
+              border: selected === o.value ? `1.5px solid ${o.color}` : "1px solid var(--c-border)",
             }}>
               <div style={{ fontSize:18, marginBottom:4 }}>{o.icon}</div>
               <div style={{ fontSize:12, fontWeight:700,
-                color: selected === o.value ? o.color : "#f1f5f9" }}>{o.label}</div>
+                color: selected === o.value ? o.color : "var(--c-text)" }}>{o.label}</div>
               <div style={{ fontSize:10, color:"#475569", marginTop:2 }}>{o.desc}</div>
             </button>
           ))}
@@ -106,12 +106,12 @@ export default function OutcomeModal({ data, onClose, onSaved }) {
 
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
           <button onClick={onClose} style={{
-            padding:"13px", background:"transparent", border:"1px solid #334155",
+            padding:"13px", background:"transparent", border:"1px solid var(--c-border)",
             borderRadius:12, color:"#64748b", fontSize:14, cursor:"pointer",
           }}>Cancel</button>
           <button onClick={handleSave} disabled={!selected || saving} style={{
             padding:"13px",
-            background: selected && !saving ? "linear-gradient(135deg, #3b82f6, #6366f1)" : "#334155",
+            background: selected && !saving ? "linear-gradient(135deg, #3b82f6, #6366f1)" : "var(--c-surface-2)",
             border:"none", borderRadius:12,
             color: selected && !saving ? "#fff" : "#475569",
             fontSize:14, fontWeight:700, cursor: selected ? "pointer" : "not-allowed",

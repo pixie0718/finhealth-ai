@@ -10,7 +10,7 @@ const CustomTooltip = ({ active, payload }) => {
     const val = payload[0].value;
     return (
       <div style={{
-        background: "#0f172a", border: "1px solid #334155",
+        background: "var(--c-bg)", border: "1px solid var(--c-border)",
         borderRadius: 8, padding: "8px 12px", fontSize: 12,
       }}>
         <div style={{ color: "#64748b", marginBottom: 2 }}>{payload[0].payload.month}</div>
@@ -45,7 +45,7 @@ export default function RevenueChart({ revenues, inflows }) {
               <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--c-surface)" />
           <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false}
             tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} width={44} />

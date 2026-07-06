@@ -8,7 +8,7 @@ export default function BottomNav({ tabs, active, onSelect }) {
       display: "flex",
       background: "rgba(15,23,42,0.94)",
       backdropFilter: "blur(14px)",
-      borderTop: "1px solid #1e293b",
+      borderTop: "1px solid var(--c-border-soft)",
       paddingBottom: "env(safe-area-inset-bottom, 0px)",
       boxShadow: "0 -4px 24px #00000055",
     }}>

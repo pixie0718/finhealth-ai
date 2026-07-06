@@ -44,7 +44,7 @@ export default function LoanProductsMatrix({ products }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 20 }}>{icon}</span>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>{label}</div>
                     <div style={{ fontSize: 10, color: "#475569", marginTop: 1 }}>{desc}</div>
                   </div>
                 </div>

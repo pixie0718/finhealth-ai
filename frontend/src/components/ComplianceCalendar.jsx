@@ -73,7 +73,7 @@ export default function ComplianceCalendar() {
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9" }}>Compliance Calendar</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--c-text)" }}>Compliance Calendar</h2>
         <p style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>
           Stay ahead of GST, EPFO, TDS & Income Tax deadlines
         </p>
@@ -109,7 +109,7 @@ export default function ComplianceCalendar() {
               borderRadius: 12, padding: "12px 14px",
             }}>
               <div style={{ fontSize: 11, color: CAT_COLORS[cat], fontWeight: 700, marginBottom: 4 }}>{cat}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>
                 {catEvents.length} upcoming
               </div>
               {days !== null && (
@@ -128,7 +128,7 @@ export default function ComplianceCalendar() {
           <button key={cat} onClick={() => setFilter(cat)} style={{
             padding: "6px 14px", borderRadius: 20,
             background: filter === cat ? (cat === "ALL" ? "#3b82f622" : `${CAT_COLORS[cat]}22`) : "transparent",
-            border: filter === cat ? `1px solid ${cat === "ALL" ? "#3b82f644" : `${CAT_COLORS[cat]}44`}` : "1px solid #334155",
+            border: filter === cat ? `1px solid ${cat === "ALL" ? "#3b82f644" : `${CAT_COLORS[cat]}44`}` : "1px solid var(--c-border)",
             color: filter === cat ? (cat === "ALL" ? "#93c5fd" : CAT_COLORS[cat]) : "#64748b",
             fontSize: 12, fontWeight: filter === cat ? 700 : 400, cursor: "pointer",
           }}>{cat}</button>
@@ -151,7 +151,7 @@ export default function ComplianceCalendar() {
                   {/* Date block */}
                   <div style={{
                     width: 44, flexShrink: 0, textAlign: "center",
-                    background: "#0f172a", borderRadius: 10, padding: "8px 6px",
+                    background: "var(--c-bg)", borderRadius: 10, padding: "8px 6px",
                     border: `1px solid ${event.color}33`,
                   }}>
                     <div style={{ fontSize: 18, fontWeight: 900, color: event.color, lineHeight: 1 }}>
@@ -166,7 +166,7 @@ export default function ComplianceCalendar() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 14 }}>{event.icon}</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>{event.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)" }}>{event.name}</span>
                       <span style={{
                         fontSize: 10, padding: "1px 8px", borderRadius: 10,
                         background: `${event.color}22`, color: event.color,

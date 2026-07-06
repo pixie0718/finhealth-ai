@@ -34,7 +34,7 @@ export default function ScoreGauge({ score }) {
         endAngle={-270}
       >
         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-        <RadialBar background={{ fill: "#1e293b" }} dataKey="value" cornerRadius={10} angleAxisId={0} />
+        <RadialBar background={{ fill: "var(--c-surface)" }} dataKey="value" cornerRadius={10} angleAxisId={0} />
       </RadialBarChart>
       <div style={{
         position: "absolute",

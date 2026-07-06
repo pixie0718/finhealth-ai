@@ -38,7 +38,7 @@ export default function LoadingSteps({ onComplete }) {
         animation: "pulse 1.5s ease-in-out infinite",
       }}>⚡</div>
 
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, color: "#f1f5f9" }}>
+      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, color: "var(--c-text)" }}>
         Fetching Your Financial Data
       </h2>
       <p style={{ fontSize: 13, color: "#64748b", marginBottom: 32 }}>
@@ -53,15 +53,15 @@ export default function LoadingSteps({ onComplete }) {
             <div key={i} style={{
               display: "flex", alignItems: "center", gap: 14,
               padding: "12px 16px",
-              background: isDone ? "#15803d11" : isActive ? "#3b82f611" : "#1e293b",
-              border: `1px solid ${isDone ? "#15803d44" : isActive ? "#3b82f644" : "#1e293b"}`,
+              background: isDone ? "#15803d11" : isActive ? "#3b82f611" : "var(--c-surface)",
+              border: `1px solid ${isDone ? "#15803d44" : isActive ? "#3b82f644" : "var(--c-surface)"}`,
               borderRadius: 12,
               transition: "all 0.3s",
               opacity: i > current ? 0.35 : 1,
             }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: isDone ? "#15803d22" : isActive ? "#3b82f622" : "#0f172a",
+                background: isDone ? "#15803d22" : isActive ? "#3b82f622" : "var(--c-bg)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 18,
               }}>
@@ -100,7 +100,7 @@ export default function LoadingSteps({ onComplete }) {
             {Math.round((done.length / STEPS.length) * 100)}%
           </span>
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 8, height: 6, overflow: "hidden" }}>
+        <div style={{ background: "var(--c-surface)", borderRadius: 8, height: 6, overflow: "hidden" }}>
           <div style={{
             height: "100%",
             width: `${(done.length / STEPS.length) * 100}%`,

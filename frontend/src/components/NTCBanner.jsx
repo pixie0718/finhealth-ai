@@ -58,7 +58,7 @@ export default function NTCBanner({ ntcFlag, ntbFlag, overallScore }) {
       {/* NTC scoring explanation */}
       {isNTC && (
         <div style={{
-          background:"#0f172a", border:"1px solid #334155",
+          background:"var(--c-bg)", border:"1px solid var(--c-border)",
           borderRadius:12, padding:"14px 16px", marginBottom:14,
         }}>
           <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:10 }}>
@@ -73,11 +73,11 @@ export default function NTCBanner({ ntcFlag, ntbFlag, overallScore }) {
             ].map(p => (
               <div key={p.pillar} style={{
                 display:"flex", alignItems:"center", gap:8,
-                padding:"8px 10px", background:"#1e293b", borderRadius:8,
+                padding:"8px 10px", background:"var(--c-surface)", borderRadius:8,
               }}>
                 <span style={{ fontSize:16 }}>{p.icon}</span>
                 <div>
-                  <div style={{ fontSize:12, color:"#f1f5f9", fontWeight:600 }}>{p.pillar}</div>
+                  <div style={{ fontSize:12, color:"var(--c-text)", fontWeight:600 }}>{p.pillar}</div>
                   <div style={{ fontSize:10, color:"#22c55e" }}>{p.weight} <span style={{ color:"#475569" }}>{p.note}</span></div>
                 </div>
               </div>
@@ -117,13 +117,13 @@ export default function NTCBanner({ ntcFlag, ntbFlag, overallScore }) {
               limit:"Based on assessment" },
           ].map(scheme => (
             <div key={scheme.name} style={{
-              background:"#0f172a", border:`1px solid ${scheme.color}22`,
+              background:"var(--c-bg)", border:`1px solid ${scheme.color}22`,
               borderRadius:12, padding:"14px 16px",
             }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
                 <span style={{ fontSize:18 }}>{scheme.icon}</span>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:"#f1f5f9" }}>{scheme.name}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"var(--c-text)" }}>{scheme.name}</div>
                   <div style={{ fontSize:11, color:"#64748b" }}>{scheme.desc}</div>
                 </div>
                 {scheme.limit && (

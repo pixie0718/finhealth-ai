@@ -16,8 +16,8 @@ const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
-      <div style={{ color: "#f1f5f9", fontWeight: 700, marginBottom: 4 }}>{d.name}</div>
+    <div style={{ background: "var(--c-bg)", border: "1px solid var(--c-border)", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
+      <div style={{ color: "var(--c-text)", fontWeight: 700, marginBottom: 4 }}>{d.name}</div>
       <div style={{ color: "#3b82f6", fontWeight: 800, fontSize: 18 }}>{d.score}</div>
       <div style={{ color: riskColors[d.risk], marginTop: 2 }}>{d.risk}</div>
       <div style={{ color: "#475569", marginTop: 2 }}>{d.date}</div>
@@ -64,7 +64,7 @@ export default function ScoreHistory({ onView }) {
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "32px 16px" }}>
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9" }}>Score History</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--c-text)" }}>Score History</h2>
         <p style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{records.length} assessments on record</p>
       </div>
 
@@ -83,7 +83,7 @@ export default function ScoreHistory({ onView }) {
         </div>
       ) : records.length === 0 ? (
         <div style={{
-          background: "#1e293b", border: "1px solid #334155", borderRadius: 20,
+          background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20,
           padding: 48, textAlign: "center",
         }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
@@ -98,7 +98,7 @@ export default function ScoreHistory({ onView }) {
               { label: "AVERAGE SCORE", value: avg, sub: "Across all assessments", color: "#a78bfa" },
               { label: "LOW RISK APPROVALS", value: low, sub: `${((low / records.length) * 100).toFixed(0)}% approval rate`, color: "#22c55e" },
             ].map((s, i) => (
-              <div key={i} style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 16, padding: "18px 22px" }}>
+              <div key={i} style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 16, padding: "18px 22px" }}>
                 <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1.5, marginBottom: 6 }}>{s.label}</div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
                 <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>{s.sub}</div>
@@ -108,7 +108,7 @@ export default function ScoreHistory({ onView }) {
 
           {/* Score trend chart */}
           {chartData.length > 1 && (
-            <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: 28, marginBottom: 24 }}>
+            <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginBottom: 24 }}>
               <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5, marginBottom: 16 }}>SCORE TREND OVER TIME</div>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -137,14 +137,14 @@ export default function ScoreHistory({ onView }) {
                 <div key={r.msme_id}
                   onClick={() => onView(r)}
                   style={{
-                    background: "#1e293b", border: "1px solid #334155",
+                    background: "var(--c-surface)", border: "1px solid var(--c-border)",
                     borderRadius: 14, padding: "16px 22px",
                     display: "flex", alignItems: "center",
                     justifyContent: "space-between", flexWrap: "wrap", gap: 12,
                     cursor: "pointer", transition: "border-color 0.2s",
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.borderColor = "#3b82f6"}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = "#334155"}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--c-surface-2)"}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <div style={{
@@ -154,7 +154,7 @@ export default function ScoreHistory({ onView }) {
                       fontSize: 17, fontWeight: 800, color,
                     }}>{Math.round(score)}</div>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#f1f5f9" }}>{r.business_name}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "var(--c-text)" }}>{r.business_name}</div>
                       <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
                         {r.city} • {r.business_type} • {new Date(r.generated_at).toLocaleDateString("en-IN")}
                       </div>
@@ -163,7 +163,7 @@ export default function ScoreHistory({ onView }) {
                   <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 10, color: "#475569", marginBottom: 2 }}>LOAN</div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)" }}>
                         ₹{((r.loan_eligibility?.eligible_loan_amount ?? 0) / 100000).toFixed(1)}L
                       </div>
                     </div>

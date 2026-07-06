@@ -32,9 +32,9 @@ export default function DemoPortal() {
   const s = SCENARIOS[scenario] || SCENARIOS["growth-star"];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#080c18", color: "#e2e8f0", padding: "24px 16px" }}>
+    <div style={{ minHeight: "100vh", background: "#080c18", color: "var(--c-text-2)", padding: "24px 16px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
-        <button onClick={() => navigate("/")} style={{ background: "transparent", border: "1px solid #334155", color: "#94a3b8", padding: "8px 14px", borderRadius: 9, fontSize: 13, cursor: "pointer", marginBottom: 20 }}>← Back to home</button>
+        <button onClick={() => navigate("/")} style={{ background: "transparent", border: "1px solid var(--c-border)", color: "#94a3b8", padding: "8px 14px", borderRadius: 9, fontSize: 13, cursor: "pointer", marginBottom: 20 }}>← Back to home</button>
 
         {/* Scenario switcher */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
@@ -42,14 +42,14 @@ export default function DemoPortal() {
             <button key={key} onClick={() => navigate(`/demo/${key}`)} style={{
               padding: "7px 14px", borderRadius: 20, fontSize: 12.5, cursor: "pointer", fontWeight: 600,
               background: key === scenario ? `${v.color}22` : "#0f1a30",
-              border: `1px solid ${key === scenario ? v.color + "66" : "#1e293b"}`,
+              border: `1px solid ${key === scenario ? v.color + "66" : "var(--c-surface)"}`,
               color: key === scenario ? v.color : "#94a3b8",
             }}>{v.tag}</button>
           ))}
         </div>
 
         <div style={{ fontSize: 11, letterSpacing: 2, color: "#818cf8", fontWeight: 700, marginBottom: 6 }}>LIVE DEMO · NO LOGIN NEEDED</div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 }}>{s.name}</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--c-text)", marginBottom: 4 }}>{s.name}</h1>
         <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>{s.gstin} · 📍 {s.city} · 🏭 {s.type}</div>
 
         {/* Score + eligibility card */}
@@ -60,16 +60,16 @@ export default function DemoPortal() {
               <div style={{ display: "inline-block", fontSize: 11, fontWeight: 800, color: s.color, background: `${s.color}18`, border: `1px solid ${s.color}55`, padding: "3px 12px", borderRadius: 20, marginBottom: 8 }}>{s.band} RISK · {s.rec}</div>
               <div style={{ fontSize: 13, color: "#94a3b8" }}>{s.blurb}</div>
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 12 }}>Eligible loan amount</div>
-              <div style={{ fontSize: 26, fontWeight: 900, color: "#f1f5f9" }}>{fmt(s.loan)}</div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: "var(--c-text)" }}>{fmt(s.loan)}</div>
             </div>
           </div>
-          <div style={{ marginTop: 22, borderTop: "1px solid #1e293b", paddingTop: 18 }}>
+          <div style={{ marginTop: 22, borderTop: "1px solid var(--c-border-soft)", paddingTop: 18 }}>
             <div style={{ fontSize: 11, color: "#64748b", letterSpacing: 1, marginBottom: 12 }}>5-PILLAR BREAKDOWN</div>
             {s.pillars.map(([l, v, c]) => (
               <div key={l} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
                 <div style={{ width: 84, fontSize: 12, color: "#94a3b8" }}>{l}</div>
-                <div style={{ flex: 1, height: 8, background: "#1e293b", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ width: `${v}%`, height: "100%", background: v ? c : "#334155", borderRadius: 4 }} />
+                <div style={{ flex: 1, height: 8, background: "var(--c-surface)", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ width: `${v}%`, height: "100%", background: v ? c : "var(--c-surface-2)", borderRadius: 4 }} />
                 </div>
                 <div style={{ width: 30, fontSize: 12, fontWeight: 700, color: v ? "#cbd5e1" : "#475569", textAlign: "right" }}>{v || "N/A"}</div>
               </div>
@@ -80,7 +80,7 @@ export default function DemoPortal() {
         {/* CTA */}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <button onClick={() => navigate("/owner/login")} style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", border: "none", color: "#fff", padding: "13px 24px", borderRadius: 12, fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}>Get my own score →</button>
-          <button onClick={() => navigate("/manager/login")} style={{ background: "#1e293baa", border: "1px solid #334155", color: "#e2e8f0", padding: "13px 24px", borderRadius: 12, fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}>🏦 Bank Officer login</button>
+          <button onClick={() => navigate("/manager/login")} style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", color: "var(--c-text-2)", padding: "13px 24px", borderRadius: 12, fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}>🏦 Bank Officer login</button>
         </div>
       </div>
     </div>

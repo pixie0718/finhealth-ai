@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { register, login } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "../components/ThemeToggle";
 
 const ROLE_CONFIG = {
   msme: {
@@ -74,7 +75,7 @@ export default function AuthPage({ role = "msme" }) {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(180deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%)",
+      background: "linear-gradient(180deg, var(--c-bg) 0%, var(--c-bg-alt) 50%, var(--c-bg) 100%)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -177,6 +178,11 @@ export default function AuthPage({ role = "msme" }) {
         🔒
       </div>
 
+      {/* Theme toggle (top-right) */}
+      <div style={{ position: "absolute", top: 20, right: 20, zIndex: 5 }}>
+        <ThemeToggle />
+      </div>
+
       {/* Main Container */}
       <div style={{
         position: "relative",
@@ -230,7 +236,7 @@ export default function AuthPage({ role = "msme" }) {
           <h1 style={{
             fontSize: window.innerWidth < 1000 ? 36 : 48,
             fontWeight: 900,
-            color: "#f1f5f9",
+            color: "var(--c-text)",
             marginBottom: 16,
             lineHeight: 1.1,
             letterSpacing: -1,
@@ -312,7 +318,7 @@ export default function AuthPage({ role = "msme" }) {
                   {f.svg}
                 </div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", marginBottom: 4 }}>
                     {f.label}
                   </div>
                   <div style={{ fontSize: 12, color: "#64748b" }}>
@@ -344,7 +350,7 @@ export default function AuthPage({ role = "msme" }) {
         <div className="auth-form">
           {/* Card */}
           <div style={{
-            background: "linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%)",
+            background: "linear-gradient(135deg, var(--c-auth-card-1) 0%, var(--c-auth-card-2) 100%)",
             backdropFilter: "blur(20px)",
             border: `1.5px solid rgba(${cfg.color === "#10b981" ? "16, 185, 129" : "59, 130, 246"}, 0.3)`,
             borderRadius: 20,
@@ -374,7 +380,7 @@ export default function AuthPage({ role = "msme" }) {
               <h2 style={{
                 fontSize: 28,
                 fontWeight: 900,
-                color: "#f1f5f9",
+                color: "var(--c-text)",
                 margin: 0,
               }}>
                 {mode === "login" ? "Welcome Back" : "Get Started"}
@@ -445,8 +451,8 @@ export default function AuthPage({ role = "msme" }) {
                       fontSize: 14,
                       outline: "none",
                       boxSizing: "border-box",
-                      color: "#f1f5f9",
-                      background: "rgba(15, 23, 42, 0.5)",
+                      color: "var(--c-text)",
+                      background: "var(--c-input-bg)",
                       "--accent": cfg.accent,
                     }}
                     value={form.full_name}
@@ -485,8 +491,8 @@ export default function AuthPage({ role = "msme" }) {
                     fontSize: 14,
                     outline: "none",
                     boxSizing: "border-box",
-                    color: "#f1f5f9",
-                    background: "rgba(15, 23, 42, 0.5)",
+                    color: "var(--c-text)",
+                    background: "var(--c-input-bg)",
                     "--accent": cfg.accent,
                   }}
                   value={form.email}
@@ -526,8 +532,8 @@ export default function AuthPage({ role = "msme" }) {
                     fontSize: 14,
                     outline: "none",
                     boxSizing: "border-box",
-                    color: "#f1f5f9",
-                    background: "rgba(15, 23, 42, 0.5)",
+                    color: "var(--c-text)",
+                    background: "var(--c-input-bg)",
                     "--accent": cfg.accent,
                   }}
                   value={form.password}
@@ -566,8 +572,8 @@ export default function AuthPage({ role = "msme" }) {
                       fontSize: 14,
                       outline: "none",
                       boxSizing: "border-box",
-                      color: "#f1f5f9",
-                      background: "rgba(15, 23, 42, 0.5)",
+                      color: "var(--c-text)",
+                      background: "var(--c-input-bg)",
                       "--accent": cfg.accent,
                     }}
                     value={form.confirm_password}

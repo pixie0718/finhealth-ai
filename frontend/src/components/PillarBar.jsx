@@ -30,7 +30,7 @@ export default function PillarBar({ scores }) {
               </span>
               <span style={{ fontSize: 14, fontWeight: 700, color }}>{score}</span>
             </div>
-            <div style={{ background: "#1e293b", borderRadius: 8, height: 8, overflow: "hidden" }}>
+            <div style={{ background: "var(--c-surface)", borderRadius: 8, height: 8, overflow: "hidden" }}>
               <div
                 style={{
                   height: "100%",

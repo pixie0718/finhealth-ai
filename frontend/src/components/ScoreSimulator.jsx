@@ -131,7 +131,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
         {isChanged && (
           <button onClick={reset} style={{
             padding: "6px 14px", background: "transparent",
-            border: "1px solid #334155", borderRadius: 8,
+            border: "1px solid var(--c-border)", borderRadius: 8,
             color: "#64748b", fontSize: 12, cursor: "pointer",
           }}>Reset</button>
         )}
@@ -153,7 +153,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
                     <span style={{ fontSize: 12, color: "#cbd5e1" }}>{lever.label}</span>
                     <span style={{
                       fontSize: 10, padding: "1px 6px", borderRadius: 10,
-                      background: "#334155", color: "#64748b",
+                      background: "var(--c-surface-2)", color: "#64748b",
                     }}>{lever.pillar}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -164,7 +164,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
                     )}
                     <span style={{
                       fontSize: 13, fontWeight: 700,
-                      color: changed ? (lever.invert ? (val < current ? "#22c55e" : "#ef4444") : (val > current ? "#22c55e" : "#ef4444")) : "#f1f5f9",
+                      color: changed ? (lever.invert ? (val < current ? "#22c55e" : "#ef4444") : (val > current ? "#22c55e" : "#ef4444")) : "var(--c-text)",
                     }}>
                       {lever.format(val)}
                     </span>
@@ -189,7 +189,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
 
           {/* Score comparison */}
           <div style={{
-            background: "#0f172a", border: "1px solid #334155",
+            background: "var(--c-bg)", border: "1px solid var(--c-border)",
             borderRadius: 14, padding: "18px 20px",
           }}>
             <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1.5, marginBottom: 14 }}>OVERALL SCORE</div>
@@ -224,7 +224,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
 
           {/* Risk band */}
           <div style={{
-            background: "#0f172a", border: `1px solid ${simRisk.color}33`,
+            background: "var(--c-bg)", border: `1px solid ${simRisk.color}33`,
             borderRadius: 14, padding: "14px 18px",
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}>
@@ -244,7 +244,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
 
           {/* Pillar comparison */}
           <div style={{
-            background: "#0f172a", border: "1px solid #334155",
+            background: "var(--c-bg)", border: "1px solid var(--c-border)",
             borderRadius: 14, padding: "14px 18px",
           }}>
             <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1.5, marginBottom: 12 }}>PILLAR IMPACT</div>
@@ -260,7 +260,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
               return (
                 <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <div style={{ width: 70, fontSize: 11, color: "#64748b" }}>{p.label}</div>
-                  <div style={{ flex: 1, height: 5, background: "#1e293b", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ flex: 1, height: 5, background: "var(--c-surface)", borderRadius: 3, overflow: "hidden" }}>
                     <div style={{
                       height: "100%", width: `${simScores[p.key]}%`,
                       background: color, borderRadius: 3, transition: "width 0.3s ease",

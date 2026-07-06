@@ -152,14 +152,14 @@ export default function Dashboard({ onView }) {
       {/* Header row */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
         <div>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", letterSpacing: -0.5 }}>Banker Dashboard</h2>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--c-text)", letterSpacing: -0.5 }}>Banker Dashboard</h2>
           <p style={{ color: "#475569", fontSize: 13, marginTop: 5 }}>
             AI-powered credit intelligence • {records.length} applications processed
           </p>
         </div>
         <button onClick={runDemo} disabled={demoing} style={{
           padding: "12px 24px", borderRadius: 12,
-          background: demoing ? "#334155" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+          background: demoing ? "var(--c-surface-2)" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
           border: "none", color: "#fff", fontSize: 14, fontWeight: 700,
           cursor: demoing ? "not-allowed" : "pointer",
           boxShadow: demoing ? "none" : "0 4px 20px #3b82f644",
@@ -236,11 +236,11 @@ export default function Dashboard({ onView }) {
       {/* Portfolio Outcomes — post-disbursement loan quality */}
       {outcomeStats && outcomeStats.total > 0 && (
         <div style={{
-          background: "#1e293b", border: "1px solid #334155",
+          background: "var(--c-surface)", border: "1px solid var(--c-border)",
           borderRadius: 18, padding: "20px 24px", marginBottom: 32,
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>📈 Portfolio Outcomes</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>📈 Portfolio Outcomes</div>
             <div style={{ fontSize: 11, color: "#475569" }}>{outcomeStats.total} tracked</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 14 }}>
@@ -251,7 +251,7 @@ export default function Dashboard({ onView }) {
               { label: "NPA", value: outcomeStats.npa ?? 0, color: "#ef4444" },
             ].map((s) => (
               <div key={s.label} style={{
-                background: "#0f172a", border: "1px solid #1e293b",
+                background: "var(--c-bg)", border: "1px solid var(--c-border-soft)",
                 borderRadius: 12, padding: "14px 16px",
               }}>
                 <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, marginBottom: 6 }}>{s.label}</div>
@@ -265,15 +265,15 @@ export default function Dashboard({ onView }) {
       {/* Incoming loan applications */}
       {applications.length > 0 && (
         <div style={{
-          background: "#1e293b", border: "1px solid #334155",
+          background: "var(--c-surface)", border: "1px solid var(--c-border)",
           borderRadius: 18, padding: "20px 24px", marginBottom: 32,
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>📥 Loan Applications</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>📥 Loan Applications</div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 11, color: "#475569" }}>{applications.length} received</span>
               <button onClick={refreshLive} title="Refresh" style={{
-                background: "transparent", border: "1px solid #334155", color: "#94a3b8",
+                background: "transparent", border: "1px solid var(--c-border)", color: "#94a3b8",
                 borderRadius: 8, padding: "3px 10px", fontSize: 11, cursor: "pointer",
               }}>↻ Refresh</button>
             </div>
@@ -287,10 +287,10 @@ export default function Dashboard({ onView }) {
                 <div key={a.reference} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                   flexWrap: "wrap", gap: 10,
-                  background: "#0f172a", borderRadius: 10, padding: "10px 14px",
+                  background: "var(--c-bg)", borderRadius: 10, padding: "10px 14px",
                 }}>
                   <div style={{ minWidth: 150, flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{a.business_name || "—"}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--c-text-2)" }}>{a.business_name || "—"}</div>
                     <div style={{ fontSize: 11, color: "#475569" }}>{a.reference} • {a.product}</div>
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#93c5fd" }}>
@@ -332,7 +332,7 @@ export default function Dashboard({ onView }) {
                       )}
                       <button onClick={() => updateApp(a.reference, "UNDER_REVIEW")} style={{
                         fontSize: 11, fontWeight: 600, cursor: "pointer",
-                        color: "#94a3b8", background: "transparent", border: "1px solid #334155",
+                        color: "#94a3b8", background: "transparent", border: "1px solid var(--c-border)",
                         padding: "5px 12px", borderRadius: 8,
                       }}>Reopen</button>
                     </div>
@@ -374,7 +374,7 @@ export default function Dashboard({ onView }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {records.map((r) => {
             const color = riskColors[r.loan_eligibility?.risk_band] || "#64748b";
-            const bg = riskBg[r.loan_eligibility?.risk_band] || "#1e293b";
+            const bg = riskBg[r.loan_eligibility?.risk_band] || "var(--c-surface)";
             const score = Math.round(r.pillar_scores?.overall ?? 0);
             const pillars = r.pillar_scores || {};
 
@@ -382,7 +382,7 @@ export default function Dashboard({ onView }) {
               <div key={r.msme_id}
                 onClick={() => onView(r)}
                 style={{
-                  background: "#1e293b",
+                  background: "var(--c-surface)",
                   border: "1px solid #1e3a5f",
                   borderRadius: 18,
                   padding: "20px 26px",
@@ -416,7 +416,7 @@ export default function Dashboard({ onView }) {
                     <div style={{ fontSize: 8, color: "#475569", letterSpacing: 0.5 }}>/ 100</div>
                   </div>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 16, color: "#f1f5f9" }}>{r.business_name}</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: "var(--c-text)" }}>{r.business_name}</div>
                     <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
                       📍 {r.city} &nbsp;•&nbsp; 🏭 {r.business_type} &nbsp;•&nbsp; ⏱ {r.years_in_business} yrs
                     </div>
@@ -434,14 +434,14 @@ export default function Dashboard({ onView }) {
                           <div key={p.key} style={{ textAlign: "center" }}>
                             <div style={{
                               width: 28, height: 4, borderRadius: 2,
-                              background: "#0f172a", overflow: "hidden",
+                              background: "var(--c-bg)", overflow: "hidden",
                             }}>
                               <div style={{
                                 width: `${val}%`, height: "100%",
                                 background: p.color, borderRadius: 2,
                               }} />
                             </div>
-                            <div style={{ fontSize: 8, color: "#334155", marginTop: 2 }}>{p.label}</div>
+                            <div style={{ fontSize: 8, color: "#64748b", marginTop: 2 }}>{p.label}</div>
                           </div>
                         );
                       })}
@@ -453,7 +453,7 @@ export default function Dashboard({ onView }) {
                 <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, marginBottom: 3 }}>LOAN ELIGIBLE</div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9" }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "var(--c-text)" }}>
                       ₹{((r.loan_eligibility?.eligible_loan_amount ?? 0) / 100000).toFixed(1)}L
                     </div>
                   </div>
@@ -466,7 +466,7 @@ export default function Dashboard({ onView }) {
                   }}>
                     {r.loan_eligibility?.risk_band}
                   </div>
-                  <div style={{ fontSize: 11, color: "#334155" }}>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>
                     {new Date(r.generated_at).toLocaleDateString("en-IN")}
                   </div>
                   <div style={{

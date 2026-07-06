@@ -30,6 +30,21 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>FinHealth AI — MSME Credit Intelligence</title>
+    <!-- Set the theme BEFORE first paint to avoid a light/dark flash (FOUC).
+         Saved choice wins; otherwise follow the OS preference. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("fh_theme");
+          var t = (saved === "light" || saved === "dark")
+            ? saved
+            : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

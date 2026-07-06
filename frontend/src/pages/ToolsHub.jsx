@@ -85,8 +85,8 @@ export default function ToolsHub() {
   const [btCity, setBtCity] = useState("Mumbai");
 
   const inp = {
-    background:"#0f172a", border:"1px solid #334155", borderRadius:10,
-    padding:"10px 14px", color:"#f1f5f9", fontSize:13, outline:"none",
+    background:"var(--c-bg)", border:"1px solid var(--c-border)", borderRadius:10,
+    padding:"10px 14px", color:"var(--c-text)", fontSize:13, outline:"none",
   };
 
   return (
@@ -97,7 +97,7 @@ export default function ToolsHub() {
         <div style={{ fontSize:11, color:"#3b82f6", letterSpacing:2, fontWeight:700, marginBottom:6 }}>
           FINANCIAL TOOLS
         </div>
-        <h2 style={{ fontSize: isMobile ? 20 : 26, fontWeight:800, color:"#f1f5f9", marginBottom:6 }}>
+        <h2 style={{ fontSize: isMobile ? 20 : 26, fontWeight:800, color:"var(--c-text)", marginBottom:6 }}>
           Tools & Calculators
         </h2>
         <p style={{ fontSize:13, color:"#64748b" }}>
@@ -114,24 +114,24 @@ export default function ToolsHub() {
         {TOOLS.map(t => (
           <button key={t.id} onClick={() => setActive(t.id)} style={{
             padding:"14px 12px",
-            background: active === t.id ? "#1e3a5f" : "#1e293b",
-            border: active === t.id ? "1.5px solid #3b82f6" : "1px solid #334155",
+            background: active === t.id ? "#1e3a5f" : "var(--c-surface)",
+            border: active === t.id ? "1.5px solid #3b82f6" : "1px solid var(--c-border)",
             borderRadius:16, cursor:"pointer", textAlign:"left",
             transition:"all 0.15s",
           }}>
             <div style={{ fontSize:22, marginBottom:6 }}>{t.icon}</div>
             <div style={{ fontSize:13, fontWeight:700,
-              color: active === t.id ? "#93c5fd" : "#f1f5f9", lineHeight:1.2, marginBottom:4 }}>
+              color: active === t.id ? "#93c5fd" : "var(--c-text)", lineHeight:1.2, marginBottom:4 }}>
               {t.label}
             </div>
-            <div style={{ fontSize:11, color:"#475569", lineHeight:1.3 }}>{t.desc}</div>
+            <div style={{ fontSize:11, color: active === t.id ? "#cbd5e1" : "#64748b", lineHeight:1.3 }}>{t.desc}</div>
           </button>
         ))}
       </div>
 
       {/* Tool panel */}
       <div style={{
-        background:"#1e293b", border:"1px solid #334155",
+        background:"var(--c-surface)", border:"1px solid var(--c-border)",
         borderRadius:24, padding: isMobile ? "20px 16px" : "32px 28px",
         minHeight:400,
       }}>
@@ -141,7 +141,7 @@ export default function ToolsHub() {
           <div>
             <div style={{ marginBottom:20 }}>
               <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5 }}>TOOL</div>
-              <h3 style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", marginTop:4 }}>EMI Calculator</h3>
+              <h3 style={{ fontSize:18, fontWeight:700, color:"var(--c-text)", marginTop:4 }}>EMI Calculator</h3>
               <p style={{ fontSize:13, color:"#64748b", marginTop:4 }}>
                 Select a loan type, adjust the amount and tenure, and instantly see your monthly EMI.
               </p>
@@ -155,7 +155,7 @@ export default function ToolsHub() {
           <div>
             <div style={{ marginBottom:20 }}>
               <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5 }}>TOOL</div>
-              <h3 style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", marginTop:4 }}>Score Simulator</h3>
+              <h3 style={{ fontSize:18, fontWeight:700, color:"var(--c-text)", marginTop:4 }}>Score Simulator</h3>
               <p style={{ fontSize:13, color:"#64748b", marginTop:4 }}>
                 Explore how improving key metrics — GST compliance, credit score, payment discipline — lifts your financial health score.
                 Values start at typical MSME averages.
@@ -164,7 +164,7 @@ export default function ToolsHub() {
             <div style={{
               display:"flex", alignItems:"center", gap:10, marginBottom:20,
               padding:"12px 16px",
-              background:"#0f172a", border:"1px solid #334155", borderRadius:12,
+              background:"var(--c-bg)", border:"1px solid var(--c-border)", borderRadius:12,
             }}>
               <span style={{ fontSize:16 }}>ℹ️</span>
               <span style={{ fontSize:12, color:"#64748b" }}>
@@ -185,7 +185,7 @@ export default function ToolsHub() {
           <div>
             <div style={{ marginBottom:20 }}>
               <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5 }}>TOOL</div>
-              <h3 style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", marginTop:4 }}>Peer Benchmark</h3>
+              <h3 style={{ fontSize:18, fontWeight:700, color:"var(--c-text)", marginTop:4 }}>Peer Benchmark</h3>
               <p style={{ fontSize:13, color:"#64748b", marginTop:4 }}>
                 See how businesses like yours perform on average. Select your industry and city below.
               </p>
@@ -224,7 +224,7 @@ export default function ToolsHub() {
           <div>
             <div style={{ marginBottom:20 }}>
               <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5 }}>TOOL</div>
-              <h3 style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", marginTop:4 }}>Compliance Calendar</h3>
+              <h3 style={{ fontSize:18, fontWeight:700, color:"var(--c-text)", marginTop:4 }}>Compliance Calendar</h3>
               <p style={{ fontSize:13, color:"#64748b", marginTop:4 }}>
                 Never miss a GST, EPFO, TDS, or Income Tax deadline. Upcoming dues highlighted by urgency.
               </p>

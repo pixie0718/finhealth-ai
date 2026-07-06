@@ -33,7 +33,7 @@ export default function ConsentCard({ consentId }) {
             display:"flex", alignItems:"center", justifyContent:"center", fontSize:18,
           }}>🔐</div>
           <div>
-            <div style={{ fontSize:13, fontWeight:700, color:"#f1f5f9" }}>
+            <div style={{ fontSize:13, fontWeight:700, color:"var(--c-text)" }}>
               AA Consent Active
             </div>
             <div style={{ fontSize:11, color:"#64748b" }}>
@@ -48,7 +48,7 @@ export default function ConsentCard({ consentId }) {
             color:statusColor, fontWeight:700,
           }}>{consent.status}</span>
           <button onClick={() => setOpen(o => !o)} style={{
-            background:"transparent", border:"1px solid #334155",
+            background:"transparent", border:"1px solid var(--c-border)",
             borderRadius:8, padding:"5px 12px", color:"#64748b",
             fontSize:11, cursor:"pointer",
           }}>{open ? "Hide" : "View Artifact"}</button>
@@ -67,7 +67,7 @@ export default function ConsentCard({ consentId }) {
 
           {/* FIP List */}
           <div style={{
-            background:"#0f172a", border:"1px solid #334155",
+            background:"var(--c-bg)", border:"1px solid var(--c-border)",
             borderRadius:12, padding:"14px 16px", marginBottom:12,
           }}>
             <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:10 }}>
@@ -77,10 +77,10 @@ export default function ConsentCard({ consentId }) {
               {(consent.fip_list || []).map((fip, i) => (
                 <div key={i} style={{
                   display:"flex", alignItems:"center", justifyContent:"space-between",
-                  padding:"8px 12px", background:"#1e293b", borderRadius:8,
+                  padding:"8px 12px", background:"var(--c-surface)", borderRadius:8,
                 }}>
                   <div>
-                    <div style={{ fontSize:12, color:"#f1f5f9", fontWeight:600 }}>{fip.name}</div>
+                    <div style={{ fontSize:12, color:"var(--c-text)", fontWeight:600 }}>{fip.name}</div>
                     <div style={{ fontSize:10, color:"#475569" }}>{fip.id}</div>
                   </div>
                   <span style={{
@@ -101,17 +101,17 @@ export default function ConsentCard({ consentId }) {
 
           {/* Signature */}
           <div style={{
-            background:"#0f172a", border:"1px solid #334155",
+            background:"var(--c-bg)", border:"1px solid var(--c-border)",
             borderRadius:10, padding:"10px 14px",
             display:"flex", alignItems:"center", justifyContent:"space-between",
           }}>
             <span style={{ fontSize:11, color:"#475569" }}>Digital Signature</span>
-            <span style={{ fontSize:10, color:"#334155", fontFamily:"monospace" }}>
+            <span style={{ fontSize:10, color:"#64748b", fontFamily:"monospace" }}>
               {consent.digital_signature}
             </span>
           </div>
 
-          <div style={{ fontSize:10, color:"#334155", marginTop:10, textAlign:"center" }}>
+          <div style={{ fontSize:10, color:"#64748b", marginTop:10, textAlign:"center" }}>
             Generated under RBI Account Aggregator Framework • Consent ID: {consentId}
           </div>
         </div>
@@ -122,9 +122,9 @@ export default function ConsentCard({ consentId }) {
 
 function InfoBox({ label, value }) {
   return (
-    <div style={{ background:"#0f172a", border:"1px solid #1e293b", borderRadius:10, padding:"10px 14px" }}>
+    <div style={{ background:"var(--c-bg)", border:"1px solid var(--c-border-soft)", borderRadius:10, padding:"10px 14px" }}>
       <div style={{ fontSize:10, color:"#475569", marginBottom:4 }}>{label}</div>
-      <div style={{ fontSize:12, color:"#f1f5f9", fontWeight:600 }}>{value || "—"}</div>
+      <div style={{ fontSize:12, color:"var(--c-text)", fontWeight:600 }}>{value || "—"}</div>
     </div>
   );
 }

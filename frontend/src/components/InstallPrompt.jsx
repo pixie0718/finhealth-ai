@@ -79,7 +79,7 @@ export default function InstallPrompt() {
         ? (isShell ? "calc(150px + env(safe-area-inset-bottom, 0px))" : "calc(20px + env(safe-area-inset-bottom, 0px))")
         : (isShell ? 96 : 24),
       width: "min(300px, calc(100vw - 24px))",
-      background: "linear-gradient(135deg, #1e293b, #221645)",
+      background: "linear-gradient(135deg, var(--c-surface), #221645)",
       border: "1px solid #3b82f566",
       borderRadius: 16,
       boxShadow: "0 12px 40px #000000aa",
@@ -99,7 +99,7 @@ export default function InstallPrompt() {
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21,
         }}>📊</div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f1f5f9" }}>Install FinHealth AI</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--c-text)" }}>Install FinHealth AI</div>
           <div style={{ fontSize: 11.5, color: "#94a3b8", lineHeight: 1.35 }}>
             {canPrompt ? "Full-screen app on your home screen." : instruction}
           </div>
@@ -115,7 +115,7 @@ export default function InstallPrompt() {
       ) : (
         <button onClick={dismiss} style={{
           width: "100%",
-          background: "transparent", border: "1px solid #334155", color: "#94a3b8",
+          background: "transparent", border: "1px solid var(--c-border)", color: "#94a3b8",
           padding: "9px", borderRadius: 10, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
         }}>Got it</button>
       )}

@@ -1,13 +1,102 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   THEME TOKENS
+   The app was originally dark-only with hardcoded slate hexes. These semantic
+   tokens let every surface flip between light & dark. Dark values are the EXACT
+   original hexes, so dark mode looks identical to before. JS (ThemeContext +
+   the inline script in index.html) sets data-theme on <html>; the media query is
+   only a pre-JS fallback.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* LIGHT (default) */
+  --c-bg: #f4f6fb;
+  --c-bg-alt: #eaeef5;
+  --c-surface: #ffffff;
+  --c-surface-2: #eef2f7;
+  --c-border: #e2e8f0;
+  --c-border-soft: #eef2f7;
+  --c-border-strong: #cbd5e1;
+  --c-text: #0f172a;
+  --c-text-2: #334155;
+  --c-scroll-track: #e2e8f0;
+  --c-scroll-thumb: #cbd5e1;
+  /* glass / auth / landing accents */
+  --c-input-bg: #ffffff;
+  --c-auth-card-1: rgba(255, 255, 255, 0.92);
+  --c-auth-card-2: rgba(241, 245, 249, 0.88);
+  --c-hero-glow-1: rgba(59, 130, 246, 0.10);
+  --c-hero-glow-2: rgba(139, 92, 246, 0.08);
+  /* landing deep-navy surfaces (light) */
+  --c-deepest: #f4f6fb;
+  --c-section: #edf1f7;
+  --c-panel: #e9eef6;
+  --c-tile: #ffffff;
+  --c-tile2: #f6f9fc;
+  --c-header: rgba(244, 246, 251, 0.85);
+}
+:root[data-theme="dark"] {
+  --c-bg: #0f172a;
+  --c-bg-alt: #0b1120;
+  --c-surface: #1e293b;
+  --c-surface-2: #334155;
+  --c-border: #334155;
+  --c-border-soft: #1e293b;
+  --c-border-strong: #0f172a;
+  --c-text: #f1f5f9;
+  --c-text-2: #e2e8f0;
+  --c-scroll-track: #1e293b;
+  --c-scroll-thumb: #334155;
+  --c-input-bg: rgba(15, 23, 42, 0.5);
+  --c-auth-card-1: rgba(30, 41, 59, 0.8);
+  --c-auth-card-2: rgba(15, 23, 42, 0.8);
+  --c-hero-glow-1: rgba(59, 130, 246, 0.10);
+  --c-hero-glow-2: rgba(139, 92, 246, 0.10);
+  /* landing deep-navy surfaces (dark = original hexes) */
+  --c-deepest: #080c18;
+  --c-section: #0b1120;
+  --c-panel: #0b1220;
+  --c-tile: #0f1a30;
+  --c-tile2: #101c34;
+  --c-header: rgba(8, 12, 24, 0.8);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --c-bg: #0f172a;
+    --c-bg-alt: #0b1120;
+    --c-surface: #1e293b;
+    --c-surface-2: #334155;
+    --c-border: #334155;
+    --c-border-soft: #1e293b;
+    --c-border-strong: #0f172a;
+    --c-text: #f1f5f9;
+    --c-text-2: #e2e8f0;
+    --c-scroll-track: #1e293b;
+    --c-scroll-thumb: #334155;
+    --c-input-bg: rgba(15, 23, 42, 0.5);
+    --c-auth-card-1: rgba(30, 41, 59, 0.8);
+    --c-auth-card-2: rgba(15, 23, 42, 0.8);
+    --c-hero-glow-1: rgba(59, 130, 246, 0.10);
+    --c-hero-glow-2: rgba(139, 92, 246, 0.10);
+    --c-deepest: #080c18;
+    --c-section: #0b1120;
+    --c-panel: #0b1220;
+    --c-tile: #0f1a30;
+    --c-tile2: #101c34;
+    --c-header: rgba(8, 12, 24, 0.8);
+  }
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--c-bg);
+  color: var(--c-text-2);
   min-height: 100vh;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #1e293b; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--c-scroll-track); }
+::-webkit-scrollbar-thumb { background: var(--c-scroll-thumb); border-radius: 3px; }
 
 /* Global animation keyframes (used by loaders/spinners across components) */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -66,4 +155,4 @@ body {
   background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.22s ease;
 }
 .fh-nav:hover::after { width: 100%; }
-.fh-nav:hover { color: #e2e8f0 !important; }
+.fh-nav:hover { color: var(--c-text-2) !important; }

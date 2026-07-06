@@ -8,15 +8,15 @@ const BANDS = ["LOW", "MEDIUM-LOW", "MEDIUM", "HIGH"];
 const bandColor = { LOW: "#22c55e", "MEDIUM-LOW": "#eab308", MEDIUM: "#f97316", HIGH: "#ef4444" };
 
 const card = {
-  background: "#1e293b", border: "1px solid #334155",
+  background: "var(--c-surface)", border: "1px solid var(--c-border)",
   borderRadius: 16, padding: "18px 20px",
 };
 
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 10, padding: "8px 12px", fontSize: 12 }}>
-      <div style={{ color: "#f1f5f9", fontWeight: 700 }}>{label ?? payload[0].name}</div>
+    <div style={{ background: "var(--c-bg)", border: "1px solid var(--c-border)", borderRadius: 10, padding: "8px 12px", fontSize: 12 }}>
+      <div style={{ color: "var(--c-text)", fontWeight: 700 }}>{label ?? payload[0].name}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color || p.payload?.fill || "#93c5fd" }}>
           {p.name}: <b>{p.value}</b>
@@ -80,7 +80,7 @@ export default function PortfolioAnalytics({ records }) {
 
         {/* Risk band donut */}
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>Risk Band Mix</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--c-text)", marginBottom: 4 }}>Risk Band Mix</div>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>{records.length} assessments</div>
           <div style={{ position: "relative" }}>
             <ResponsiveContainer width="100%" height={180}>
@@ -96,7 +96,7 @@ export default function PortfolioAnalytics({ records }) {
               position: "absolute", inset: 0, display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center", pointerEvents: "none",
             }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#f1f5f9" }}>{avgScore}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "var(--c-text)" }}>{avgScore}</div>
               <div style={{ fontSize: 9, color: "#64748b", letterSpacing: 1 }}>AVG SCORE</div>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function PortfolioAnalytics({ records }) {
 
         {/* Sector-wise average score */}
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>Average Score by Sector</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--c-text)", marginBottom: 4 }}>Average Score by Sector</div>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Where your portfolio is strongest</div>
           <ResponsiveContainer width="100%" height={Math.max(160, sectorData.length * 30)}>
             <BarChart data={sectorData} layout="vertical" margin={{ left: 8, right: 16, top: 4, bottom: 4 }}>
@@ -135,7 +135,7 @@ export default function PortfolioAnalytics({ records }) {
 
         {/* Risk heatmap: sector × risk band */}
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>Risk Heatmap</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--c-text)", marginBottom: 4 }}>Risk Heatmap</div>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Applications by sector &amp; risk band</div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 4, minWidth: 340 }}>
@@ -157,10 +157,10 @@ export default function PortfolioAnalytics({ records }) {
                         <td key={c.band} style={{ padding: 0 }}>
                           <div title={`${row.sector} · ${c.band}: ${c.count}`} style={{
                             height: 34, borderRadius: 6,
-                            background: c.count ? `${bandColor[c.band]}${Math.round(20 + intensity * 200).toString(16).padStart(2, "0")}` : "#0f172a",
-                            border: `1px solid ${c.count ? bandColor[c.band] + "55" : "#1e293b"}`,
+                            background: c.count ? `${bandColor[c.band]}${Math.round(20 + intensity * 200).toString(16).padStart(2, "0")}` : "var(--c-bg)",
+                            border: `1px solid ${c.count ? bandColor[c.band] + "55" : "var(--c-surface)"}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 12, fontWeight: 700, color: c.count ? "#fff" : "#334155",
+                            fontSize: 12, fontWeight: 700, color: c.count ? "#fff" : "#64748b",
                           }}>{c.count || ""}</div>
                         </td>
                       );
@@ -174,13 +174,13 @@ export default function PortfolioAnalytics({ records }) {
 
         {/* Geographic distribution */}
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>Geographic Spread</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--c-text)", marginBottom: 4 }}>Geographic Spread</div>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Applications by city</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             {cityData.map((c) => (
               <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 78, fontSize: 11.5, color: "#94a3b8", whiteSpace: "nowrap" }}>📍 {c.name}</div>
-                <div style={{ flex: 1, height: 18, background: "#0f172a", borderRadius: 5, overflow: "hidden", position: "relative" }}>
+                <div style={{ flex: 1, height: 18, background: "var(--c-bg)", borderRadius: 5, overflow: "hidden", position: "relative" }}>
                   <div style={{ width: `${(c.count / maxCityCount) * 100}%`, height: "100%", background: "linear-gradient(90deg, #3b82f6, #8b5cf6)", borderRadius: 5 }} />
                   <span style={{ position: "absolute", right: 8, top: 0, lineHeight: "18px", fontSize: 10.5, color: "#cbd5e1", fontWeight: 700 }}>{c.count} · avg {c.avg}</span>
                 </div>

@@ -8,11 +8,11 @@ const steps = ["Business Details", "Data Sources", "Consent & Submit"];
 
 const inputStyle = {
   width: "100%",
-  background: "#0f172a",
-  border: "1px solid #334155",
+  background: "var(--c-bg)",
+  border: "1px solid var(--c-border)",
   borderRadius: 10,
   padding: "12px 16px",
-  color: "#f1f5f9",
+  color: "var(--c-text)",
   fontSize: 14,
   outline: "none",
 };
@@ -69,8 +69,8 @@ export default function Onboarding({ onResult }) {
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
             <div style={{
               width: 32, height: 32, borderRadius: "50%",
-              background: i <= step ? "#3b82f6" : "#1e293b",
-              border: `2px solid ${i <= step ? "#3b82f6" : "#334155"}`,
+              background: i <= step ? "#3b82f6" : "var(--c-surface)",
+              border: `2px solid ${i <= step ? "#3b82f6" : "#64748b"}`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 13, fontWeight: 700, color: i <= step ? "#fff" : "#475569",
               transition: "all 0.3s",
@@ -86,8 +86,8 @@ export default function Onboarding({ onResult }) {
       </div>
 
       <div style={{
-        background: "#1e293b",
-        border: "1px solid #334155",
+        background: "var(--c-surface)",
+        border: "1px solid var(--c-border)",
         borderRadius: 20,
         padding: 32,
       }}>
@@ -141,7 +141,7 @@ export default function Onboarding({ onResult }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {dataSources.map((ds) => (
                 <div key={ds.name} style={{
-                  background: "#0f172a",
+                  background: "var(--c-bg)",
                   border: `1px solid ${ds.color}33`,
                   borderRadius: 12,
                   padding: "14px 16px",
@@ -174,11 +174,11 @@ export default function Onboarding({ onResult }) {
             </p>
 
             <div style={{
-              background: "#0f172a", border: "1px solid #334155",
+              background: "var(--c-bg)", border: "1px solid var(--c-border)",
               borderRadius: 12, padding: 20, marginBottom: 20,
               fontSize: 13, color: "#94a3b8", lineHeight: 1.7,
             }}>
-              <strong style={{ color: "#f1f5f9", display: "block", marginBottom: 8 }}>I hereby consent to:</strong>
+              <strong style={{ color: "var(--c-text)", display: "block", marginBottom: 8 }}>I hereby consent to:</strong>
               <div>• Sharing of my GST filing data for credit assessment</div>
               <div>• Fetching bank statements via Account Aggregator framework</div>
               <div>• Access to EPFO records for employment verification</div>
@@ -213,8 +213,8 @@ export default function Onboarding({ onResult }) {
             disabled={step === 0}
             style={{
               padding: "10px 24px", borderRadius: 10,
-              background: "transparent", border: "1px solid #334155",
-              color: step === 0 ? "#334155" : "#94a3b8",
+              background: "transparent", border: "1px solid var(--c-border)",
+              color: step === 0 ? "#64748b" : "#94a3b8",
               fontSize: 14, cursor: step === 0 ? "not-allowed" : "pointer",
             }}
           >
@@ -240,7 +240,7 @@ export default function Onboarding({ onResult }) {
               disabled={!form.consent_given || loading}
               style={{
                 padding: "10px 28px", borderRadius: 10,
-                background: form.consent_given && !loading ? "#22c55e" : "#334155",
+                background: form.consent_given && !loading ? "#22c55e" : "#64748b",
                 border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
                 cursor: form.consent_given && !loading ? "pointer" : "not-allowed",
                 display: "flex", alignItems: "center", gap: 8,

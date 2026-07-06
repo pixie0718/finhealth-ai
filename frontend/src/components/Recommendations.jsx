@@ -15,8 +15,8 @@ export default function Recommendations({ recommendations }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {recommendations.map((rec, i) => {
           const color = priorityColor[rec.priority] || "#64748b";
-          const bg = priorityBg[rec.priority] || "#1e293b";
-          const border = priorityBorder[rec.priority] || "#334155";
+          const bg = priorityBg[rec.priority] || "var(--c-surface)";
+          const border = priorityBorder[rec.priority] || "var(--c-surface-2)";
           return (
             <div key={i} style={{
               background: bg,
@@ -30,12 +30,12 @@ export default function Recommendations({ recommendations }) {
               <div style={{
                 fontSize: 22, flexShrink: 0,
                 width: 40, height: 40, borderRadius: 10,
-                background: "#0f172a",
+                background: "var(--c-bg)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>{rec.icon}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{rec.title}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)" }}>{rec.title}</div>
                   <div style={{
                     fontSize: 10, fontWeight: 700, color,
                     border: `1px solid ${border}`,
