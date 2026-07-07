@@ -15,22 +15,22 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
-    role = Column(String, default="msme")
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(255), nullable=True)
+    role = Column(String(50), default="msme")
     created_at = Column(DateTime, server_default=func.now())
 
 
 class ScoreRecord(Base):
     __tablename__ = "scores"
-    msme_id = Column(String, primary_key=True, index=True)
+    msme_id = Column(String(50), primary_key=True, index=True)
     user_id = Column(Integer, nullable=True, index=True)
-    business_name = Column(String, nullable=False)
-    gstin = Column(String, nullable=True, index=True)
-    business_type = Column(String, nullable=True)
-    city = Column(String, nullable=True)
-    years_in_business = Column(String, nullable=True)
+    business_name = Column(String(255), nullable=False)
+    gstin = Column(String(15), nullable=True, index=True)
+    business_type = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=True)
+    years_in_business = Column(String(50), nullable=True)
     data_json = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
@@ -43,38 +43,38 @@ class ScoreSnapshot(Base):
     """
     __tablename__ = "score_snapshots"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    msme_id = Column(String, nullable=False, index=True)
+    msme_id = Column(String(50), nullable=False, index=True)
     user_id = Column(Integer, nullable=True, index=True)
-    gstin = Column(String, nullable=True, index=True)
+    gstin = Column(String(15), nullable=True, index=True)
     overall = Column(Float, nullable=True)
-    risk_band = Column(String, nullable=True)
-    generated_at = Column(String, nullable=True)
+    risk_band = Column(String(50), nullable=True)
+    generated_at = Column(String(255), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 
 
 class ConsentArtifact(Base):
     """Stores AA-style consent artifacts per GSTIN application."""
     __tablename__ = "consent_artifacts"
-    consent_id = Column(String, primary_key=True, index=True)
-    msme_id = Column(String, nullable=False, index=True)
-    gstin = Column(String, nullable=True)
+    consent_id = Column(String(100), primary_key=True, index=True)
+    msme_id = Column(String(50), nullable=False, index=True)
+    gstin = Column(String(15), nullable=True)
     user_id = Column(Integer, nullable=True)
     artifact_json = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     expires_at = Column(DateTime, nullable=True)
-    status = Column(String, default="ACTIVE")   # ACTIVE | REVOKED | EXPIRED
+    status = Column(String(50), default="ACTIVE")   # ACTIVE | REVOKED | EXPIRED
 
 
 class LoanOutcome(Base):
     """Tracks post-disbursement loan outcomes for model feedback."""
     __tablename__ = "loan_outcomes"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    msme_id = Column(String, nullable=False, index=True)
+    msme_id = Column(String(50), nullable=False, index=True)
     user_id = Column(Integer, nullable=True)
-    outcome = Column(String, nullable=False)   # repaid | npa | active | rejected
-    loan_product = Column(String, nullable=True)
+    outcome = Column(String(50), nullable=False)   # repaid | npa | active | rejected
+    loan_product = Column(String(100), nullable=True)
     loan_amount = Column(Float, nullable=True)
-    original_risk_band = Column(String, nullable=True)
+    original_risk_band = Column(String(50), nullable=True)
     original_score = Column(Float, nullable=True)
     banker_notes = Column(Text, nullable=True)
     recorded_at = Column(DateTime, server_default=func.now())
@@ -84,17 +84,17 @@ class LoanApplication(Base):
     """A loan application submitted by an MSME from the result screen."""
     __tablename__ = "loan_applications"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    reference = Column(String, unique=True, index=True)
-    msme_id = Column(String, nullable=False, index=True)
+    reference = Column(String(50), unique=True, index=True)
+    msme_id = Column(String(50), nullable=False, index=True)
     user_id = Column(Integer, nullable=True, index=True)
-    gstin = Column(String, nullable=True)
-    business_name = Column(String, nullable=True)
-    product = Column(String, nullable=True)
+    gstin = Column(String(15), nullable=True)
+    business_name = Column(String(255), nullable=True)
+    product = Column(String(100), nullable=True)
     loan_amount = Column(Float, nullable=True)
     interest_rate = Column(Float, nullable=True)
     tenure_months = Column(Integer, nullable=True)
     score = Column(Float, nullable=True)
-    status = Column(String, default="SUBMITTED")   # SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
+    status = Column(String(50), default="SUBMITTED")   # SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
     created_at = Column(DateTime, server_default=func.now())
 
 
@@ -103,13 +103,13 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, nullable=True, index=True)
-    user_email = Column(String, nullable=True)
-    role = Column(String, nullable=True)
-    action = Column(String, nullable=False)          # e.g. "POST /api/score/generate"
-    method = Column(String, nullable=True)
-    path = Column(String, nullable=True)
+    user_email = Column(String(255), nullable=True)
+    role = Column(String(50), nullable=True)
+    action = Column(String(255), nullable=False)          # e.g. "POST /api/score/generate"
+    method = Column(String(20), nullable=True)
+    path = Column(String(255), nullable=True)
     status_code = Column(Integer, nullable=True)
-    ip_address = Column(String, nullable=True)
+    ip_address = Column(String(50), nullable=True)
     created_at = Column(DateTime, server_default=func.now(), index=True)
 
 
@@ -117,8 +117,8 @@ class BenchmarkCache(Base):
     """Pre-computed peer benchmark statistics per (business_type, city)."""
     __tablename__ = "benchmark_cache"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    business_type = Column(String, nullable=False)
-    city = Column(String, nullable=False)
+    business_type = Column(String(100), nullable=False)
+    city = Column(String(100), nullable=False)
     cache_json = Column(Text, nullable=False)
     computed_at = Column(DateTime, server_default=func.now())
 
