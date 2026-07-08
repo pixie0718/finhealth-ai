@@ -1,14 +1,40 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import useIsMobile from "../hooks/useIsMobile";
 
 function clip(v, min, max) { return Math.min(Math.max(v, min), max); }
 
-function computeScores(f, ntc = false) {
+// Smoothly tweens a display number toward `value` whenever it changes,
+// so dragging a slider animates the score instead of snapping.
+function useTween(value, duration = 350) {
+  const [display, setDisplay] = useState(value);
+  const raf = useRef(null);
+  const from = useRef(value);
+  useEffect(() => {
+    cancelAnimationFrame(raf.current);
+    const start = performance.now();
+    const startVal = from.current;
+    function step(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(startVal + (value - startVal) * eased);
+      if (t < 1) raf.current = requestAnimationFrame(step);
+      else from.current = value;
+    }
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [value, duration]);
+  return display;
+}
+
+function computeScores(f, ntc = false, hasGstin = true) {
   // Weights in each pillar already sum to 100 and features are 0–1, so the weighted
   // sum is already on a 0–100 scale. (Must match backend compute_pillar_scores — an
   // extra ×100 here overflowed every pillar to 100, faking a huge simulated gain.)
   const cf = f.cash_flow_ratio * 35 + f.inflow_stability * 25 + (1 - f.bounce_rate) * 25 + Math.min(f.avg_balance_ratio, 1) * 15;
-  const comp = f.gst_compliance * 50 + f.epfo_compliance * 35 + Math.min(f.tax_to_revenue / 0.18, 1) * 15;
+  // No GSTIN — Compliance is 100% EPFO, matching the backend's no-GSTIN formula.
+  const comp = hasGstin
+    ? f.gst_compliance * 50 + f.epfo_compliance * 35 + Math.min(f.tax_to_revenue / 0.18, 1) * 15
+    : f.epfo_compliance * 100;
   const rev_growth_norm = clip(0.5 + f.revenue_growth * 0.8, 0, 1);
   const emp_growth_norm = clip(0.5 + (f.emp_growth || 0) * 0.8, 0, 1);
   const trend_norm = clip((f.revenue_trend_norm || 0) + 0.5, 0, 1);
@@ -71,12 +97,14 @@ const FALLBACK_FEATURES = {
   credit_score_norm: 0.67, bounce_rate: 0.05, revenue_growth: 0.1,
 };
 
-export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyRevenue }) {
+export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyRevenue, hasGstin = true }) {
   // rawFeatures can be null/undefined if the record pre-dates raw_features storage.
   // We must call all hooks unconditionally (Rules of Hooks), so we fall back to
   // safe defaults and render a disabled state instead of crashing.
   const isMobile = useIsMobile();
   const safeFeatures = rawFeatures || FALLBACK_FEATURES;
+  // No GSTIN — the GST slider doesn't apply, since Compliance is scored purely from EPFO.
+  const levers = hasGstin ? LEVERS : LEVERS.filter(l => l.key !== "gst_compliance");
 
   const [sliders, setSliders] = useState({
     gst_compliance: safeFeatures.gst_compliance,
@@ -89,9 +117,10 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
   // NTC businesses have no credit pillar — the backend redistributes its weight.
   const isNtc = currentScores?.credit_worthiness == null;
   const simFeatures = useMemo(() => ({ ...safeFeatures, ...sliders }), [sliders, safeFeatures]);
-  const simScores = useMemo(() => computeScores(simFeatures, isNtc), [simFeatures, isNtc]);
+  const simScores = useMemo(() => computeScores(simFeatures, isNtc, hasGstin), [simFeatures, isNtc, hasGstin]);
 
   const delta = Math.round((simScores.overall - currentScores.overall) * 10) / 10;
+  const animatedSim = useTween(simScores.overall);
   const currentRisk = getRisk(currentScores.overall);
   const simRisk = getRisk(simScores.overall);
   const bandChanged = simRisk.band !== currentRisk.band;
@@ -108,7 +137,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
     revenue_growth: safeFeatures.revenue_growth,
   });
 
-  const isChanged = LEVERS.some(l => Math.abs(sliders[l.key] - safeFeatures[l.key]) > 0.001);
+  const isChanged = levers.some(l => Math.abs(sliders[l.key] - safeFeatures[l.key]) > 0.001);
 
   return (
     <div>
@@ -141,7 +170,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
 
         {/* Sliders */}
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          {LEVERS.map((lever) => {
+          {levers.map((lever) => {
             const current = safeFeatures[lever.key];
             const val = sliders[lever.key];
             const changed = Math.abs(val - current) > 0.001;
@@ -217,7 +246,7 @@ export default function ScoreSimulator({ rawFeatures, currentScores, avgMonthlyR
               </div>
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>SIMULATED</div>
-                <div style={{ fontSize: 36, fontWeight: 900, color: simRisk.color }}>{simScores.overall}</div>
+                <div style={{ fontSize: 36, fontWeight: 900, color: simRisk.color }}>{animatedSim.toFixed(1)}</div>
               </div>
             </div>
           </div>

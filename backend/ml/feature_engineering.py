@@ -1,13 +1,12 @@
 import numpy as np
 
 
-def extract_features(profile: dict) -> dict:
+def extract_features(profile: dict, has_gstin: bool = True) -> dict:
     gst = profile["gst_data"]
     upi = profile["upi_aa_data"]
     epfo = profile["epfo_data"]
     credit = profile["credit_history"]
 
-    revenues = np.array(gst["monthly_revenues"])
     inflows = np.array(upi["monthly_inflows"])
     outflows = np.array(upi["monthly_outflows"])
     bounces = np.array(upi["bounce_counts"])
@@ -16,16 +15,26 @@ def extract_features(profile: dict) -> dict:
     salaries = np.array(epfo["avg_salaries"])
     buyers = np.array(gst["unique_buyers_per_month"])
 
+    # Without a GSTIN there's no GST-reported revenue or filing data to lean on —
+    # fall back to UPI/Bank AA inflow as the revenue proxy, and drop the GST-derived
+    # compliance/tax signals entirely rather than fabricate them.
+    if has_gstin:
+        revenues = np.array(gst["monthly_revenues"])
+        gst_compliance = gst["filing_compliance_rate"]
+        tax_to_revenue = gst["tax_paid"] / (np.sum(revenues) + 1)
+    else:
+        revenues = inflows
+        gst_compliance = 0.0
+        tax_to_revenue = 0.0
+
     net_cash_flow = inflows - outflows
     cash_flow_ratio = np.mean(net_cash_flow) / (np.mean(inflows) + 1)
     inflow_stability = 1 - (np.std(inflows) / (np.mean(inflows) + 1))
     bounce_rate = np.sum(bounces) / (np.sum(txns) + 1)
     avg_balance_ratio = upi["avg_monthly_balance"] / (np.mean(inflows) + 1)
 
-    gst_compliance = gst["filing_compliance_rate"]
     epfo_compliance = epfo["compliance_rate"]
-    tax_to_revenue = gst["tax_paid"] / (np.sum(revenues) + 1)
-    combined_compliance = gst_compliance * 0.6 + epfo_compliance * 0.4
+    combined_compliance = gst_compliance * 0.6 + epfo_compliance * 0.4 if has_gstin else epfo_compliance
 
     if len(revenues) >= 6:
         early = np.mean(revenues[:6])
@@ -74,15 +83,18 @@ def extract_features(profile: dict) -> dict:
         "dpd_30":                   float(dpd_30),
         "dpd_90":                   float(dpd_90),
         "active_loans":             float(active_loans),
+        "has_gstin":                bool(has_gstin),
     }
 
 
-def compute_pillar_scores(features: dict, ntc_mode: bool = False) -> dict:
+def compute_pillar_scores(features: dict, ntc_mode: bool = False, has_gstin: bool = True) -> dict:
     """
     Compute 5-pillar scores.
     ntc_mode: when True (New-to-Credit), suppress credit pillar and redistribute its
               15% weight across the four alternate-data pillars — enabling fair scoring
               of credit-invisible MSMEs.
+    has_gstin: when False (business isn't GST-registered), Compliance is scored purely
+               from EPFO filing data instead of the GST+EPFO+tax blend.
     """
     # NOTE: each pillar's weights already sum to 100, and the input features are 0–1,
     # so the weighted sum is already on a 0–100 scale. (An earlier version multiplied
@@ -96,11 +108,15 @@ def compute_pillar_scores(features: dict, ntc_mode: bool = False) -> dict:
     )
     cash_flow_score = float(np.clip(cf_raw, 0, 100))
 
-    comp_raw = (
-        features["gst_compliance"] * 50 +
-        features["epfo_compliance"] * 35 +
-        min(features["tax_to_revenue"] / 0.18, 1) * 15
-    )
+    if has_gstin:
+        comp_raw = (
+            features["gst_compliance"] * 50 +
+            features["epfo_compliance"] * 35 +
+            min(features["tax_to_revenue"] / 0.18, 1) * 15
+        )
+    else:
+        # No GSTIN — Compliance is entirely EPFO-derived, no GST filing/tax signal exists.
+        comp_raw = features["epfo_compliance"] * 100
     compliance_score = float(np.clip(comp_raw, 0, 100))
 
     # Centre flat growth at ~0.5 (neutral), reward moderate positive growth and
@@ -152,6 +168,7 @@ def compute_pillar_scores(features: dict, ntc_mode: bool = False) -> dict:
         "credit_worthiness": round(credit_score, 1) if credit_score is not None else None,
         "overall":           round(overall, 1),
         "ntc_mode":          ntc_mode,
+        "has_gstin":         has_gstin,
     }
 
 
@@ -263,13 +280,19 @@ def get_recommendations(pillar_scores: dict, features: dict) -> list:
                                "significantly improves your AA data profile and loan eligibility.",
                      "priority": "high"})
 
-    # GST compliance
-    if features["gst_compliance"] < 0.9:
-        shortfall = round((0.9 - features["gst_compliance"]) * 100)
-        tips.append({"icon": "📋", "title": "File GST returns on time",
-                     "detail": f"GST compliance at {features['gst_compliance']*100:.0f}%. "
-                               f"Reaching 90%+ boosts Compliance score by ~{shortfall} pts.",
-                     "priority": "high"})
+    # GST compliance (only relevant for GST-registered businesses)
+    if features.get("has_gstin", True):
+        if features["gst_compliance"] < 0.9:
+            shortfall = round((0.9 - features["gst_compliance"]) * 100)
+            tips.append({"icon": "📋", "title": "File GST returns on time",
+                         "detail": f"GST compliance at {features['gst_compliance']*100:.0f}%. "
+                                   f"Reaching 90%+ boosts Compliance score by ~{shortfall} pts.",
+                         "priority": "high"})
+    else:
+        tips.append({"icon": "🧾", "title": "Consider registering for GST",
+                     "detail": "GST registration adds a second Compliance data source and typically "
+                               "unlocks a higher eligible loan amount once your turnover crosses the threshold.",
+                     "priority": "low"})
 
     # EPFO compliance
     if features["epfo_compliance"] < 0.9:

@@ -189,8 +189,8 @@ function OwnerShell() {
         </div>
         {!isMobile && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-            {["Check Eligibility", "Applications", "Tools", "Settings"].map((t) => (
-              <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{t}</button>
+            {[["Check Eligibility", "Health Check"], ["Applications", "Applications"], ["Tools", "Tools"], ["Settings", "Settings"]].map(([t, label]) => (
+              <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{label}</button>
             ))}
           </div>
         )}

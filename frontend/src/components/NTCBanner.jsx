@@ -6,9 +6,10 @@ const MUDRA_TIERS = [
   { name:"Tarun",   amount:"₹5L – ₹10 Lakh", desc:"Established micro-enterprise expansion",   color:"#8b5cf6" },
 ];
 
-export default function NTCBanner({ ntcFlag, ntbFlag, overallScore }) {
+export default function NTCBanner({ ntcFlag, ntbFlag, hasGstin = true, overallScore }) {
   const [expanded, setExpanded] = useState(false);
-  if (!ntcFlag && !ntbFlag) return null;
+  const noGstin = !hasGstin;
+  if (!ntcFlag && !ntbFlag && !noGstin) return null;
 
   const isNTC = ntcFlag;
   const isNTB = ntbFlag;
@@ -43,17 +44,50 @@ export default function NTCBanner({ ntcFlag, ntbFlag, overallScore }) {
                 color:"#3b82f6", fontWeight:800, letterSpacing:1,
               }}>NTB — NEW TO BANK</span>
             )}
+            {noGstin && (
+              <span style={{
+                fontSize:10, padding:"2px 10px", borderRadius:20,
+                background:"#f59e0b22", border:"1px solid #f59e0b44",
+                color:"#f59e0b", fontWeight:800, letterSpacing:1,
+              }}>NOT GST-REGISTERED</span>
+            )}
           </div>
           <div style={{ fontSize:16, fontWeight:700, color:"#f1f5f9", marginBottom:4 }}>
-            {isNTC ? "No Credit History Detected — You Still Qualify" : "New Business — Special Products Available"}
+            {isNTC ? "No Credit History Detected — You Still Qualify"
+              : !isNTB && noGstin ? "No GST Registration — Scored on Bank & UPI Data Alone"
+              : "New Business — Special Products Available"}
           </div>
           <div style={{ fontSize:13, color:"#86efac", lineHeight:1.6 }}>
             {isNTC
               ? "Traditional banks reject NTC businesses. Our alternate data assessment (GST + UPI + EPFO) scores you independently of CIBIL. You're scored on 4 pillars instead of 5, with credit pillar weight redistributed to your actual financial behavior."
+              : !isNTB && noGstin
+              ? "Many small businesses aren't GST-registered — that shouldn't mean no credit access. Your Compliance pillar is scored entirely from EPFO filings, and your revenue is estimated from UPI/Bank AA cash flow instead of GST returns."
               : "New businesses often lack the credit history required by traditional lenders. MUDRA, CGTMSE, and Stand-Up India schemes are available specifically for you."}
           </div>
         </div>
       </div>
+
+      {/* No-GSTIN scoring explanation */}
+      {noGstin && (
+        <div style={{
+          background:"var(--c-bg)", border:"1px solid var(--c-border)",
+          borderRadius:12, padding:"14px 16px", marginBottom:14,
+        }}>
+          <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:10 }}>
+            HOW COMPLIANCE WAS SCORED (NO GSTIN)
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px", background:"var(--c-surface)", borderRadius:8 }}>
+            <span style={{ fontSize:16 }}>📋</span>
+            <div>
+              <div style={{ fontSize:12, color:"var(--c-text)", fontWeight:600 }}>Compliance — 100% EPFO</div>
+              <div style={{ fontSize:10, color:"#475569" }}>No GST filing data exists, so the GST + tax-to-revenue components are dropped entirely rather than estimated.</div>
+            </div>
+          </div>
+          <div style={{ marginTop:10, fontSize:11, color:"#475569" }}>
+            Revenue and cash-flow figures are estimated from UPI/Bank AA inflows instead of GST-reported turnover.
+          </div>
+        </div>
+      )}
 
       {/* NTC scoring explanation */}
       {isNTC && (

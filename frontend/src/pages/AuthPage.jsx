@@ -13,6 +13,14 @@ const ROLE_CONFIG = {
     icon: "🏭",
     color: "#10b981",
     home: "/owner",
+    selfRegister: true,
+    secureBadge: "🔒 Secured by RBI AA Framework • IDBI Innovate 2026",
+    features: [
+      { label: "Instant Score", desc: "Get results in seconds" },
+      { label: "Bank-Grade Security", desc: "RBI compliant encryption" },
+      { label: "AI Powered", desc: "Advanced ML analysis" },
+      { label: "Easy Process", desc: "Simple 3-step verification" },
+    ],
   },
   banker: {
     accent: "#3b82f6",
@@ -22,11 +30,22 @@ const ROLE_CONFIG = {
     icon: "🏦",
     color: "#3b82f6",
     home: "/manager",
+    // Real banking orgs provision manager accounts via IT/Admin or an Identity
+    // Provider (SSO/AD) — bank employees don't self-register on the portal.
+    selfRegister: false,
+    secureBadge: "🔒 Secured via RBI Identity Services • Authorized Personnel Only",
+    features: [
+      { label: "Instant Credit Assessment", desc: "Explainable AI decisions in seconds" },
+      { label: "Alternate Data Analysis", desc: "GST, AA, UPI & EPFO signals" },
+      { label: "Explainable AI", desc: "SHAP-backed score breakdowns" },
+      { label: "OCEN-Ready Lending", desc: "Direct-to-disbursal workflow" },
+    ],
   },
 };
 
 export default function AuthPage({ role = "msme" }) {
   const cfg = ROLE_CONFIG[role] || ROLE_CONFIG.msme;
+  const isBanker = !cfg.selfRegister;
   const { user, saveSession } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState("login");
@@ -258,45 +277,21 @@ export default function AuthPage({ role = "msme" }) {
           {/* Feature List */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {[
-              {
-                svg: (
-                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
-                    <path d="M14 2v10M8 8l4.24 4.24M20 8l-4.24 4.24M14 26c6.627 0 12-5.373 12-12S20.627 2 14 2 2 7.373 2 14s5.373 12 12 12z" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ),
-                label: "Instant Score",
-                desc: "Get results in seconds"
-              },
-              {
-                svg: (
-                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
-                    <path d="M9 11v-6c0-1.105.895-2 2-2h6c1.105 0 2 .895 2 2v6M7 11h14v12c0 1.105-.895 2-2 2H9c-1.105 0-2-.895-2-2V11z" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M11 14v6M17 14v6" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ),
-                label: "Bank-Grade Security",
-                desc: "RBI compliant encryption"
-              },
-              {
-                svg: (
-                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
-                    <path d="M4 8h20M4 8v12c0 1.105.895 2 2 2h16c1.105 0 2-.895 2-2V8M4 8l2-3h16l2 3" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M8 12v8M14 12v8M20 12v8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ),
-                label: "AI Powered",
-                desc: "Advanced ML analysis"
-              },
-              {
-                svg: (
-                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
-                    <path d="M24 7L10.5 20.5L4 14" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ),
-                label: "Easy Process",
-                desc: "Simple 3-step verification"
-              },
-            ].map((f, i) => (
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
+                <path d="M14 2v10M8 8l4.24 4.24M20 8l-4.24 4.24M14 26c6.627 0 12-5.373 12-12S20.627 2 14 2 2 7.373 2 14s5.373 12 12 12z" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>,
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
+                <path d="M9 11v-6c0-1.105.895-2 2-2h6c1.105 0 2 .895 2 2v6M7 11h14v12c0 1.105-.895 2-2 2H9c-1.105 0-2-.895-2-2V11z" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M11 14v6M17 14v6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>,
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
+                <path d="M4 8h20M4 8v12c0 1.105.895 2 2 2h16c1.105 0 2-.895 2-2V8M4 8l2-3h16l2 3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 12v8M14 12v8M20 12v8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>,
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={cfg.color} strokeWidth="2">
+                <path d="M24 7L10.5 20.5L4 14" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>,
+            ].map((svg, i) => ({ svg, ...cfg.features[i] })).map((f, i) => (
               <div key={i} style={{
                 display: "flex",
                 gap: 16,
@@ -342,7 +337,7 @@ export default function AuthPage({ role = "msme" }) {
             textAlign: "center",
             animation: "fadeInUp 0.8s ease-out 0.5s backwards",
           }}>
-            🔒 Secured by RBI AA Framework • IDBI Innovate 2026
+            {cfg.secureBadge}
           </div>
         </div>
 
@@ -387,37 +382,39 @@ export default function AuthPage({ role = "msme" }) {
               </h2>
             </div>
 
-            {/* Tab Toggle */}
-            <div style={{
-              display: "flex",
-              background: "rgba(148, 163, 184, 0.1)",
-              borderRadius: 12,
-              padding: 4,
-              marginBottom: 32,
-              gap: 4,
-              border: "1px solid rgba(148, 163, 184, 0.2)",
-            }}>
-              {["login", "register"].map((m) => (
-                <button
-                  key={m}
-                  onClick={() => { setMode(m); setError(""); }}
-                  className="tab-btn"
-                  style={{
-                    flex: 1,
-                    padding: "12px 20px",
-                    borderRadius: 10,
-                    border: "none",
-                    background: mode === m ? cfg.accent : "transparent",
-                    color: mode === m ? "#ffffff" : "#94a3b8",
-                    fontSize: 14,
-                    fontWeight: mode === m ? 700 : 500,
-                    cursor: "pointer",
-                  }}
-                >
-                  {m === "login" ? "Sign In" : "Register"}
-                </button>
-              ))}
-            </div>
+            {/* Tab Toggle — banker accounts are provisioned by IT/Admin, not self-registered */}
+            {cfg.selfRegister && (
+              <div style={{
+                display: "flex",
+                background: "rgba(148, 163, 184, 0.1)",
+                borderRadius: 12,
+                padding: 4,
+                marginBottom: 32,
+                gap: 4,
+                border: "1px solid rgba(148, 163, 184, 0.2)",
+              }}>
+                {["login", "register"].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => { setMode(m); setError(""); }}
+                    className="tab-btn"
+                    style={{
+                      flex: 1,
+                      padding: "12px 20px",
+                      borderRadius: 10,
+                      border: "none",
+                      background: mode === m ? cfg.accent : "transparent",
+                      color: mode === m ? "#ffffff" : "#94a3b8",
+                      fontSize: 14,
+                      fontWeight: mode === m ? 700 : 500,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {m === "login" ? "Sign In" : "Register"}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -478,7 +475,7 @@ export default function AuthPage({ role = "msme" }) {
                     <rect x="1" y="2" width="12" height="10" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M1 2l6 4 6-4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  Email Address
+                  {isBanker ? "Employee ID" : "Email Address"}
                 </label>
                 <input
                   className="input-field"
@@ -497,7 +494,7 @@ export default function AuthPage({ role = "msme" }) {
                   }}
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={isBanker ? "e.g. manager@idbibank.in" : "you@example.com"}
                   required
                 />
               </div>
@@ -622,28 +619,41 @@ export default function AuthPage({ role = "msme" }) {
               </button>
             </form>
 
-            {/* Toggle Mode */}
-            <div style={{
-              textAlign: "center",
-              marginTop: 24,
-              fontSize: 13,
-              color: "#94a3b8",
-            }}>
-              {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-              <span
-                onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}
-                style={{
-                  color: cfg.accent,
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => { e.target.style.textDecoration = "underline"; }}
-                onMouseLeave={(e) => { e.target.style.textDecoration = "none"; }}
-              >
-                {mode === "login" ? "Register Now" : "Sign In"}
-              </span>
-            </div>
+            {/* Toggle Mode — banker accounts have no self-registration */}
+            {cfg.selfRegister ? (
+              <div style={{
+                textAlign: "center",
+                marginTop: 24,
+                fontSize: 13,
+                color: "#94a3b8",
+              }}>
+                {mode === "login" ? "Don't have an account? " : "Already have an account? "}
+                <span
+                  onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}
+                  style={{
+                    color: cfg.accent,
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => { e.target.style.textDecoration = "underline"; }}
+                  onMouseLeave={(e) => { e.target.style.textDecoration = "none"; }}
+                >
+                  {mode === "login" ? "Register Now" : "Sign In"}
+                </span>
+              </div>
+            ) : (
+              <div style={{
+                textAlign: "center",
+                marginTop: 24,
+                fontSize: 12,
+                color: "#64748b",
+                lineHeight: 1.6,
+              }}>
+                Authorized IDBI Bank employees only.<br/>
+                Accounts are provisioned by your bank's IT administrator.
+              </div>
+            )}
           </div>
 
           {/* Back Link */}

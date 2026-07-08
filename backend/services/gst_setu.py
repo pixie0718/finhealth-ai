@@ -6,6 +6,7 @@ tagged as REAL. Otherwise the platform transparently falls back to its determini
 synthetic profile (tagged SANDBOX), so scoring always works in a demo.
 """
 import os
+from typing import Optional
 import httpx
 
 GST_SETU_BASE = os.environ.get("GST_SETU_BASE_URL", "https://api.gstsetu.in")
@@ -15,7 +16,7 @@ def is_configured() -> bool:
     return bool(os.environ.get("GST_SETU_API_KEY"))
 
 
-def fetch_real_gst_data(gstin: str) -> dict | None:
+def fetch_real_gst_data(gstin: str) -> Optional[dict]:
     """Return live GST summary for a GSTIN, or None if unavailable (caller falls back)."""
     api_key = os.environ.get("GST_SETU_API_KEY")
     if not api_key:

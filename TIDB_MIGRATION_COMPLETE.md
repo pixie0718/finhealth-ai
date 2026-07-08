@@ -11,7 +11,7 @@
 
 1. **Database Created:** `finhealth` on TiDB Cloud
    - Host: `gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000`
-   - User: `45YQw5GHn42CMte.root`
+   - User: `<redacted — rotated>`
 
 2. **Tables Created (8 total):**
    - ✅ users
@@ -39,8 +39,8 @@
 
 | Role | Email | Password |
 |------|-------|----------|
-| Owner | `owner@demo.com` | `Demo123` |
-| Manager | `manager@demo.com` | `Demo123` |
+| Owner | `owner@demo.com` | `<redacted>` |
+| Manager | `manager@demo.com` | `<redacted>` |
 
 **Test Scenario:** Growth Star (Sharma Textiles - Score 84, LOW risk)
 
@@ -50,9 +50,9 @@
 
 ### backend/.env
 ```
-SECRET_KEY=2M2pBgsdbwlsxdMU4HLPQ5HqsWUybonQvlC3h-407zL0YsuE0jKYflqXCEU02Q6-
+SECRET_KEY=<redacted — rotated, see Railway env vars>
 GEMINI_API_KEY=
-DATABASE_URL=mysql+pymysql://45YQw5GHn42CMte.root:AlvrFGDTt16kjnLx@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true
+DATABASE_URL=mysql+pymysql://<user>:<password>@<host>:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true  # redacted — rotated
 ```
 
 ### backend/requirements.txt
@@ -77,14 +77,14 @@ uvicorn main:app --reload
 ### 2. Test Login with Demo Account
 - Go to http://localhost:3000/owner/login
 - Email: `owner@demo.com`
-- Password: `Demo123`
+- Password: `<redacted>`
 - Should see growth star demo score
 
 ### 3. Set Vercel Environment Variables
 In Vercel dashboard for your project:
 ```
-DATABASE_URL=mysql+pymysql://45YQw5GHn42CMte.root:AlvrFGDTt16kjnLx@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true
-SECRET_KEY=2M2pBgsdbwlsxdMU4HLPQ5HqsWUybonQvlC3h-407zL0YsuE0jKYflqXCEU02Q6-
+DATABASE_URL=mysql+pymysql://<user>:<password>@<host>:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true  # redacted — rotated
+SECRET_KEY=<redacted — rotated, see Railway env vars>
 GEMINI_API_KEY=[your API key if available]
 ```
 
@@ -134,7 +134,7 @@ git push origin main
 ```
 
 ### Issue: "Demo password not working"
-**Password:** `Demo123` (not Demo@123456)
+**Password:** `<redacted>` (not Demo@123456)
 
 ---
 

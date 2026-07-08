@@ -39,20 +39,22 @@ def get_model():
     return _model_bundle
 
 
-def _make_consent_artifact(consent_id: str, gstin: str, business_name: str) -> dict:
+def _make_consent_artifact(consent_id: str, gstin: str, business_name: str, has_gstin: bool = True) -> dict:
     from datetime import timedelta
     now = datetime.utcnow()
+    fip_list = [
+        {"id": "NPCI-FIP",  "name": "NPCI (UPI / AA)",       "data_type": "BANK_STATEMENT"},
+        {"id": "EPFO-FIP",  "name": "EPFO Unified Portal",   "data_type": "EPFO_CONTRIBUTION"},
+        {"id": "CIBIL-FIP", "name": "TransUnion CIBIL",      "data_type": "CREDIT_REPORT"},
+    ]
+    if has_gstin:
+        fip_list.insert(0, {"id": "GSTN-FIP", "name": "GST Network", "data_type": "GST_RETURNS"})
     return {
         "consent_id": consent_id,
         "consent_handle": f"AA-CONSENT-{consent_id[:8].upper()}",
         "fiu": {"id": "IDBI-FIU-001", "name": "IDBI Bank Ltd", "type": "FIU"},
         "aa_operator": {"id": "SAHAMATI-AA-01", "name": "Sahamati Account Aggregator"},
-        "fip_list": [
-            {"id": "GSTN-FIP",  "name": "GST Network",           "data_type": "GST_RETURNS"},
-            {"id": "NPCI-FIP",  "name": "NPCI (UPI / AA)",       "data_type": "BANK_STATEMENT"},
-            {"id": "EPFO-FIP",  "name": "EPFO Unified Portal",   "data_type": "EPFO_CONTRIBUTION"},
-            {"id": "CIBIL-FIP", "name": "TransUnion CIBIL",      "data_type": "CREDIT_REPORT"},
-        ],
+        "fip_list": fip_list,
         "purpose": {
             "code": "101",
             "text": "MSME Credit Assessment",
@@ -76,12 +78,12 @@ def _make_consent_artifact(consent_id: str, gstin: str, business_name: str) -> d
 
 
 def build_result(profile: dict, business_name: str, gstin: str,
-                 business_type: str, city: str, years_in_business: int) -> dict:
-    features = extract_features(profile)
+                 business_type: str, city: str, years_in_business: int, has_gstin: bool = True) -> dict:
+    features = extract_features(profile, has_gstin=has_gstin)
     ntc_flag = profile.get("ntc_flag", not bool(profile["credit_history"]["has_credit_history"]))
     ntb_flag = profile.get("ntb_flag", years_in_business <= 2)
 
-    pillar_scores = compute_pillar_scores(features, ntc_mode=ntc_flag)
+    pillar_scores = compute_pillar_scores(features, ntc_mode=ntc_flag, has_gstin=has_gstin)
     loan_eligibility = get_loan_eligibility(
         pillar_scores["overall"],
         features["avg_monthly_revenue"],
@@ -101,6 +103,7 @@ def build_result(profile: dict, business_name: str, gstin: str,
         "msme_id": profile["msme_id"],
         "business_name": business_name,
         "gstin": gstin,
+        "has_gstin": has_gstin,
         "business_type": business_type,
         "city": city,
         "years_in_business": years_in_business,
@@ -111,7 +114,10 @@ def build_result(profile: dict, business_name: str, gstin: str,
         "ml_prediction": ml_prediction,
         "explanations": explanations,
         "recommendations": recommendations,
-        "monthly_revenues": profile["gst_data"]["monthly_revenues"],
+        # Without a GSTIN there's no GST-reported revenue — show the UPI/Bank inflow
+        # series instead (the same proxy extract_features used for cash-flow scoring),
+        # rather than a synthetic GST figure that was never actually used.
+        "monthly_revenues": profile["gst_data"]["monthly_revenues"] if has_gstin else profile["upi_aa_data"]["monthly_inflows"],
         "monthly_inflows": profile["upi_aa_data"]["monthly_inflows"],
         "data_sources": profile.get("data_sources", {}),
         "raw_features": {k: round(v, 4) if isinstance(v, float) else v for k, v in features.items()},
@@ -130,16 +136,20 @@ def generate_health_score(
     if not request.get("consent_given"):
         raise HTTPException(status_code=400, detail="Consent is required.")
 
-    gstin = request.get("gstin", "").upper().strip()
+    # Not every MSME is GST-registered (many small shops sit below the turnover
+    # threshold). When the owner explicitly says so, skip GSTIN entirely rather
+    # than scoring against a meaningless/garbage GSTIN value.
+    has_gstin = bool(request.get("has_gstin", True))
+    gstin = request.get("gstin", "").upper().strip() if has_gstin else ""
     business_name = request.get("business_name", "")
     business_type = request.get("business_type", "Retail")
     city = request.get("city", "Mumbai")
     years_in_business = int(request.get("years_in_business", 3))
 
     # Validate GSTIN format
-    validation = validate_gstin(gstin) if gstin else {"valid": False}
+    validation = validate_gstin(gstin) if (has_gstin and gstin) else {"valid": False}
 
-    if gstin and validation["valid"]:
+    if has_gstin and gstin and validation["valid"]:
         # Deterministic seeded profile from real GSTIN
         profile = generate_msme_profile_from_gstin(
             gstin=gstin,
@@ -149,25 +159,30 @@ def generate_health_score(
             years_in_business=years_in_business,
         )
     else:
-        # Fallback to random profile (demo / invalid GSTIN)
+        # Fallback to random profile (demo / invalid GSTIN / no GSTIN at all)
         profile = generate_msme_profile(business_type=business_type, city=city)
         profile["business_name"] = business_name
         profile["gstin"] = gstin
         profile["years_in_business"] = years_in_business
         profile["msme_id"] = str(uuid.uuid4())
 
-    result = build_result(profile, business_name, gstin, business_type, city, years_in_business)
+    result = build_result(profile, business_name, gstin, business_type, city, years_in_business, has_gstin=has_gstin)
 
-    # Record GST data provenance (real GST SETU fetch vs synthetic fallback)
-    from services.gst_setu import gst_provenance
-    prov = gst_provenance(gstin) if gstin else {"source": "SYNTHETIC", "mode": "SANDBOX", "live": False}
-    result["data_provenance"] = prov
-    if result.get("data_sources", {}).get("gst"):
-        result["data_sources"]["gst"]["status"] = "FETCHED (REAL)" if prov.get("live") else "FETCHED"
+    # Record GST data provenance (real GST SETU fetch vs synthetic fallback vs not registered)
+    if has_gstin:
+        from services.gst_setu import gst_provenance
+        prov = gst_provenance(gstin) if gstin else {"source": "SYNTHETIC", "mode": "SANDBOX", "live": False}
+        result["data_provenance"] = prov
+        if result.get("data_sources", {}).get("gst"):
+            result["data_sources"]["gst"]["status"] = "FETCHED (REAL)" if prov.get("live") else "FETCHED"
+    else:
+        result["data_provenance"] = {"source": "NOT_REGISTERED", "mode": "N/A", "live": False}
+        if result.get("data_sources", {}).get("gst"):
+            result["data_sources"]["gst"]["status"] = "NOT REGISTERED"
 
     # Generate & store AA consent artifact
     consent_id = str(uuid.uuid4())
-    artifact = _make_consent_artifact(consent_id, gstin, business_name)
+    artifact = _make_consent_artifact(consent_id, gstin, business_name, has_gstin=has_gstin)
     save_consent(db, consent_id, result["msme_id"], gstin, artifact, user_id=current_user.id)
     result["consent_id"] = consent_id
     result["gstin_valid"] = validation.get("valid", False)

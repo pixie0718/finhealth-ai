@@ -41,9 +41,9 @@ Once deployed, click on the service → Settings → "Variables"
 
 Add these environment variables:
 ```
-DATABASE_URL = mysql+pymysql://45YQw5GHn42CMte.root:AlvrFGDTt16kjnLx@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true
+DATABASE_URL = mysql+pymysql://<user>:<password>@<host>:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true  # redacted — rotated
 
-SECRET_KEY = 2M2pBgsdbwlsxdMU4HLPQ5HqsWUybonQvlC3h-407zL0YsuE0jKYflqXCEU02Q6-
+SECRET_KEY = <redacted — rotated, see Railway env vars>
 
 GEMINI_API_KEY = [optional, leave blank if not needed]
 ```

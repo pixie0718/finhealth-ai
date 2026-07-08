@@ -13,12 +13,17 @@ from sqlalchemy.orm import sessionmaker
 from passlib.context import CryptContext
 import json
 
-# TiDB connection details
-TIDB_HOST = "gateway01.ap-southeast-1.prod.aws.tidbcloud.com"
-TIDB_PORT = 4000
-TIDB_USER = "45YQw5GHn42CMte.root"
-TIDB_PASSWORD = "AlvrFGDTt16kjnLx"
-TIDB_NAME = "test"
+# TiDB connection details — read from the environment, never hardcoded.
+# Set these before running (e.g. `railway run python migrate_to_tidb.py`, or
+# export them locally / put them in backend/.env, which is gitignored).
+TIDB_HOST = os.environ.get("TIDB_HOST")
+TIDB_PORT = os.environ.get("TIDB_PORT", "4000")
+TIDB_USER = os.environ.get("TIDB_USER")
+TIDB_PASSWORD = os.environ.get("TIDB_PASSWORD")
+
+if not all([TIDB_HOST, TIDB_USER, TIDB_PASSWORD]):
+    print("[ERROR] Set TIDB_HOST, TIDB_USER and TIDB_PASSWORD in the environment before running this script.")
+    sys.exit(1)
 
 # Connection URLs
 TIDB_ROOT_URL = f"mysql+pymysql://{TIDB_USER}:{TIDB_PASSWORD}@{TIDB_HOST}:{TIDB_PORT}/"
@@ -98,10 +103,12 @@ try:
     Session = sessionmaker(bind=engine_fh)
     db = Session()
 
-    # Demo accounts
+    # Demo accounts — generate a fresh random password each run unless one is
+    # explicitly provided, so a real credential never sits in source control.
+    import secrets
     demo_owner_email = "owner@demo.com"
     demo_manager_email = "manager@demo.com"
-    demo_password = "Demo123"
+    demo_password = os.environ.get("DEMO_PASSWORD") or secrets.token_urlsafe(12)
 
     # Check if accounts exist
     owner_exists = db.query(User).filter(User.email == demo_owner_email).first()
@@ -308,13 +315,13 @@ print("\n" + "="*70)
 print("[SUCCESS] MIGRATION COMPLETE!")
 print("="*70)
 print("\nNEXT STEPS:")
-print("1. Update backend/.env with TiDB connection:")
-print("   DATABASE_URL=mysql+pymysql://45YQw5GHn42CMte.root:AlvrFGDTt16kjnLx@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true")
+print("1. Set DATABASE_URL in Railway's env vars (not in a committed file) to:")
+print("   mysql+pymysql://<TIDB_USER>:<TIDB_PASSWORD>@<TIDB_HOST>:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true")
+print("   using the same TIDB_USER/TIDB_PASSWORD/TIDB_HOST you passed to this script.")
 print("\n2. Test backend locally:")
 print("   cd backend && uvicorn main:app --reload")
 print("   Visit: http://localhost:8000/docs")
-print("\n3. Test demo accounts:")
-print(f"   Owner  -> {demo_owner_email} / Demo@123456")
-print(f"   Manager -> {demo_manager_email} / Demo@123456")
-print("\n4. Deploy to Vercel")
+print(f"\n3. Demo account credentials were printed above at creation time — {demo_owner_email} / {demo_manager_email}.")
+print("   (Re-run with --force-style env var DEMO_PASSWORD unset to generate fresh ones if lost.)")
+print("\n4. Frontend (Vercel) only needs REACT_APP_API_URL pointing at the Railway backend URL — no DB credentials there.")
 print("="*70 + "\n")

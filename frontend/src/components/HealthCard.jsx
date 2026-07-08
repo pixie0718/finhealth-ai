@@ -36,7 +36,11 @@ const recBg = {
 async function exportPDF(ref, business_name) {
   const { default: html2canvas } = await import("html2canvas");
   const { default: jsPDF } = await import("jspdf");
-  const canvas = await html2canvas(ref, { backgroundColor: "var(--c-bg)", scale: 1.5, useCORS: true });
+  // html2canvas's `backgroundColor` option runs through its own color parser, which
+  // doesn't understand an unresolved "var(--c-bg)" string — resolve it to a real
+  // color first, or the export throws "unsupported color function var".
+  const resolvedBg = getComputedStyle(document.documentElement).getPropertyValue("--c-bg").trim() || "#ffffff";
+  const canvas = await html2canvas(ref, { backgroundColor: resolvedBg, scale: 1.5, useCORS: true });
   const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width / 1.5, canvas.height / 1.5] });
   pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width / 1.5, canvas.height / 1.5);
   pdf.save(`FinHealth-${business_name.replace(/\s+/g, "-")}.pdf`);

@@ -386,12 +386,22 @@ def load_audit_logs(db, limit: int = 100) -> list:
 
 # ─── Benchmark cache helpers ──────────────────────────────────────────────────
 
+BENCHMARK_CACHE_TTL = timedelta(hours=24)
+
+
 def get_cached_benchmark(db, business_type: str, city: str):
     record = db.query(BenchmarkCache).filter(
         BenchmarkCache.business_type == business_type,
         BenchmarkCache.city == city,
     ).first()
-    return json.loads(record.cache_json) if record else None
+    if not record:
+        return None
+    # A stale row (e.g. seeded by an older, buggy generator) would otherwise be
+    # served forever — expire it so peer stats stay in sync with the current
+    # scoring logic instead of calcifying on whatever was computed first.
+    if datetime.utcnow() - record.computed_at > BENCHMARK_CACHE_TTL:
+        return None
+    return json.loads(record.cache_json)
 
 
 def save_benchmark_cache(db, business_type: str, city: str, data: dict):

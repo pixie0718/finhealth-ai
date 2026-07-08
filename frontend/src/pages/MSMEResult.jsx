@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import RevenueChart from "../components/RevenueChart";
 import ScoreSimulator from "../components/ScoreSimulator";
 import EMICalculator from "../components/EMICalculator";
@@ -19,6 +19,19 @@ function useIsMobile() {
   return isMobile;
 }
 
+async function exportPDF(ref, business_name) {
+  const { default: html2canvas } = await import("html2canvas");
+  const { default: jsPDF } = await import("jspdf");
+  // html2canvas's `backgroundColor` option runs through its own color parser, which
+  // doesn't understand an unresolved "var(--c-bg)" string — resolve it to a real
+  // color first, or the export throws "unsupported color function var".
+  const resolvedBg = getComputedStyle(document.documentElement).getPropertyValue("--c-bg").trim() || "#ffffff";
+  const canvas = await html2canvas(ref, { backgroundColor: resolvedBg, scale: 1.5, useCORS: true });
+  const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width / 1.5, canvas.height / 1.5] });
+  pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width / 1.5, canvas.height / 1.5);
+  pdf.save(`FinHealth-${business_name.replace(/\s+/g, "-")}.pdf`);
+}
+
 /* ─── helpers ─── */
 const getColor  = s => s >= 75 ? "#22c55e" : s >= 60 ? "#eab308" : s >= 45 ? "#f97316" : "#ef4444";
 const getGrade  = s => s >= 75 ? "A" : s >= 60 ? "B" : s >= 45 ? "C" : "D";
@@ -26,25 +39,74 @@ const getLabel  = s => s >= 75 ? "Excellent" : s >= 60 ? "Good" : s >= 45 ? "Fai
 const riskColor = { LOW:"#22c55e","MEDIUM-LOW":"#eab308",MEDIUM:"#f97316",HIGH:"#ef4444" };
 const fmtL      = v => v >= 100000 ? `₹${(v/100000).toFixed(1)}L` : `₹${Math.round(v).toLocaleString("en-IN")}`;
 
-/* ─── circular score ring ─── */
-function ScoreRing({ score, size = 130, stroke = 10 }) {
+// Backend recommendation codes, remapped to bank-facing language.
+function recLabel(rec) {
+  if (!rec) return rec;
+  if (rec.startsWith("APPROVE (NTC")) return "Pre-Qualified (NTC — CGTMSE backed)";
+  if (rec === "APPROVE") return "Pre-Qualified";
+  if (rec === "RECOMMEND FOR REVIEW") return "Pre-Qualified · Under Review";
+  if (rec === "MANUAL UNDERWRITING REQUIRED") return "Manual Review Required";
+  if (rec === "DECLINE") return "Not Eligible Yet";
+  return rec;
+}
+
+/* ─── "Last synced Xm ago", ticking every 30s ─── */
+function useTimeAgo(iso) {
+  const [, force] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => force(n => n + 1), 30000);
+    return () => clearInterval(t);
+  }, []);
+  if (!iso) return "just now";
+  const secs = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (secs < 60) return "just now";
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
+}
+
+/* ─── semicircle health meter (Poor / Fair / Good / Excellent) ─── */
+function HealthMeter({ score, size = 170, stroke = 14 }) {
   const color = getColor(score);
-  const r     = (size - stroke) / 2;
-  const circ  = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
+  const cx = size / 2, cy = size / 2;
+  const r = (size - stroke) / 2;
+  const halfCirc = Math.PI * r;
+  const path = `M ${cx - r},${cy} A ${r},${r} 0 0 1 ${cx + r},${cy}`;
+  const offset = halfCirc * (1 - score / 100);
+
+  // Tick marks at the 45 / 60 / 75 band boundaries, in the same angle space as the arc.
+  const ticks = [45, 60, 75].map(s => {
+    const angleDeg = 180 - (s / 100) * 180;
+    const rad = (angleDeg * Math.PI) / 180;
+    const x1 = cx + (r - stroke / 2 - 2) * Math.cos(rad), y1 = cy - (r - stroke / 2 - 2) * Math.sin(rad);
+    const x2 = cx + (r + stroke / 2 + 2) * Math.cos(rad), y2 = cy - (r + stroke / 2 + 2) * Math.sin(rad);
+    return { x1, y1, x2, y2 };
+  });
+
   return (
-    <div style={{ position:"relative", width:size, height:size }}>
-      <svg width={size} height={size} style={{ transform:"rotate(-90deg)", display:"block" }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--c-surface)" strokeWidth={stroke} />
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+    <div style={{ position:"relative", width:size, height:size / 2 + 34 }}>
+      <svg width={size} height={size / 2 + 4} style={{ display:"block", overflow:"visible" }}>
+        <path d={path} fill="none" stroke="var(--c-surface)" strokeWidth={stroke} strokeLinecap="round" />
+        <path d={path} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={halfCirc} strokeDashoffset={offset}
           style={{ transition:"stroke-dashoffset 1.2s ease", filter:`drop-shadow(0 0 6px ${color}88)` }} />
+        {ticks.map((t, i) => (
+          <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="var(--c-bg)" strokeWidth={2} />
+        ))}
       </svg>
-      <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column",
-        alignItems:"center", justifyContent:"center" }}>
-        <div style={{ fontSize: size > 100 ? 32 : 20, fontWeight:900, color, lineHeight:1 }}>{score}</div>
-        <div style={{ fontSize:10, color:"#475569" }}>/ 100</div>
+      <div style={{
+        position:"absolute", left:0, right:0, bottom:0,
+        display:"flex", flexDirection:"column", alignItems:"center",
+      }}>
+        <div style={{ fontSize:30, fontWeight:900, color, lineHeight:1 }}>{score}</div>
+        <div style={{ fontSize:11, fontWeight:700, color, letterSpacing:0.5, marginTop:2 }}>{getLabel(score)}</div>
       </div>
+      <div style={{
+        position:"absolute", left:2, bottom:0, fontSize:9, color:"#475569",
+      }}>Poor</div>
+      <div style={{
+        position:"absolute", right:2, bottom:0, fontSize:9, color:"#475569",
+      }}>Excellent</div>
     </div>
   );
 }
@@ -84,7 +146,8 @@ function PillarCard({ icon, label, score, isMobile }) {
       background:"var(--c-surface)", border:`1px solid ${color}33`,
       borderRadius:16, padding: isMobile ? "14px 10px" : "20px 16px",
       display:"flex", flexDirection:"column", alignItems:"center", gap:8,
-      flex:"1 1 0", minWidth: isMobile ? "calc(50% - 6px)" : 0,
+      flex: isMobile ? "1 1 0" : "1 1 200px", maxWidth: isMobile ? undefined : 240,
+      minWidth: isMobile ? "calc(50% - 6px)" : 0,
     }}>
       <div style={{ position:"relative", width:70, height:70 }}>
         <svg width={70} height={70} style={{ transform:"rotate(-90deg)" }}>
@@ -160,29 +223,61 @@ export default function MSMEResult({ result, onReset }) {
   const lc      = riskColor[loan.risk_band] || "#64748b";
   const ps      = result.pillar_scores;
   const ml      = result.ml_prediction;
+  const lastSynced = useTimeAgo(result.generated_at);
+  const highPriorityInsights = (result.recommendations || []).filter(r => r.priority === "high");
+  const topInsight = highPriorityInsights[0] || result.recommendations?.[0];
+  const secondInsight = highPriorityInsights[1];
+  const [showBreakdown, setShowBreakdown] = useState(false);
+
+  // Real weighted contribution of each pillar to the overall 0-100 score —
+  // same weights used server-side in compute_pillar_scores().
+  const PILLAR_WEIGHTS = result.ntc_flag
+    ? { cash_flow: 0.30, compliance: 0.24, growth: 0.23, stability: 0.23, credit_worthiness: 0 }
+    : { cash_flow: 0.25, compliance: 0.20, growth: 0.20, stability: 0.20, credit_worthiness: 0.15 };
+
+  const printRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
+  const handleExport = async () => {
+    setExporting(true);
+    try { await exportPDF(printRef.current, result.business_name || "Business"); }
+    finally { setExporting(false); }
+  };
 
   return (
-    <div style={{ maxWidth: 720, margin:"0 auto", padding: isMobile ? "16px 12px" : "24px 16px" }}>
+    <div ref={printRef} style={{ maxWidth: isMobile ? 720 : 1320, margin:"0 auto", padding: isMobile ? "16px 12px" : "24px 32px" }}>
 
       {/* ── Sticky quick-nav ── */}
       <div style={{
         position:"sticky", top:60, zIndex:50,
         background:"var(--c-header)", backdropFilter:"blur(8px)",
         borderBottom:"1px solid var(--c-border-soft)",
-        display:"flex", gap:6, padding:"8px 0", marginBottom:20,
-        overflowX:"auto", scrollbarWidth:"none",
+        display:"flex", gap: isMobile ? 6 : 10,
+        justifyContent: isMobile ? "flex-start" : "center",
+        padding: isMobile ? "8px 0" : "12px 0", marginBottom:20,
+        overflowX: isMobile ? "auto" : "visible", scrollbarWidth:"none",
       }}>
         {SECTIONS.map(s => (
-          <button key={s.id} onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior:"smooth", block:"start" })} style={{
-            padding:"5px 12px", borderRadius:20, flexShrink:0,
+          <button key={s.id} className="fh-nav-pill" onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior:"smooth", block:"start" })} style={{
+            padding: isMobile ? "5px 12px" : "8px 20px", borderRadius:20, flexShrink:0,
             background:"var(--c-surface)", border:"1px solid var(--c-border)",
-            color:"#94a3b8", fontSize:11, cursor:"pointer",
-            display:"flex", alignItems:"center", gap:4,
+            color:"#94a3b8", fontSize: isMobile ? 11 : 13, cursor:"pointer",
+            display:"flex", alignItems:"center", gap: isMobile ? 4 : 6,
+            fontWeight: isMobile ? 400 : 600, transition:"all 0.18s ease",
           }}>
             <span>{s.icon}</span>
             <span>{s.label}</span>
           </button>
         ))}
+        <button onClick={handleExport} disabled={exporting} className="fh-nav-pill" style={{
+          padding: isMobile ? "5px 12px" : "8px 20px", borderRadius:20, flexShrink:0,
+          background:"var(--c-surface)", border:"1px solid var(--c-border)",
+          color:"#94a3b8", fontSize: isMobile ? 11 : 13, cursor: exporting ? "not-allowed" : "pointer",
+          display:"flex", alignItems:"center", gap: isMobile ? 4 : 6,
+          fontWeight: isMobile ? 400 : 600, transition:"all 0.18s ease",
+        }}>
+          <span>⬇</span>
+          <span>{exporting ? "Generating…" : "PDF"}</span>
+        </button>
       </div>
 
       {/* ── Hero card ── */}
@@ -196,8 +291,18 @@ export default function MSMEResult({ result, onReset }) {
         <div style={{ position:"absolute", top:-40, right:-40, width:200, height:200,
           background:`radial-gradient(circle, ${color}18 0%, transparent 70%)`, borderRadius:"50%", pointerEvents:"none" }} />
 
-        <div style={{ fontSize:11, color:"#475569", letterSpacing:2, marginBottom:12 }}>
-          YOUR FINANCIAL HEALTH REPORT
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:8, marginBottom:12 }}>
+          <div style={{ fontSize:11, color:"#475569", letterSpacing:2 }}>
+            YOUR FINANCIAL HEALTH REPORT
+          </div>
+          <div style={{
+            display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:"#64748b",
+            padding:"3px 10px", borderRadius:20, background:"var(--c-bg)", border:"1px solid var(--c-border)",
+          }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", display:"inline-block",
+              animation:"pulse 1.8s ease-in-out infinite" }} />
+            Last synced {lastSynced}
+          </div>
         </div>
 
         <div style={{ display:"flex", alignItems: isMobile ? "flex-start" : "center",
@@ -231,9 +336,9 @@ export default function MSMEResult({ result, onReset }) {
             </div>
           </div>
 
-          {/* Right: score ring */}
+          {/* Right: health meter */}
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
-            <ScoreRing score={score} size={isMobile ? 110 : 130} />
+            <HealthMeter score={score} size={isMobile ? 150 : 170} />
             <div style={{ fontSize:11, color:"#475569", textAlign:"center" }}>
               {ml.prediction === "CREDITWORTHY" ? "✓" : "!"} ML: {ml.prediction}<br/>
               <span style={{ color: ml.prediction === "CREDITWORTHY" ? "#22c55e" : "#ef4444" }}>
@@ -244,10 +349,28 @@ export default function MSMEResult({ result, onReset }) {
         </div>
       </div>
 
+      {/* ── AI explainability one-liner ── */}
+      {topInsight && (
+        <div style={{
+          display:"flex", alignItems:"flex-start", gap:12,
+          background:"#3b82f60d", border:"1px solid #3b82f633", borderRadius:16,
+          padding:"14px 18px", marginBottom:16,
+        }}>
+          <span style={{ fontSize:18, flexShrink:0 }}>🤖</span>
+          <div>
+            <span style={{ fontSize:11, fontWeight:700, color:"#93c5fd", letterSpacing:1 }}>AI INSIGHT </span>
+            <span style={{ fontSize:13, color:"var(--c-text-2)" }}>
+              {topInsight.detail}{secondInsight && secondInsight.detail !== topInsight.detail ? ` ${secondInsight.detail}` : ""}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ── NTC / NTB banner ── */}
       <NTCBanner
         ntcFlag={result.ntc_flag}
         ntbFlag={result.ntb_flag}
+        hasGstin={result.has_gstin !== false}
         overallScore={score}
       />
 
@@ -288,45 +411,21 @@ export default function MSMEResult({ result, onReset }) {
         </div>
       )}
 
-      {/* ── Loan eligibility banner ── */}
-      <div style={{
-        background:`linear-gradient(135deg, ${lc}12, ${lc}06)`,
-        border:`1px solid ${lc}33`, borderRadius:20,
-        padding: isMobile ? "20px" : "24px 32px",
-        display:"flex", alignItems:"center", justifyContent:"space-between",
-        flexWrap:"wrap", gap:16, marginBottom:16,
-      }}>
-        <div>
-          <div style={{ fontSize:11, color:lc, fontWeight:700, letterSpacing:1.5, marginBottom:6 }}>
-            LOAN ELIGIBILITY
-          </div>
-          <div style={{ fontSize: isMobile ? 32 : 42, fontWeight:900, color:"var(--c-text)", lineHeight:1 }}>
-            {fmtL(loan.eligible_loan_amount)}
-          </div>
-          <div style={{ fontSize:13, color:"#64748b", marginTop:4 }}>
-            Maximum eligible • {loan.recommendation}
-          </div>
-        </div>
-        <div style={{
-          padding:"10px 24px", borderRadius:12,
-          background:`${lc}22`, border:`1px solid ${lc}44`,
-          fontSize:16, fontWeight:800, color:lc,
-          textAlign:"center", minWidth:120,
-        }}>
-          {loan.recommendation}
-        </div>
-      </div>
-
       {/* ── 5 Pillar scores ── */}
       <div style={{
         background:"var(--c-surface)", border:"1px solid var(--c-border)",
         borderRadius:20, padding: isMobile ? "20px 16px" : "24px 28px",
         marginBottom:16,
       }}>
-        <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:20 }}>
+        <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:4 }}>
           5-PILLAR BREAKDOWN
         </div>
-        <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+        <div style={{ fontSize:11, color:"#64748b", marginBottom:20 }}>
+          {result.ntc_flag
+            ? "Weighted: Cash Flow 30% · Compliance 24% · Growth 23% · Stability 23% (Credit pillar redistributed — NTC mode)"
+            : "Weighted: Cash Flow 25% · Compliance 20% · Growth 20% · Stability 20% · Credit 15%"}
+        </div>
+        <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent: isMobile ? "flex-start" : "center" }}>
           {[
             { key:"cash_flow",        icon:"💧", label:"Cash Flow"   },
             { key:"compliance",       icon:"📋", label:"Compliance"  },
@@ -337,12 +436,50 @@ export default function MSMEResult({ result, onReset }) {
             <PillarCard key={p.key} icon={p.icon} label={p.label} score={ps[p.key]} isMobile={isMobile} />
           ))}
         </div>
+
+        <button onClick={() => setShowBreakdown(v => !v)} style={{
+          display:"flex", alignItems:"center", gap:6, margin:"20px auto 0",
+          background:"transparent", border:"none", color:"#3b82f6",
+          fontSize:12, fontWeight:600, cursor:"pointer",
+        }}>
+          Why did I get {Math.round(score)}? <span style={{ transform: showBreakdown ? "rotate(180deg)" : "none", display:"inline-block", transition:"transform 0.2s" }}>▾</span>
+        </button>
+
+        {showBreakdown && (
+          <div style={{ marginTop:16, display:"flex", flexDirection:"column", gap:8 }}>
+            {[
+              { key:"cash_flow",         label:"Cash Flow"   },
+              { key:"compliance",        label:"Compliance"  },
+              { key:"growth",            label:"Growth"      },
+              { key:"stability",         label:"Stability"   },
+              { key:"credit_worthiness", label:"Credit"      },
+            ].filter(p => ps[p.key] != null).map(p => {
+              const weight = PILLAR_WEIGHTS[p.key] || 0;
+              const contribution = ps[p.key] * weight;
+              return (
+                <div key={p.key} style={{
+                  display:"flex", alignItems:"center", justifyContent:"space-between",
+                  background:"var(--c-bg)", border:"1px solid var(--c-border-soft)",
+                  borderRadius:10, padding:"8px 14px", fontSize:12,
+                }}>
+                  <span style={{ color:"#94a3b8" }}>{p.label} <span style={{ color:"#475569" }}>({ps[p.key]} × {Math.round(weight * 100)}%)</span></span>
+                  <span style={{ fontWeight:700, color: contribution >= 15 ? "#22c55e" : contribution >= 8 ? "#eab308" : "#f97316" }}>
+                    +{contribution.toFixed(1)} pts
+                  </span>
+                </div>
+              );
+            })}
+            <div style={{ fontSize:10.5, color:"#64748b", marginTop:4, textAlign:"center" }}>
+              Sum of weighted pillar contributions = your overall score of {Math.round(score)}.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Strengths & Risks ── */}
       <div style={{
         display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-        gap:12, marginBottom:16,
+        gap:16, marginBottom:16,
       }}>
         <div style={{ background:"#0d2618", border:"1px solid #15803d33", borderRadius:20, padding:"20px 24px" }}>
           <div style={{ fontSize:11, color:"#22c55e", fontWeight:700, letterSpacing:1.5, marginBottom:14 }}>
@@ -406,23 +543,6 @@ export default function MSMEResult({ result, onReset }) {
         </div>
       )}
 
-      {/* ── Loan products ── */}
-      <div id="r-products" style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20,
-        padding:"24px", marginBottom:16 }}>
-        <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:16 }}>
-          ELIGIBLE LOAN PRODUCTS
-        </div>
-        <div style={{
-          display:"grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)",
-          gap:10,
-        }}>
-          {PRODUCTS.map(p => (
-            <ProductCard key={p.key} {...p} product={loan.products?.[p.key]} rc={lc} isMobile={isMobile} />
-          ))}
-        </div>
-      </div>
-
       {/* ── Recommendations ── */}
       {result.recommendations?.length > 0 && (
         <div style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20, padding:"24px", marginBottom:16 }}>
@@ -472,17 +592,72 @@ export default function MSMEResult({ result, onReset }) {
         <PeerBenchmark businessType={result.business_type} city={result.city} myScores={ps} />
       </div>
 
-      {/* ── EMI Calculator ── */}
-      <div id="r-emi" style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20,
-        padding:"24px", marginBottom:16 }}>
-        <EMICalculator products={loan.products} />
+      {/* ── EMI Calculator + Score Simulator ── */}
+      <div style={{
+        display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        gap:16, marginBottom:16, alignItems:"start",
+      }}>
+        <div id="r-emi" style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20,
+          padding:"24px" }}>
+          <EMICalculator products={loan.products} />
+        </div>
+
+        <div id="r-simulator" style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20,
+          padding:"24px" }}>
+          <ScoreSimulator rawFeatures={result.raw_features} currentScores={ps}
+            avgMonthlyRevenue={result.raw_features?.avg_monthly_revenue}
+            hasGstin={result.has_gstin !== false} />
+        </div>
       </div>
 
-      {/* ── Score Simulator ── */}
-      <div id="r-simulator" style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20,
+      {/* ── Loan eligibility banner ── */}
+      <div id="r-products" style={{
+        background:`linear-gradient(135deg, ${lc}12, ${lc}06)`,
+        border:`1px solid ${lc}33`, borderRadius:20,
+        padding: isMobile ? "20px" : "24px 32px",
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        flexWrap:"wrap", gap:16, marginBottom:16,
+      }}>
+        <div>
+          <div style={{ fontSize:11, color:lc, fontWeight:700, letterSpacing:1.5, marginBottom:6 }}>
+            BASED ON YOUR HEALTH SCORE — LOAN ELIGIBILITY
+          </div>
+          <div style={{ fontSize: isMobile ? 32 : 42, fontWeight:900, color:"var(--c-text)", lineHeight:1 }}>
+            {fmtL(loan.eligible_loan_amount)}
+          </div>
+          <div style={{ fontSize:13, color:"#64748b", marginTop:4 }}>
+            Maximum eligible • {recLabel(loan.recommendation)}
+          </div>
+        </div>
+        <div style={{ textAlign:"center", minWidth:150 }}>
+          <div style={{
+            padding:"10px 24px", borderRadius:12,
+            background:`${lc}22`, border:`1px solid ${lc}44`,
+            fontSize:16, fontWeight:800, color:lc,
+          }}>
+            {recLabel(loan.recommendation)}
+          </div>
+          <div style={{ fontSize:10.5, color:"#64748b", marginTop:6 }}>
+            AI Recommendation · {(ml.confidence * 100).toFixed(0)}% confidence
+          </div>
+        </div>
+      </div>
+
+      {/* ── Loan products ── */}
+      <div style={{ background:"var(--c-surface)", border:"1px solid var(--c-border)", borderRadius:20,
         padding:"24px", marginBottom:16 }}>
-        <ScoreSimulator rawFeatures={result.raw_features} currentScores={ps}
-          avgMonthlyRevenue={result.raw_features?.avg_monthly_revenue} />
+        <div style={{ fontSize:11, color:"#475569", letterSpacing:1.5, marginBottom:16 }}>
+          ELIGIBLE LOAN PRODUCTS
+        </div>
+        <div style={{
+          display:"grid",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(auto-fit, minmax(200px, 1fr))",
+          gap:14,
+        }}>
+          {PRODUCTS.map(p => (
+            <ProductCard key={p.key} {...p} product={loan.products?.[p.key]} rc={lc} isMobile={isMobile} />
+          ))}
+        </div>
       </div>
 
       {/* ── Apply CTA ── */}
@@ -497,6 +672,26 @@ export default function MSMEResult({ result, onReset }) {
       }}>
         ← Check Another Business
       </button>
+
+      {/* ── Powered-by footer ── */}
+      <div style={{
+        display:"flex", flexDirection:"column", alignItems:"center", gap:8,
+        marginTop:24, paddingTop:20, borderTop:"1px solid var(--c-border-soft)",
+      }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flexWrap:"wrap", gap:10 }}>
+          <span style={{ fontSize:10.5, color:"#475569", letterSpacing:0.5 }}>BUILT FOR</span>
+          {["AA", "OCEN", "ULI", "GSTN", "NPCI"].map(name => (
+            <span key={name} style={{
+              fontSize:10.5, fontWeight:700, color:"#64748b",
+              padding:"3px 10px", borderRadius:20,
+              background:"var(--c-surface)", border:"1px solid var(--c-border)",
+            }}>{name}</span>
+          ))}
+        </div>
+        <div style={{ fontSize:10, color:"#475569", textAlign:"center" }}>
+          Built for integration with the GSTN, NPCI &amp; Account Aggregator ecosystem — data shown above is sandbox/synthetic for this demo.
+        </div>
+      </div>
     </div>
   );
 }

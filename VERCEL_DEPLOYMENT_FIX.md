@@ -112,7 +112,7 @@ REACT_APP_API_URL = https://YOUR_BACKEND_URL
 2. **Login:**
    - Go to `/owner/login`
    - Email: `owner@demo.com`
-   - Password: `Demo123`
+   - Password: `<redacted>`
    - Should fetch score from backend TiDB ✓
 
 3. **API Health:**
@@ -130,8 +130,8 @@ REACT_APP_API_URL=https://YOUR_BACKEND_URL
 
 ### Backend (.env on Railway/Render)
 ```
-SECRET_KEY=2M2pBgsdbwlsxdMU4HLPQ5HqsWUybonQvlC3h-407zL0YsuE0jKYflqXCEU02Q6-
-DATABASE_URL=mysql+pymysql://45YQw5GHn42CMte.root:AlvrFGDTt16kjnLx@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true
+SECRET_KEY=<redacted — rotated, see Railway env vars>
+DATABASE_URL=mysql+pymysql://<user>:<password>@<host>:4000/finhealth?ssl_verify_cert=true&ssl_verify_identity=true  # redacted — rotated
 GEMINI_API_KEY=[optional]
 ```
 

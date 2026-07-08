@@ -151,6 +151,13 @@ body {
 .fh-card:hover::before { left: 130%; }
 .fh-card > * { position: relative; z-index: 1; }
 
+/* report page quick-nav pills */
+.fh-nav-pill:hover {
+  border-color: #6366f166 !important;
+  color: var(--c-text-2) !important;
+  background: var(--c-surface-2) !important;
+}
+
 /* link/nav underline grow */
 .fh-nav { position: relative; }
 .fh-nav::after {
