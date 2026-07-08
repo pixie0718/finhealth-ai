@@ -5,18 +5,32 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 import os
 
-# Railway auto-generates MYSQL_URL; convert it to use PyMySQL driver if present
-MYSQL_URL = os.environ.get("MYSQL_URL")
-if MYSQL_URL:
-    # Convert mysql:// to mysql+pymysql:// for PyMySQL compatibility
-    DATABASE_URL = MYSQL_URL.replace("mysql://", "mysql+pymysql://", 1)
-else:
-    # Fallback to DATABASE_URL or SQLite for local dev
-    DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./finhealth.db")
+# Determine database URL with proper driver configuration
+def get_database_url():
+    # Priority 1: Explicit DATABASE_URL (for manual MySQL setup)
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url:
+        return db_url
+
+    # Priority 2: Railway MYSQL_URL + auto-convert to pymysql dialect
+    mysql_url = os.environ.get("MYSQL_URL")
+    if mysql_url:
+        # Ensure mysql+pymysql:// dialect (Railway gives mysql://)
+        if mysql_url.startswith("mysql://"):
+            return mysql_url.replace("mysql://", "mysql+pymysql://", 1)
+        elif mysql_url.startswith("mysql+pymysql://"):
+            return mysql_url
+        else:
+            return mysql_url
+
+    # Fallback: SQLite for local development
+    return "sqlite:///./finhealth.db"
+
+DATABASE_URL = get_database_url()
 
 # SQLite needs special args; MySQL doesn't
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
