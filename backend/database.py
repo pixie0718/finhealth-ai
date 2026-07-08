@@ -4,10 +4,19 @@ from sqlalchemy import create_engine, Column, String, Text, DateTime, func, Inte
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 import os
-# Configurable so Docker can point the SQLite file at a persistent volume;
-# defaults to the local file for normal `uvicorn` runs.
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./finhealth.db")
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}) if "sqlite" in DATABASE_URL else create_engine(DATABASE_URL)
+
+# Railway auto-generates MYSQL_URL; convert it to use PyMySQL driver if present
+MYSQL_URL = os.environ.get("MYSQL_URL")
+if MYSQL_URL:
+    # Convert mysql:// to mysql+pymysql:// for PyMySQL compatibility
+    DATABASE_URL = MYSQL_URL.replace("mysql://", "mysql+pymysql://", 1)
+else:
+    # Fallback to DATABASE_URL or SQLite for local dev
+    DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./finhealth.db")
+
+# SQLite needs special args; MySQL doesn't
+connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
