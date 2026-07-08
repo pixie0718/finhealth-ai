@@ -8,9 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install deps first for better layer caching
+# Install deps (clear cache to ensure PyMySQL driver is installed)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --force-reinstall -r requirements.txt
 
 # App code (trained_model.joblib ships in the repo, so scoring works out of the box)
 COPY . .

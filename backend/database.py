@@ -5,24 +5,40 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool
 
 import os
+import sys
+
+# Debug: Check if PyMySQL is available
+try:
+    import pymysql
+    print("[DB] ✓ PyMySQL is installed")
+except ImportError:
+    print("[DB] ✗ WARNING: PyMySQL NOT found - will fail on MySQL URLs!")
+    sys.exit(1)
 
 # Determine database URL with proper driver configuration
 DATABASE_URL = os.environ.get("DATABASE_URL")
+print(f"[DB] DATABASE_URL env var: {bool(DATABASE_URL)}")
 
 if not DATABASE_URL:
     # Railway provides MYSQL_URL; convert to explicit mysql+pymysql:// format
     mysql_url = os.environ.get("MYSQL_URL")
+    print(f"[DB] MYSQL_URL env var: {bool(mysql_url)}")
+
     if mysql_url:
-        # Strip trailing /railway or database name, re-add with explicit pymysql dialect
+        print(f"[DB] Converting MYSQL_URL to mysql+pymysql:// format")
+        # Explicitly convert mysql:// to mysql+pymysql://
         if mysql_url.startswith("mysql://"):
             DATABASE_URL = mysql_url.replace("mysql://", "mysql+pymysql://", 1)
+            print(f"[DB] ✓ Converted to: {DATABASE_URL.split('@')[0]}@...")
         else:
             DATABASE_URL = mysql_url
+            print(f"[DB] Using MYSQL_URL as-is")
     else:
         # Fallback to SQLite for local dev
         DATABASE_URL = "sqlite:///./finhealth.db"
+        print(f"[DB] Using SQLite fallback")
 
-print(f"[DB] Using database: {DATABASE_URL.split('@')[0] if '@' in DATABASE_URL else 'SQLite'}")
+print(f"[DB] Final DATABASE_URL dialect: {DATABASE_URL.split(':')[0]}")
 
 # Create engine with proper config
 if "sqlite" in DATABASE_URL:
