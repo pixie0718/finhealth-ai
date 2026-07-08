@@ -7,7 +7,7 @@ import os
 # Configurable so Docker can point the SQLite file at a persistent volume;
 # defaults to the local file for normal `uvicorn` runs.
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./finhealth.db")
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}) if "sqlite" in DATABASE_URL else create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
