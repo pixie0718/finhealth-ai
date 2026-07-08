@@ -23,22 +23,15 @@ if not DATABASE_URL:
     # Railway provides MYSQL_URL; convert to explicit mysql+pymysql:// format
     mysql_url = os.environ.get("MYSQL_URL")
     print(f"[DB] MYSQL_URL env var: {bool(mysql_url)}")
+    DATABASE_URL = mysql_url or "sqlite:///./finhealth.db"
 
-    if mysql_url:
-        print(f"[DB] Converting MYSQL_URL to mysql+pymysql:// format")
-        # Explicitly convert mysql:// to mysql+pymysql://
-        if mysql_url.startswith("mysql://"):
-            DATABASE_URL = mysql_url.replace("mysql://", "mysql+pymysql://", 1)
-            print(f"[DB] ✓ Converted to: {DATABASE_URL.split('@')[0]}@...")
-        else:
-            DATABASE_URL = mysql_url
-            print(f"[DB] Using MYSQL_URL as-is")
-    else:
-        # Fallback to SQLite for local dev
-        DATABASE_URL = "sqlite:///./finhealth.db"
-        print(f"[DB] Using SQLite fallback")
+# ALWAYS convert mysql:// to mysql+pymysql:// (works for both DATABASE_URL and MYSQL_URL)
+if DATABASE_URL and DATABASE_URL.startswith("mysql://"):
+    print(f"[DB] Converting mysql:// to mysql+pymysql://")
+    DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
+    print(f"[DB] ✓ Converted successfully")
 
-print(f"[DB] Final DATABASE_URL dialect: {DATABASE_URL.split(':')[0]}")
+print(f"[DB] Final DATABASE_URL dialect: {DATABASE_URL.split(':')[0] if ':' in DATABASE_URL else 'unknown'}")
 
 # Create engine with proper config
 if "sqlite" in DATABASE_URL:
