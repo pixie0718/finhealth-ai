@@ -1,36 +1,47 @@
 import json
 from datetime import datetime, timedelta
-from sqlalchemy import create_engine, Column, String, Text, DateTime, func, Integer, Float, text
+from sqlalchemy import create_engine, Column, String, Text, DateTime, func, Integer, Float, text, event
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.pool import NullPool
 
 import os
 
 # Determine database URL with proper driver configuration
-def get_database_url():
-    # Priority 1: Explicit DATABASE_URL (for manual MySQL setup)
-    db_url = os.environ.get("DATABASE_URL")
-    if db_url:
-        return db_url
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-    # Priority 2: Railway MYSQL_URL + auto-convert to pymysql dialect
+if not DATABASE_URL:
+    # Railway provides MYSQL_URL; convert to explicit mysql+pymysql:// format
     mysql_url = os.environ.get("MYSQL_URL")
     if mysql_url:
-        # Ensure mysql+pymysql:// dialect (Railway gives mysql://)
+        # Strip trailing /railway or database name, re-add with explicit pymysql dialect
         if mysql_url.startswith("mysql://"):
-            return mysql_url.replace("mysql://", "mysql+pymysql://", 1)
-        elif mysql_url.startswith("mysql+pymysql://"):
-            return mysql_url
+            DATABASE_URL = mysql_url.replace("mysql://", "mysql+pymysql://", 1)
         else:
-            return mysql_url
+            DATABASE_URL = mysql_url
+    else:
+        # Fallback to SQLite for local dev
+        DATABASE_URL = "sqlite:///./finhealth.db"
 
-    # Fallback: SQLite for local development
-    return "sqlite:///./finhealth.db"
+print(f"[DB] Using database: {DATABASE_URL.split('@')[0] if '@' in DATABASE_URL else 'SQLite'}")
 
-DATABASE_URL = get_database_url()
+# Create engine with proper config
+if "sqlite" in DATABASE_URL:
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        echo=False
+    )
+else:
+    # MySQL: use explicit pymysql driver, pool config for Railway (ephemeral containers)
+    engine = create_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+        pool_size=5,
+        max_overflow=10,
+    )
 
-# SQLite needs special args; MySQL doesn't
-connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
