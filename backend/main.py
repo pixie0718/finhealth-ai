@@ -3,6 +3,8 @@ load_dotenv()  # load SECRET_KEY / GEMINI_API_KEY from backend/.env before route
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from routers import score
 from routers import auth
 from routers import chat
@@ -29,6 +31,11 @@ app.include_router(auth.router)
 app.include_router(score.router)
 app.include_router(chat.router)
 app.include_router(ocen.router)
+
+# Serve static files (logo, favicon, etc.)
+static_dir = Path(__file__).parent / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
 # ─── Audit/compliance middleware ──────────────────────────────────────────────

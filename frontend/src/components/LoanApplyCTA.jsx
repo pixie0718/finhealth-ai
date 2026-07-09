@@ -30,6 +30,9 @@ export default function LoanApplyCTA({ data }) {
   const eligible = Object.entries(loan?.products || {}).filter(([, p]) => p.eligible);
   const rc = riskColor[loan?.risk_band] || "#64748b";
 
+  // Check if already applied for this MSME
+  const alreadyApplied = localStorage.getItem(`loan_applied_${data?.msme_id}`) !== null;
+
   if (!eligible.length || loan?.risk_band === "HIGH") return null;
 
   const close = () => { setOpen(false); setStep("select"); setSelectedProduct(null); setError(""); };
@@ -45,7 +48,9 @@ export default function LoanApplyCTA({ data }) {
         interest_rate: product.interest_rate,
         tenure_months: product.tenure_months,
       });
-      setRef(res.data.reference);
+      const refNum = res.data.reference;
+      setRef(refNum);
+      localStorage.setItem(`loan_applied_${data.msme_id}`, refNum);
       setStep("done");
     } catch (e) {
       setError(e?.response?.data?.detail || "Couldn't submit. Please try again.");
@@ -60,33 +65,48 @@ export default function LoanApplyCTA({ data }) {
     <>
       {/* CTA Banner */}
       <div style={{
-        background: `linear-gradient(135deg, ${rc}11, ${rc}08)`,
-        border: `1px solid ${rc}33`,
+        background: alreadyApplied ? `linear-gradient(135deg, #22c55e11, #22c55e08)` : `linear-gradient(135deg, ${rc}11, ${rc}08)`,
+        border: alreadyApplied ? `1px solid #22c55e33` : `1px solid ${rc}33`,
         borderRadius: 16, padding: "20px 24px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         flexWrap: "wrap", gap: 14,
       }}>
         <div>
-          <div style={{ fontSize: 11, color: rc, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>
-            YOU'RE PRE-QUALIFIED
+          <div style={{ fontSize: 11, color: alreadyApplied ? "#22c55e" : rc, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>
+            {alreadyApplied ? "APPLICATION SUBMITTED" : "YOU'RE PRE-QUALIFIED"}
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "var(--c-text)" }}>
-            Apply for up to {fmtL(loan.eligible_loan_amount)}
+            {alreadyApplied ? "Your application is under review" : `Apply for up to ${fmtL(loan.eligible_loan_amount)}`}
           </div>
           <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
-            {eligible.length} loan product{eligible.length > 1 ? "s" : ""} available • Based on your FinHealth score
+            {alreadyApplied
+              ? "A relationship manager will contact you within 2 business days"
+              : `${eligible.length} loan product${eligible.length > 1 ? "s" : ""} available • Based on your FinHealth score`}
           </div>
         </div>
-        <button onClick={() => setOpen(true)} style={{
-          padding: "12px 28px",
-          background: `linear-gradient(135deg, ${rc}, ${rc}bb)`,
-          border: "none", borderRadius: 12,
-          color: "#fff", fontSize: 14, fontWeight: 700,
-          cursor: "pointer", whiteSpace: "nowrap",
-          boxShadow: `0 4px 20px ${rc}44`,
-        }}>
-          Apply Now →
-        </button>
+        {!alreadyApplied && (
+          <button onClick={() => setOpen(true)} style={{
+            padding: "12px 28px",
+            background: `linear-gradient(135deg, ${rc}, ${rc}bb)`,
+            border: "none", borderRadius: 12,
+            color: "#fff", fontSize: 14, fontWeight: 700,
+            cursor: "pointer", whiteSpace: "nowrap",
+            boxShadow: `0 4px 20px ${rc}44`,
+          }}>
+            Apply Now →
+          </button>
+        )}
+        {alreadyApplied && (
+          <div style={{
+            padding: "12px 28px",
+            background: "var(--c-surface)",
+            border: "1px solid #22c55e55", borderRadius: 12,
+            color: "#22c55e", fontSize: 14, fontWeight: 700,
+            whiteSpace: "nowrap",
+          }}>
+            ✓ Already Applied
+          </div>
+        )}
       </div>
 
       {/* Modal */}

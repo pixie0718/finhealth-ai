@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import useIsMobile from "../../hooks/useIsMobile";
 import CountUp from "../../components/CountUp";
 import ThemeToggle from "../../components/ThemeToggle";
+import Logo from "../../components/Logo";
 import { STATS, HERO_PILLARS } from "./data";
 
 export const accent = "#6366f1";
@@ -21,8 +22,8 @@ export function LandingHeader({ navigate }) {
       borderBottom: "1px solid var(--c-border)",
     }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px", height: 66, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => scrollTo("top")}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>📊</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => scrollTo("top")}>
+          <Logo size={48} />
           <div style={{ fontSize: 16, fontWeight: 800, color: "var(--c-text)" }}>FinHealth <span style={{ color: "#818cf8" }}>AI</span></div>
         </div>
         {!isMobile && (

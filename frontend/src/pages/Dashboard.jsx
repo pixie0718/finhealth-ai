@@ -130,11 +130,49 @@ export default function Dashboard({ onView }) {
   const runDemo = async () => {
     setDemoing(true);
     try {
-      const res = await getDemoScore();
-      setRecords((prev) => [res.data, ...prev]);
-      onView(res.data);
-    } catch {
-      alert("Backend not reachable");
+      // Try backend first, if fails use local demo
+      try {
+        const res = await getDemoScore();
+        setRecords((prev) => [res.data, ...prev]);
+        onView(res.data);
+      } catch {
+        // Fallback: Generate demo score locally
+        const demoScore = {
+          msme_id: "demo-" + Math.random().toString(36).substring(7),
+          business_name: "Demo Business Ltd",
+          gstin: "27AAPFU0939F1ZV",
+          has_gstin: true,
+          business_type: "Manufacturing",
+          city: "Mumbai",
+          years_in_business: 5,
+          ntc_flag: false,
+          ntb_flag: false,
+          pillar_scores: {
+            cash_flow: 78,
+            compliance: 85,
+            growth: 72,
+            stability: 80,
+            credit_worthiness: 76,
+            overall: 78.2
+          },
+          loan_eligibility: {
+            eligible_loan_amount: 5000000,
+            risk_band: "LOW",
+            multiplier_used: 1.0,
+            recommendation: "APPROVE"
+          },
+          ml_prediction: { prediction: "CREDITWORTHY", confidence: 0.89 },
+          explanations: { strengths: ["Strong compliance", "Good stability"], risks: [], top_drivers: ["cash_flow", "stability"] },
+          recommendations: ["Approve for Business Loan", "Consider higher amount"],
+          monthly_revenues: [900000, 950000, 1000000, 1050000, 1100000, 1150000],
+          monthly_inflows: [950000, 1000000, 1050000, 1100000, 1150000, 1200000],
+          data_sources: {},
+          raw_features: {},
+          generated_at: new Date().toISOString(),
+        };
+        setRecords((prev) => [demoScore, ...prev]);
+        onView(demoScore);
+      }
     } finally {
       setDemoing(false);
     }
@@ -303,13 +341,11 @@ export default function Dashboard({ onView }) {
                   }}>{a.status.replace("_", " ")}</div>
                   {pending ? (
                     <div style={{ display: "flex", gap: 6 }}>
-                      {linkedRecord && (
-                        <button onClick={() => onView({ ...linkedRecord, _appRef: a.reference, _appData: a })} style={{
-                          fontSize: 11, fontWeight: 700, cursor: "pointer",
-                          color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
-                          padding: "5px 12px", borderRadius: 8,
-                        }}>📊 Details</button>
-                      )}
+                      <button onClick={() => onView(linkedRecord ? { ...linkedRecord, _appRef: a.reference, _appData: a } : { _appRef: a.reference, _appData: a, business_name: a.business_name, pillar_scores: { cash_flow: 0, compliance: 0, growth: 0, stability: 0, credit_worthiness: 0, overall: 0 }, loan_eligibility: { eligible_loan_amount: 0, risk_band: "UNKNOWN" }, ml_prediction: {}, explanations: { strengths: [], risks: [], top_drivers: [] }, monthly_revenues: [], monthly_inflows: [], recommendations: [] })} style={{
+                        fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
+                        padding: "5px 12px", borderRadius: 8,
+                      }}>📊 Details</button>
                       <button onClick={() => updateApp(a.reference, "APPROVED")} style={{
                         fontSize: 11, fontWeight: 700, cursor: "pointer",
                         color: "#22c55e", background: "#15803d22", border: "1px solid #15803d55",
@@ -323,13 +359,11 @@ export default function Dashboard({ onView }) {
                     </div>
                   ) : (
                     <div style={{ display: "flex", gap: 6 }}>
-                      {linkedRecord && (
-                        <button onClick={() => onView({ ...linkedRecord, _appRef: a.reference, _appData: a })} style={{
-                          fontSize: 11, fontWeight: 700, cursor: "pointer",
-                          color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
-                          padding: "5px 12px", borderRadius: 8,
-                        }}>📊 Details</button>
-                      )}
+                      <button onClick={() => onView(linkedRecord ? { ...linkedRecord, _appRef: a.reference, _appData: a } : { _appRef: a.reference, _appData: a, business_name: a.business_name, pillar_scores: { cash_flow: 0, compliance: 0, growth: 0, stability: 0, credit_worthiness: 0, overall: 0 }, loan_eligibility: { eligible_loan_amount: 0, risk_band: "UNKNOWN" }, ml_prediction: {}, explanations: { strengths: [], risks: [], top_drivers: [] }, monthly_revenues: [], monthly_inflows: [], recommendations: [] })} style={{
+                        fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
+                        padding: "5px 12px", borderRadius: 8,
+                      }}>📊 Details</button>
                       <button onClick={() => updateApp(a.reference, "UNDER_REVIEW")} style={{
                         fontSize: 11, fontWeight: 600, cursor: "pointer",
                         color: "#94a3b8", background: "transparent", border: "1px solid var(--c-border)",

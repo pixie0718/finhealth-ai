@@ -16,6 +16,7 @@ import DemoPortal from "./pages/DemoPortal";
 import BottomNav from "./components/BottomNav";
 import InstallPrompt from "./components/InstallPrompt";
 import ThemeToggle from "./components/ThemeToggle";
+import Logo from "./components/Logo";
 import useIsMobile from "./hooks/useIsMobile";
 
 // Short labels + icons for the mobile bottom tab bar (keys match the shells' tab state).
@@ -91,13 +92,8 @@ function ManagerShell() {
         background: "var(--c-bg)",
         zIndex: 100,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 16,
-          }}>🏦</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Logo size={56} />
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", lineHeight: 1 }}>FinHealth AI</div>
             <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Bank Manager Console</div>
@@ -176,12 +172,8 @@ function OwnerShell() {
         flexWrap: "wrap", rowGap: 8,
         minHeight: 60, position: "sticky", top: 0, background: "var(--c-bg)", zIndex: 100,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
-          }}>🏭</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Logo size={56} />
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", lineHeight: 1 }}>FinHealth AI</div>
             <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Business Owner Portal</div>
