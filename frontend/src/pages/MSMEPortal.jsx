@@ -17,9 +17,9 @@ function readSaved(email) {
 
 /* ─── responsive hook ─── */
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   useEffect(() => {
-    const fn = () => setIsMobile(window.innerWidth < 768);
+    const fn = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);

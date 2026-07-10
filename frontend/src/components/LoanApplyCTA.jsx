@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { applyForLoan } from "../api/client";
+import useIsMobile from "../hooks/useIsMobile";
 
 const PRODUCT_LABELS = {
   msme_loan:        "MSME Loan",
@@ -19,6 +20,7 @@ const PRODUCT_LABELS = {
 const riskColor = { LOW: "#22c55e", "MEDIUM-LOW": "#eab308", MEDIUM: "#f97316", HIGH: "#ef4444" };
 
 export default function LoanApplyCTA({ data }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState("select"); // select | confirm | done
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -63,6 +65,41 @@ export default function LoanApplyCTA({ data }) {
 
   return (
     <>
+      {/* Floating "Apply Now" bar — stays on screen so users don't have to scroll to find it */}
+      {!alreadyApplied && !open && (
+        <div style={{
+          position: "fixed", left: 0, right: 0,
+          bottom: isMobile ? 74 : 0, zIndex: 900,
+          background: "var(--c-header)", backdropFilter: "blur(10px)",
+          borderTop: `1px solid ${rc}44`,
+          boxShadow: "0 -4px 24px #00000033",
+          padding: isMobile ? "10px 14px" : "12px 24px",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <div style={{
+            width: "100%", maxWidth: 900,
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 10, color: rc, fontWeight: 700, letterSpacing: 1 }}>PRE-QUALIFIED</div>
+              <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 800, color: "var(--c-text)", whiteSpace: "nowrap" }}>
+                Eligible up to {fmtL(loan.eligible_loan_amount)}
+              </div>
+            </div>
+            <button onClick={() => setOpen(true)} style={{
+              padding: isMobile ? "10px 18px" : "12px 28px",
+              background: `linear-gradient(135deg, ${rc}, ${rc}bb)`,
+              border: "none", borderRadius: 12,
+              color: "#fff", fontSize: 13, fontWeight: 700,
+              cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: `0 4px 20px ${rc}44`,
+            }}>
+              Apply Now →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* CTA Banner */}
       <div style={{
         background: alreadyApplied ? `linear-gradient(135deg, #22c55e11, #22c55e08)` : `linear-gradient(135deg, ${rc}11, ${rc}08)`,

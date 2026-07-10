@@ -33,6 +33,17 @@ const recBg = {
   "DECLINE": "#dc262622",
 };
 
+const appStatusColors = {
+  SUBMITTED: "#fbbf24", UNDER_REVIEW: "#3b82f6", APPROVED: "#22c55e", REJECTED: "#ef4444",
+};
+
+const PRODUCT_LABELS = {
+  msme_loan: "MSME Loan", working_capital: "Working Capital", business_loan: "Business Loan",
+  personal_loan: "Personal Loan", auto_loan: "Auto Loan", home_loan: "Home Loan",
+  mudra_shishu: "MUDRA Shishu", mudra_kishore: "MUDRA Kishore", mudra_tarun: "MUDRA Tarun",
+  cgtmse_backed: "CGTMSE-Backed", standup_india: "Stand-Up India",
+};
+
 async function exportPDF(ref, business_name) {
   const { default: html2canvas } = await import("html2canvas");
   const { default: jsPDF } = await import("jspdf");
@@ -53,20 +64,23 @@ export default function HealthCard({ data, isManagerView = false }) {
   const [recordedOutcome, setRecordedOutcome] = useState(null);
   const [approving, setApproving] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+  const [reopening, setReopening] = useState(false);
   const [actionMessage, setActionMessage] = useState(null);
+  const [appStatus, setAppStatus] = useState(data._appData?.status || null);
   const [ocen, setOcen] = useState(null);        // OCEN request+response
   const [ocenLoading, setOcenLoading] = useState(false);
 
   const isMobile = useIsMobile();
   const { business_name, gstin, city, business_type, years_in_business,
     pillar_scores, loan_eligibility, ml_prediction, explanations, generated_at,
-    monthly_revenues, monthly_inflows, recommendations, raw_features, _appRef } = data;
+    monthly_revenues, monthly_inflows, recommendations, raw_features, _appRef, _appData } = data;
 
   const handleApprove = async () => {
     if (!_appRef) return;
     setApproving(true);
     try {
       await setApplicationStatus(_appRef, "APPROVED");
+      setAppStatus("APPROVED");
       setActionMessage({ type: "success", text: "✓ Application Approved! Notification sent to owner." });
       setTimeout(() => setActionMessage(null), 4000);
     } catch {
@@ -81,12 +95,28 @@ export default function HealthCard({ data, isManagerView = false }) {
     setRejecting(true);
     try {
       await setApplicationStatus(_appRef, "REJECTED");
+      setAppStatus("REJECTED");
       setActionMessage({ type: "error", text: "✗ Application Rejected. Notification sent to owner." });
       setTimeout(() => setActionMessage(null), 4000);
     } catch {
       setActionMessage({ type: "error", text: "Failed to reject application" });
     } finally {
       setRejecting(false);
+    }
+  };
+
+  const handleReopen = async () => {
+    if (!_appRef) return;
+    setReopening(true);
+    try {
+      await setApplicationStatus(_appRef, "UNDER_REVIEW");
+      setAppStatus("UNDER_REVIEW");
+      setActionMessage({ type: "success", text: "↺ Application reopened for review." });
+      setTimeout(() => setActionMessage(null), 4000);
+    } catch {
+      setActionMessage({ type: "error", text: "Failed to reopen application" });
+    } finally {
+      setReopening(false);
     }
   };
 
@@ -131,7 +161,7 @@ export default function HealthCard({ data, isManagerView = false }) {
   ];
 
   return (
-    <div ref={printRef} style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px" }}>
+    <div ref={printRef} style={{ maxWidth: isMobile ? 720 : 1300, margin: "0 auto", padding: isMobile ? "24px 16px" : "24px 32px" }}>
 
       {/* Action Message Toast */}
       {actionMessage && (
@@ -208,26 +238,49 @@ export default function HealthCard({ data, isManagerView = false }) {
             </div>
             <div style={{ display:"flex", gap:6, flexWrap: "wrap" }}>
               {isManagerView && _appRef && (
-                <>
-                  <button onClick={handleApprove} disabled={approving} style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    background: approving ? "#15803d44" : "#15803d22",
-                    border: "1px solid #15803d55", color: "#22c55e",
-                    fontSize: 11, cursor: approving ? "not-allowed" : "pointer",
-                    fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
-                  }}>
-                    {approving ? "⏳ Approving…" : "✓ Approve"}
-                  </button>
-                  <button onClick={handleReject} disabled={rejecting} style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    background: rejecting ? "#dc262644" : "#dc262611",
-                    border: "1px solid #dc262655", color: "#f87171",
-                    fontSize: 11, cursor: rejecting ? "not-allowed" : "pointer",
-                    fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
-                  }}>
-                    {rejecting ? "⏳ Rejecting…" : "✕ Reject"}
-                  </button>
-                </>
+                appStatus === "APPROVED" || appStatus === "REJECTED" ? (
+                  <>
+                    <span style={{
+                      padding: "6px 14px", borderRadius: 8,
+                      background: appStatus === "APPROVED" ? "#15803d22" : "#dc262611",
+                      border: `1px solid ${appStatus === "APPROVED" ? "#15803d55" : "#dc262655"}`,
+                      color: appStatus === "APPROVED" ? "#22c55e" : "#f87171",
+                      fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
+                    }}>
+                      {appStatus === "APPROVED" ? "✓ Approved" : "✕ Rejected"}
+                    </span>
+                    <button onClick={handleReopen} disabled={reopening} style={{
+                      padding: "6px 14px", borderRadius: 8,
+                      background: "var(--c-surface)",
+                      border: "1px solid var(--c-border)", color: "#94a3b8",
+                      fontSize: 11, cursor: reopening ? "not-allowed" : "pointer",
+                      fontWeight: 600, display: "flex", alignItems: "center", gap: 5,
+                    }}>
+                      {reopening ? "⏳ Reopening…" : "↺ Reopen"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={handleApprove} disabled={approving} style={{
+                      padding: "6px 14px", borderRadius: 8,
+                      background: approving ? "#15803d44" : "#15803d22",
+                      border: "1px solid #15803d55", color: "#22c55e",
+                      fontSize: 11, cursor: approving ? "not-allowed" : "pointer",
+                      fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
+                    }}>
+                      {approving ? "⏳ Approving…" : "✓ Approve"}
+                    </button>
+                    <button onClick={handleReject} disabled={rejecting} style={{
+                      padding: "6px 14px", borderRadius: 8,
+                      background: rejecting ? "#dc262644" : "#dc262611",
+                      border: "1px solid #dc262655", color: "#f87171",
+                      fontSize: 11, cursor: rejecting ? "not-allowed" : "pointer",
+                      fontWeight: 700, display: "flex", alignItems: "center", gap: 5,
+                    }}>
+                      {rejecting ? "⏳ Rejecting…" : "✕ Reject"}
+                    </button>
+                  </>
+                )
               )}
               <button onClick={() => setShowOutcome(true)} style={{
                 padding: "6px 14px", borderRadius: 8,
@@ -261,6 +314,43 @@ export default function HealthCard({ data, isManagerView = false }) {
           </div>
         </div>
       </div>
+
+      {/* Application details — what the applicant actually requested */}
+      {isManagerView && _appData && (
+        <div style={{
+          background: "var(--c-surface)", border: "1px solid var(--c-border)",
+          borderRadius: 20, padding: isMobile ? "18px 20px" : "22px 28px", marginBottom: 20,
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: "#475569", letterSpacing: 1.5 }}>APPLICATION DETAILS</div>
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+              color: appStatusColors[appStatus] || "#94a3b8",
+              background: `${appStatusColors[appStatus] || "#64748b"}18`,
+              border: `1px solid ${appStatusColors[appStatus] || "#64748b"}44`,
+              padding: "3px 10px", borderRadius: 20,
+            }}>{(appStatus || "").replace("_", " ")}</span>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
+            gap: 16,
+          }}>
+            {[
+              { label: "REFERENCE", value: _appData.reference },
+              { label: "PRODUCT REQUESTED", value: PRODUCT_LABELS[_appData.product] || _appData.product || "—" },
+              { label: "REQUESTED AMOUNT", value: _appData.loan_amount ? `₹${(_appData.loan_amount / 100000).toFixed(1)}L` : "—" },
+              { label: "RATE / TENURE", value: _appData.interest_rate ? `${_appData.interest_rate}% • ${_appData.tenure_months}mo` : "—" },
+              { label: "SUBMITTED", value: _appData.created_at ? new Date(_appData.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—" },
+            ].map(f => (
+              <div key={f.label}>
+                <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1, marginBottom: 4 }}>{f.label}</div>
+                <div style={{ fontSize: 13, color: "var(--c-text)", fontWeight: 600 }}>{f.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* NTC/NTB Banner */}
       <NTCBanner ntcFlag={data.ntc_flag} ntbFlag={data.ntb_flag} overallScore={pillar_scores.overall} />
@@ -444,23 +534,28 @@ export default function HealthCard({ data, isManagerView = false }) {
         </div>
       )}
 
-      {/* EMI Calculator */}
+      {/* EMI Calculator + What-If Score Simulator — side by side on wide screens */}
       <div id="hc-emi" />
-      {loan_eligibility?.products && (
-        <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
-          <EMICalculator products={loan_eligibility.products} />
-        </div>
-      )}
-
-      {/* What-If Score Simulator */}
       <div id="hc-simulator" />
-      {raw_features && (
-        <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28, marginTop: 20 }}>
-          <ScoreSimulator
-            rawFeatures={raw_features}
-            currentScores={pillar_scores}
-            avgMonthlyRevenue={raw_features.avg_monthly_revenue}
-          />
+      {(loan_eligibility?.products || raw_features) && (
+        <div style={{
+          display: "grid", gridTemplateColumns: isMobile || !loan_eligibility?.products || !raw_features ? "1fr" : "1fr 1fr",
+          gap: 20, marginTop: 20, alignItems: "start",
+        }}>
+          {loan_eligibility?.products && (
+            <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28 }}>
+              <EMICalculator products={loan_eligibility.products} />
+            </div>
+          )}
+          {raw_features && (
+            <div style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: 20, padding: 28 }}>
+              <ScoreSimulator
+                rawFeatures={raw_features}
+                currentScores={pillar_scores}
+                avgMonthlyRevenue={raw_features.avg_monthly_revenue}
+              />
+            </div>
+          )}
         </div>
       )}
 

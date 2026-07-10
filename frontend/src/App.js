@@ -12,6 +12,7 @@ import HealthCard from "./components/HealthCard";
 import ChatAssistant from "./components/ChatAssistant";
 import ToolsHub from "./pages/ToolsHub";
 import OwnerApplications from "./pages/OwnerApplications";
+import ManagerApplications from "./pages/ManagerApplications";
 import DemoPortal from "./pages/DemoPortal";
 import BottomNav from "./components/BottomNav";
 import InstallPrompt from "./components/InstallPrompt";
@@ -22,6 +23,7 @@ import useIsMobile from "./hooks/useIsMobile";
 // Short labels + icons for the mobile bottom tab bar (keys match the shells' tab state).
 const MANAGER_BOTTOM = [
   { key: "Dashboard", label: "Home", icon: "🏠" },
+  { key: "Applications", label: "Apps", icon: "📄" },
   { key: "Score History", label: "History", icon: "📈" },
   { key: "New Application", label: "New", icon: "➕" },
   { key: "Tools", label: "Tools", icon: "🧰" },
@@ -34,7 +36,7 @@ const OWNER_BOTTOM = [
   { key: "Settings", label: "Settings", icon: "⚙️" },
 ];
 
-const NAV_TABS = ["Dashboard", "Score History", "New Application", "Tools", "Settings"];
+const NAV_TABS = ["Dashboard", "Applications", "Score History", "New Application", "Tools", "Settings"];
 
 const navStyle = (active) => ({
   padding: "8px 20px",
@@ -81,44 +83,44 @@ function ManagerShell() {
     <div style={{ minHeight: "100vh", background: "var(--c-bg)", paddingBottom: isMobile ? 74 : 0 }}>
       <div style={{
         borderBottom: "1px solid var(--c-border-soft)",
-        padding: "8px 16px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        rowGap: 8,
-        minHeight: 60,
         position: "sticky", top: 0,
         background: "var(--c-bg)",
         zIndex: 100,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Logo size={56} />
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", lineHeight: 1 }}>FinHealth AI</div>
-            <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Bank Manager Console</div>
+        <div style={{
+          maxWidth: 1400, margin: "0 auto", padding: "8px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          rowGap: 8,
+          minHeight: 60,
+        }}>
+          <div onClick={() => navigate("/")} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+            <Logo size={52} />
+            <div style={{ fontSize: 11, color: "#475569", lineHeight: 1 }}>Bank Manager Console</div>
           </div>
-        </div>
 
-        {!isMobile && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-            {NAV_TABS.map((t) => (
-              <button key={t} style={navStyle(tab === t)} onClick={() => { setTab(t); setViewData(null); }}>
-                {t}
-              </button>
-            ))}
+          {!isMobile && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+              {NAV_TABS.map((t) => (
+                <button key={t} style={navStyle(tab === t)} onClick={() => { setTab(t); setViewData(null); }}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ fontSize: 12, color: "#475569" }}>🏦 IDBI Bank</div>
+            {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
+            <ThemeToggle />
+            <button onClick={doLogout} style={{
+              background: "transparent", border: "1px solid #ef444433",
+              color: "#ef4444", padding: "5px 12px", borderRadius: 8,
+              fontSize: 11, cursor: "pointer",
+            }}>Logout</button>
           </div>
-        )}
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 12, color: "#475569" }}>🏦 IDBI Bank</div>
-          {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
-          <ThemeToggle />
-          <button onClick={doLogout} style={{
-            background: "transparent", border: "1px solid #ef444433",
-            color: "#ef4444", padding: "5px 12px", borderRadius: 8,
-            fontSize: 11, cursor: "pointer",
-          }}>Logout</button>
         </div>
       </div>
 
@@ -136,6 +138,8 @@ function ManagerShell() {
         </div>
       ) : tab === "Dashboard" ? (
         <Dashboard onView={setViewData} />
+      ) : tab === "Applications" ? (
+        <ManagerApplications onView={setViewData} />
       ) : tab === "Score History" ? (
         <ScoreHistory onView={setViewData} />
       ) : tab === "Tools" ? (
@@ -167,32 +171,33 @@ function OwnerShell() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--c-bg)", paddingBottom: isMobile ? 74 : 0 }}>
       <div style={{
-        borderBottom: "1px solid var(--c-border-soft)", padding: "8px 16px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        flexWrap: "wrap", rowGap: 8,
-        minHeight: 60, position: "sticky", top: 0, background: "var(--c-bg)", zIndex: 100,
+        borderBottom: "1px solid var(--c-border-soft)",
+        position: "sticky", top: 0, background: "var(--c-bg)", zIndex: 100,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Logo size={56} />
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--c-text)", lineHeight: 1 }}>FinHealth AI</div>
-            <div style={{ fontSize: 10, color: "#475569", lineHeight: 1 }}>Business Owner Portal</div>
+        <div style={{
+          maxWidth: 1400, margin: "0 auto", padding: "8px 16px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", rowGap: 8, minHeight: 60,
+        }}>
+          <div onClick={() => navigate("/")} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+            <Logo size={52} />
+            <div style={{ fontSize: 11, color: "#475569", lineHeight: 1 }}>Business Owner Portal</div>
           </div>
-        </div>
-        {!isMobile && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-            {[["Check Eligibility", "Health Check"], ["Applications", "Applications"], ["Tools", "Tools"], ["Settings", "Settings"]].map(([t, label]) => (
-              <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{label}</button>
-            ))}
+          {!isMobile && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+              {[["Check Eligibility", "Health Check"], ["Applications", "Applications"], ["Tools", "Tools"], ["Settings", "Settings"]].map(([t, label]) => (
+                <button key={t} onClick={() => setMsmeTab(t)} style={navStyle(msmeTab === t)}>{label}</button>
+              ))}
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
+            <ThemeToggle />
+            <button onClick={doLogout} style={{
+              background: "transparent", border: "1px solid #ef444433",
+              color: "#ef4444", padding: "5px 12px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+            }}>Logout</button>
           </div>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {user && <div style={{ fontSize: 12, color: "#475569" }}>👤 {user.full_name || user.email}</div>}
-          <ThemeToggle />
-          <button onClick={doLogout} style={{
-            background: "transparent", border: "1px solid #ef444433",
-            color: "#ef4444", padding: "5px 12px", borderRadius: 8, fontSize: 11, cursor: "pointer",
-          }}>Logout</button>
         </div>
       </div>
       {msmeTab === "Tools" ? <ToolsHub /> : msmeTab === "Settings" ? <Settings /> : msmeTab === "Applications" ? <OwnerApplications /> : <MSMEPortal onBack={() => setMsmeTab("Check Eligibility")} onResult={setOwnerResult} />}

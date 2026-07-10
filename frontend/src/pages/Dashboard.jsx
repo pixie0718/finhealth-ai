@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getHistory, getDemoScore, getAllOutcomes, getApplications, setApplicationStatus } from "../api/client";
+import { getHistory, getDemoScore, getAllOutcomes, getApplications, setApplicationStatus, getScore } from "../api/client";
 import useIsMobile from "../hooks/useIsMobile";
 import PortfolioAnalytics from "../components/PortfolioAnalytics";
 import EmptyState from "../components/EmptyState";
@@ -115,6 +115,27 @@ export default function Dashboard({ onView }) {
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const emptyRecord = (a) => ({
+    _appRef: a.reference, _appData: a, business_name: a.business_name,
+    pillar_scores: { cash_flow: 0, compliance: 0, growth: 0, stability: 0, credit_worthiness: 0, overall: 0 },
+    loan_eligibility: { eligible_loan_amount: 0, risk_band: "UNKNOWN" },
+    ml_prediction: {}, explanations: { strengths: [], risks: [], top_drivers: [] },
+    monthly_revenues: [], monthly_inflows: [], recommendations: [],
+  });
+
+  // The banker's own `records` (getHistory) only holds scores generated under
+  // their account, so most incoming applications won't have a linkedRecord —
+  // fetch the actual score by msme_id instead of showing an empty card.
+  const viewApplication = async (a, linkedRecord) => {
+    if (linkedRecord) { onView({ ...linkedRecord, _appRef: a.reference, _appData: a }); return; }
+    try {
+      const res = await getScore(a.msme_id);
+      onView({ ...res.data, _appRef: a.reference, _appData: a });
+    } catch {
+      onView(emptyRecord(a));
+    }
+  };
 
   const updateApp = async (reference, status) => {
     // optimistic update, then refresh
@@ -341,7 +362,7 @@ export default function Dashboard({ onView }) {
                   }}>{a.status.replace("_", " ")}</div>
                   {pending ? (
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => onView(linkedRecord ? { ...linkedRecord, _appRef: a.reference, _appData: a } : { _appRef: a.reference, _appData: a, business_name: a.business_name, pillar_scores: { cash_flow: 0, compliance: 0, growth: 0, stability: 0, credit_worthiness: 0, overall: 0 }, loan_eligibility: { eligible_loan_amount: 0, risk_band: "UNKNOWN" }, ml_prediction: {}, explanations: { strengths: [], risks: [], top_drivers: [] }, monthly_revenues: [], monthly_inflows: [], recommendations: [] })} style={{
+                      <button onClick={() => viewApplication(a, linkedRecord)} style={{
                         fontSize: 11, fontWeight: 700, cursor: "pointer",
                         color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
                         padding: "5px 12px", borderRadius: 8,
@@ -359,7 +380,7 @@ export default function Dashboard({ onView }) {
                     </div>
                   ) : (
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => onView(linkedRecord ? { ...linkedRecord, _appRef: a.reference, _appData: a } : { _appRef: a.reference, _appData: a, business_name: a.business_name, pillar_scores: { cash_flow: 0, compliance: 0, growth: 0, stability: 0, credit_worthiness: 0, overall: 0 }, loan_eligibility: { eligible_loan_amount: 0, risk_band: "UNKNOWN" }, ml_prediction: {}, explanations: { strengths: [], risks: [], top_drivers: [] }, monthly_revenues: [], monthly_inflows: [], recommendations: [] })} style={{
+                      <button onClick={() => viewApplication(a, linkedRecord)} style={{
                         fontSize: 11, fontWeight: 700, cursor: "pointer",
                         color: "#3b82f6", background: "#3b82f622", border: "1px solid #3b82f655",
                         padding: "5px 12px", borderRadius: 8,

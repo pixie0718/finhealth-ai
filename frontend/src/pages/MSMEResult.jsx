@@ -10,9 +10,9 @@ import ConsentCard from "../components/ConsentCard";
 
 /* ─── responsive hook ─── */
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   useEffect(() => {
-    const fn = () => setIsMobile(window.innerWidth < 768);
+    const fn = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
@@ -692,6 +692,11 @@ export default function MSMEResult({ result, onReset }) {
           Built for integration with the GSTN, NPCI &amp; Account Aggregator ecosystem — data shown above is sandbox/synthetic for this demo.
         </div>
       </div>
+
+      {/* Reserve space so the floating Apply bar doesn't cover the footer */}
+      {loan?.eligible_loan_amount > 0 && loan?.risk_band !== "HIGH" && (
+        <div style={{ height: isMobile ? 84 : 70 }} />
+      )}
     </div>
   );
 }

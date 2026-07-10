@@ -23,8 +23,7 @@ export function LandingHeader({ navigate }) {
     }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px", height: 66, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => scrollTo("top")}>
-          <Logo size={48} />
-          <div style={{ fontSize: 16, fontWeight: 800, color: "var(--c-text)" }}>FinHealth <span style={{ color: "#818cf8" }}>AI</span></div>
+          <Logo size={52} />
         </div>
         {!isMobile && (
           <nav style={{ display: "flex", gap: 30 }}>

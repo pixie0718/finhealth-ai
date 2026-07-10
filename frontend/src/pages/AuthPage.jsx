@@ -3,6 +3,7 @@ import { Navigate, useNavigate, Link } from "react-router-dom";
 import { register, login } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import ThemeToggle from "../components/ThemeToggle";
+import Logo from "../components/Logo";
 
 const ROLE_CONFIG = {
   msme: {
@@ -216,39 +217,15 @@ export default function AuthPage({ role = "msme" }) {
 
         {/* LEFT: Info Section */}
         <div className="auth-info">
-          {/* Professional Icon */}
+          {/* Brand logo */}
           <div style={{
-            width: 100,
-            height: 100,
             margin: "0 auto 30px",
             animation: "float 3s ease-in-out infinite",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}>
-            {role === "banker" ? (
-              <svg width="100" height="100" viewBox="0 0 100 100" fill="none" stroke={cfg.color} strokeWidth="1.5">
-                {/* Bank Building */}
-                <rect x="15" y="35" width="70" height="50" rx="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M50 15L75 35H25Z" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="30" y1="35" x2="30" y2="85" strokeLinecap="round"/>
-                <line x1="50" y1="35" x2="50" y2="85" strokeLinecap="round"/>
-                <line x1="70" y1="35" x2="70" y2="85" strokeLinecap="round"/>
-                <rect x="20" y="45" width="10" height="15" strokeLinecap="round" strokeLinejoin="round"/>
-                <rect x="45" y="45" width="10" height="15" strokeLinecap="round" strokeLinejoin="round"/>
-                <rect x="70" y="45" width="10" height="15" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="100" height="100" viewBox="0 0 100 100" fill="none" stroke={cfg.color} strokeWidth="1.5">
-                {/* Factory/Industry */}
-                <rect x="20" y="45" width="30" height="40" rx="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <rect x="60" y="50" width="25" height="35" rx="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M30 45V20M70 50V25" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"/>
-                <circle cx="30" cy="55" r="5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="40" cy="65" r="5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="70" cy="60" r="5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
+            <Logo size={84} />
           </div>
 
           {/* Title */}

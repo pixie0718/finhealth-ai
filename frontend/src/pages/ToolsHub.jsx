@@ -6,9 +6,9 @@ import ComplianceCalendar from "../components/ComplianceCalendar";
 
 /* ─── responsive hook ─── */
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   useEffect(() => {
-    const fn = () => setIsMobile(window.innerWidth < 768);
+    const fn = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
@@ -90,7 +90,7 @@ export default function ToolsHub() {
   };
 
   return (
-    <div style={{ maxWidth:860, margin:"0 auto", padding: isMobile ? "16px 12px" : "28px 20px" }}>
+    <div style={{ maxWidth:1300, margin:"0 auto", padding: isMobile ? "16px 12px" : "28px 20px" }}>
 
       {/* Page header */}
       <div style={{ marginBottom:28 }}>
@@ -105,26 +105,36 @@ export default function ToolsHub() {
         </p>
       </div>
 
+      <div style={{
+        display: isMobile ? "block" : "grid",
+        gridTemplateColumns: isMobile ? undefined : "260px 1fr",
+        gap:20, alignItems:"start",
+      }}>
+
       {/* Tool selector */}
       <div style={{
         display:"grid",
-        gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
-        gap:10, marginBottom:24,
+        gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr",
+        gap:10, marginBottom: isMobile ? 24 : 0,
+        position: isMobile ? "static" : "sticky", top: isMobile ? undefined : 90,
       }}>
         {TOOLS.map(t => (
           <button key={t.id} onClick={() => setActive(t.id)} style={{
-            padding:"14px 12px",
+            display:"flex", alignItems:"center", gap:12,
+            padding: isMobile ? "14px 12px" : "12px 14px",
             background: active === t.id ? "#1e3a5f" : "var(--c-surface)",
             border: active === t.id ? "1.5px solid #3b82f6" : "1px solid var(--c-border)",
-            borderRadius:16, cursor:"pointer", textAlign:"left",
-            transition:"all 0.15s",
+            borderRadius:14, cursor:"pointer", textAlign:"left",
+            transition:"all 0.15s", width:"100%",
           }}>
-            <div style={{ fontSize:22, marginBottom:6 }}>{t.icon}</div>
-            <div style={{ fontSize:13, fontWeight:700,
-              color: active === t.id ? "#93c5fd" : "var(--c-text)", lineHeight:1.2, marginBottom:4 }}>
-              {t.label}
+            <div style={{ fontSize:20, flexShrink:0 }}>{t.icon}</div>
+            <div style={{ minWidth:0 }}>
+              <div style={{ fontSize:13, fontWeight:700,
+                color: active === t.id ? "#93c5fd" : "var(--c-text)", lineHeight:1.2, marginBottom:2 }}>
+                {t.label}
+              </div>
+              <div style={{ fontSize:11, color: active === t.id ? "#cbd5e1" : "#64748b", lineHeight:1.3 }}>{t.desc}</div>
             </div>
-            <div style={{ fontSize:11, color: active === t.id ? "#cbd5e1" : "#64748b", lineHeight:1.3 }}>{t.desc}</div>
           </button>
         ))}
       </div>
@@ -232,6 +242,7 @@ export default function ToolsHub() {
             <ComplianceCalendar />
           </div>
         )}
+      </div>
       </div>
     </div>
   );

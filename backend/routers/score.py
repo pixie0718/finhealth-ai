@@ -354,8 +354,8 @@ def record_outcome(
     if outcome not in valid_outcomes:
         raise HTTPException(status_code=400, detail=f"outcome must be one of {valid_outcomes}")
 
-    # Fetch original score for context — must belong to this banker.
-    score_record = load_score_by_id(db, msme_id, user_id=current_user.id)
+    # Fetch original score for context — bankers can reference any MSME's score.
+    score_record = load_score_by_id(db, msme_id, user_id=None)
     if not score_record:
         raise HTTPException(status_code=404, detail="Score not found for this account.")
     original_risk_band = score_record["loan_eligibility"]["risk_band"]
@@ -469,7 +469,10 @@ def get_score_by_id(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    result = load_score_by_id(db, msme_id, user_id=current_user.id)
+    # Single-bank model: a banker can pull up any MSME's score to review an
+    # incoming application; an MSME account can only see its own.
+    uid = None if current_user.role == "banker" else current_user.id
+    result = load_score_by_id(db, msme_id, user_id=uid)
     if not result:
         raise HTTPException(status_code=404, detail="Score not found.")
     return result
