@@ -136,9 +136,8 @@ export function LandingFooter({ navigate }) {
     <footer style={{ borderTop: "1px solid var(--c-border-soft)", background: "var(--c-deepest)", padding: "40px 28px 28px" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 28 }}>
         <div style={{ maxWidth: 300 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>📊</div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--c-text)" }}>FinHealth <span style={{ color: "#818cf8" }}>AI</span></div>
+          <div style={{ marginBottom: 12 }}>
+            <Logo size={44} />
           </div>
           <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>Explainable MSME credit scoring on alternate data. Built for IDBI Innovate 2026.</p>
         </div>
